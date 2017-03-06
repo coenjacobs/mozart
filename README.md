@@ -34,3 +34,17 @@ The following configuration values are required:
 - `packages` is an array that defines the packages that need to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`.
 
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration.
+
+## Scripts
+Mozart is designed to install and be forgotten about. Using Composer scripts, the Mozart script can be run as soon as Composer either installs a new package, or updates an already installed one. This ensures that the packages you want to bundle, are always bundled in the latest installed version, automatically:
+
+```
+"scripts": {
+    "post-install-cmd": [
+        "\"vendor/bin/mozart\" compose"
+    ],
+    "post-update-cmd": [
+        "\"vendor/bin/mozart\" compose"
+    ]
+}
+```
