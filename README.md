@@ -1,4 +1,4 @@
-# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart)
+# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg?format=flat-square)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg?format=flat-square)](https://packagist.org/packages/coenjacobs/mozart)
 Composes all dependencies as a package inside a WordPress plugin. Very experimental. More to come soon.
 
 ## License
