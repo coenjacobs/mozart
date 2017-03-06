@@ -1,2 +1,2 @@
-# Mozart
+# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart)
 Composes all dependencies as a package inside a WordPress plugin. Very experimental. More to come soon.
