@@ -1,0 +1,22 @@
+{
+    "name": "coenjacobs/mozart",
+    "authors": [
+        {
+            "name": "Coen Jacobs",
+            "email": "coenjacobs@gmail.com"
+        }
+    ],
+    "bin": ["bin/mozart"],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "symfony/console": "^3.2",
+        "symfony/finder": "^3.2",
+        "league/flysystem": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CoenJacobs\\Mozart\\": "src/"
+        }
+    }
+}
