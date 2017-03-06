@@ -9,6 +9,7 @@
     "bin": ["bin/mozart"],
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "license": "MIT",
     "require": {
         "symfony/console": "^3.2",
         "symfony/finder": "^3.2",
