@@ -2,9 +2,10 @@
 
 namespace CoenJacobs\Mozart;
 
-use CoenJacobs\Mozart\Composer\Autoload\Psr0;
-use CoenJacobs\Mozart\Composer\Autoload\Psr4;
+use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Replace\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -39,23 +40,17 @@ class Mover
         $filesystem = new Filesystem(new Local($this->workingDir));
 
         foreach( $package->autoloaders as $autoloader ) {
-            foreach( $autoloader->paths as $path ) {
+            foreach ($autoloader->paths as $path) {
                 $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
                 $finder->files()->in($source_path);
 
-                $searchNamespace = $autoloader->namespace;
-
-                if ( is_a($autoloader, Psr4::class)) {
-                    $searchNamespace = trim($autoloader->namespace, '\\');
-                }
-
                 foreach ($finder as $file) {
-                    if ( is_a($autoloader, Psr0::class)) {
-                        $targetFile = str_replace($this->workingDir, $this->config->dep_directory, $file->getRealPath());
-                    } else {
-                        $namespacePath = str_replace('\\', '/', $autoloader->namespace);
+                    if (is_a($autoloader, NamespaceAutoloader::class)) {
+                        $namespacePath = $autoloader->getNamespacePath();
                         $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
+                    } else {
+                        $targetFile = str_replace($this->workingDir, $this->config->classmap_directory, $file->getRealPath());
                     }
 
                     $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
@@ -65,18 +60,19 @@ class Mover
                         $targetFile
                     );
 
-                    if ( '.php' == substr($targetFile, '-4', 4 ) ) {
+                    if ('.php' == substr($targetFile, '-4', 4)) {
                         $contents = $filesystem->read($targetFile);
 
-                        $contents = preg_replace_callback(
-                            '/'.addslashes($searchNamespace).'([\\\|;])/U',
-                            function($matches) {
-                                $replace = trim($matches[0], $matches[1]);
-                                return $this->config->dep_namespace . $replace . $matches[1];
-                            },
-                            $contents
-                        );
+                        if (is_a($autoloader, NamespaceAutoloader::class)) {
+                            $replacer = new NamespaceReplacer();
+                            $replacer->dep_namespace = $this->config->dep_namespace;
+                        } else {
+                            $replacer = new ClassmapReplacer();
+                        }
 
+                        $replacer->setAutoloader($autoloader);
+
+                        $contents = $replacer->replace($contents);
                         $filesystem->put($targetFile, $contents);
                     }
                 }

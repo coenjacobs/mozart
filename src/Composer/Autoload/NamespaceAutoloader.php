@@ -17,4 +17,14 @@ abstract class NamespaceAutoloader implements Autoloader
             array_push( $this->paths, $value);
         }
     }
+
+    public function getSearchNamespace()
+    {
+        return $this->namespace;
+    }
+
+    public function getNamespacePath()
+    {
+        return '';
+    }
 }
