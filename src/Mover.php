@@ -72,6 +72,7 @@ class Mover
                             $replacer->dep_namespace = $this->config->dep_namespace;
                         } else {
                             $replacer = new ClassmapReplacer();
+                            $replacer->classmap_prefix = $this->config->classmap_prefix;
                         }
 
                         $replacer->setAutoloader($autoloader);

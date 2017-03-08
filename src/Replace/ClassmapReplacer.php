@@ -7,12 +7,15 @@ class ClassmapReplacer extends BaseReplacer
     /** @var array */
     public $replacedClasses = [];
 
+    /** @var string */
+    public $classmap_prefix;
+
     public function replace( $contents )
     {
         return preg_replace_callback(
             '/(?:\W[abstract]*class |interface )([a-zA-Z\_]+)[ ]*{/U',
             function ($matches) {
-                $replace = 'CJDT_' . $matches[1];
+                $replace = $this->classmap_prefix . $matches[1];
                 $this->saveReplacedClass($matches[1], $replace);
                 return str_replace($matches[1], $replace, $matches[0]);
             },
