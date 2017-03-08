@@ -25,7 +25,7 @@ class Compose extends Command
         $config = $config->extra->mozart;
 
         $mover = new Mover($workingDir, $config);
-        $mover->deleteTargetDir();
+        $mover->deleteTargetDirs();
 
         foreach( $config->packages as $package_slug ) {
             $package = new Package($workingDir . '/vendor/' . $package_slug);

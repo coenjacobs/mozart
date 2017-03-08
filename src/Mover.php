@@ -28,16 +28,19 @@ class Mover
         $this->config = $config;
     }
 
-    public function deleteTargetDir()
+    public function deleteTargetDirs()
     {
         $filesystem = new Filesystem(new Local($this->workingDir));
-        $filesystem->deleteDir($this->targetDir);
+        $filesystem->deleteDir($this->config->dep_directory);
+        $filesystem->deleteDir($this->config->classmap_directory);
     }
 
     public function movePackage(Package $package)
     {
         $finder = new Finder();
         $filesystem = new Filesystem(new Local($this->workingDir));
+
+        $replacedClasses = [];
 
         foreach( $package->autoloaders as $autoloader ) {
             foreach ($autoloader->paths as $path) {
@@ -71,12 +74,19 @@ class Mover
                         }
 
                         $replacer->setAutoloader($autoloader);
-
                         $contents = $replacer->replace($contents);
+
+                        if ( is_a($replacer, ClassmapReplacer::class)) {
+                            $replacedClasses = array_merge($replacedClasses, $replacer->replacedClasses);
+                        }
+
                         $filesystem->put($targetFile, $contents);
                     }
                 }
             }
         }
+
+        // Replace all replaced class names throughout the classmap dependencies here
+
     }
 }
