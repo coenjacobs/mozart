@@ -32,5 +32,7 @@ class Compose extends Command
             $package->findAutoloaders();
             $mover->movePackage($package);
         }
+
+        $mover->replaceClassmapNames();
     }
 }

@@ -21,6 +21,9 @@ class Mover
     /** @var \stdClass */
     protected $config;
 
+    /** @var array */
+    protected $replacedClasses = [];
+
     public function __construct( $workingDir, $config )
     {
         $this->workingDir = $workingDir;
@@ -39,8 +42,6 @@ class Mover
     {
         $finder = new Finder();
         $filesystem = new Filesystem(new Local($this->workingDir));
-
-        $replacedClasses = [];
 
         foreach( $package->autoloaders as $autoloader ) {
             foreach ($autoloader->paths as $path) {
@@ -77,7 +78,7 @@ class Mover
                         $contents = $replacer->replace($contents);
 
                         if ( is_a($replacer, ClassmapReplacer::class)) {
-                            $replacedClasses = array_merge($replacedClasses, $replacer->replacedClasses);
+                            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
                         }
 
                         $filesystem->put($targetFile, $contents);
@@ -85,8 +86,31 @@ class Mover
                 }
             }
         }
+    }
 
-        // Replace all replaced class names throughout the classmap dependencies here
+    public function replaceClassmapNames()
+    {
+        $classmap_path = $this->workingDir . $this->config->classmap_directory;
+        $finder = new Finder();
+        $finder->files()->in($classmap_path);
 
+        $filesystem = new Filesystem(new Local($this->workingDir));
+
+        foreach ($finder as $file) {
+            $file_path = str_replace($this->workingDir, '', $file->getRealPath());
+            $contents = $filesystem->read($file_path);
+
+            foreach( $this->replacedClasses as $original => $replacement ) {
+                $contents = preg_replace_callback(
+                    '/\W('.$original.')(?:\(|\:\:)/U',
+                    function ($matches) use ($replacement) {
+                        return str_replace($matches[1], $replacement, $matches[0]);
+                    },
+                    $contents
+                );
+            }
+
+            $filesystem->put($file_path, $contents);
+        }
     }
 }
