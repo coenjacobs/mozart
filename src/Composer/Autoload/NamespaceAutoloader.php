@@ -22,9 +22,4 @@ abstract class NamespaceAutoloader implements Autoloader
     {
         return $this->namespace;
     }
-
-    public function getNamespacePath()
-    {
-        return '';
-    }
 }

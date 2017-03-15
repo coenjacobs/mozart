@@ -48,13 +48,13 @@ class Mover
                 $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
                 $finder->files()->in($source_path);
+                $namespacePath = $package->config->name;
 
                 foreach ($finder as $file) {
                     if ($autoloader instanceof NamespaceAutoloader::class) {
-                        $namespacePath = $autoloader->getNamespacePath();
                         $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
                     } else {
-                        $targetFile = str_replace($this->workingDir, $this->config->classmap_directory, $file->getRealPath());
+                        $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
                     }
 
                     $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
