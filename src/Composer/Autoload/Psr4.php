@@ -8,4 +8,9 @@ class Psr4 extends NamespaceAutoloader
     {
         return trim($this->namespace, '\\');
     }
+
+    public function getNamespacePath()
+    {
+        return str_replace('\\', '/', $this->namespace);
+    }
 }

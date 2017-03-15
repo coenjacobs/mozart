@@ -50,12 +50,14 @@ class Mover
                 $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
                 $finder->files()->in($source_path);
-                $namespacePath = $package->config->name;
 
                 foreach ($finder as $file) {
+
                     if ($autoloader instanceof NamespaceAutoloader) {
+                        $namespacePath = $autoloader->getNamespacePath();
                         $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
                     } else {
+                        $namespacePath = $package->config->name;
                         $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
                     }
 
