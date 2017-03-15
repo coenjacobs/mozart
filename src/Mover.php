@@ -51,7 +51,7 @@ class Mover
                 $namespacePath = $package->config->name;
 
                 foreach ($finder as $file) {
-                    if ($autoloader instanceof NamespaceAutoloader::class) {
+                    if ($autoloader instanceof NamespaceAutoloader) {
                         $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
                     } else {
                         $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
@@ -67,7 +67,7 @@ class Mover
                     if ('.php' == substr($targetFile, '-4', 4)) {
                         $contents = $filesystem->read($targetFile);
 
-                        if ($autoloader instanceof NamespaceAutoloader::class) {
+                        if ($autoloader instanceof NamespaceAutoloader) {
                             $replacer = new NamespaceReplacer();
                             $replacer->dep_namespace = $this->config->dep_namespace;
                         } else {
@@ -78,7 +78,7 @@ class Mover
                         $replacer->setAutoloader($autoloader);
                         $contents = $replacer->replace($contents);
 
-                        if ( $replacer instanceof ClassmapReplacer::class) {
+                        if ( $replacer instanceof ClassmapReplacer) {
                             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
                         }
 
