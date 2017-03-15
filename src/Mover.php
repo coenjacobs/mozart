@@ -35,7 +35,9 @@ class Mover
     {
         $filesystem = new Filesystem(new Local($this->workingDir));
         $filesystem->deleteDir($this->config->dep_directory);
+        $filesystem->createDir($this->config->dep_directory);
         $filesystem->deleteDir($this->config->classmap_directory);
+        $filesystem->createDir($this->config->classmap_directory);
     }
 
     public function movePackage(Package $package)
