@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart;
 
+use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
@@ -24,26 +25,29 @@ class Mover
     /** @var array */
     protected $replacedClasses = [];
 
+    /** @var Filesystem */
+    protected $filesystem;
+
     public function __construct( $workingDir, $config )
     {
         $this->workingDir = $workingDir;
         $this->targetDir = $config->dep_directory;
         $this->config = $config;
+
+        $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
 
     public function deleteTargetDirs()
     {
-        $filesystem = new Filesystem(new Local($this->workingDir));
-        $filesystem->deleteDir($this->config->dep_directory);
-        $filesystem->createDir($this->config->dep_directory);
-        $filesystem->deleteDir($this->config->classmap_directory);
-        $filesystem->createDir($this->config->classmap_directory);
+        $this->filesystem->deleteDir($this->config->dep_directory);
+        $this->filesystem->createDir($this->config->dep_directory);
+        $this->filesystem->deleteDir($this->config->classmap_directory);
+        $this->filesystem->createDir($this->config->classmap_directory);
     }
 
     public function movePackage(Package $package)
     {
         $finder = new Finder();
-        $filesystem = new Filesystem(new Local($this->workingDir));
 
         foreach( $package->autoloaders as $autoloader ) {
             foreach ($autoloader->paths as $path) {
@@ -52,45 +56,57 @@ class Mover
                 $finder->files()->in($source_path);
 
                 foreach ($finder as $file) {
-
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $namespacePath = $autoloader->getNamespacePath();
-                        $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
-                    } else {
-                        $namespacePath = $package->config->name;
-                        $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
-                    }
-
-                    $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
-
-                    $filesystem->copy(
-                        str_replace($this->workingDir, '', $file->getRealPath()),
-                        $targetFile
-                    );
+                    $targetFile = $this->moveFile($package, $autoloader, $file, $path);
 
                     if ('.php' == substr($targetFile, '-4', 4)) {
-                        $contents = $filesystem->read($targetFile);
+                        $this->replaceInFile($targetFile, $autoloader);
+                    }
+                }
+            }
 
-                        if ($autoloader instanceof NamespaceAutoloader) {
-                            $replacer = new NamespaceReplacer();
-                            $replacer->dep_namespace = $this->config->dep_namespace;
-                        } else {
-                            $replacer = new ClassmapReplacer();
-                            $replacer->classmap_prefix = $this->config->classmap_prefix;
+            if ( $autoloader instanceof Classmap && ! empty($autoloader->files ) ) {
+                foreach( $autoloader->files as $file ) {
+                    $finder = new Finder();
+                    $source_path = $this->workingDir . '/vendor/' . $package->config->name;
+                    $finder->files()->name($file)->in($source_path);
+
+                    foreach ($finder as $foundFile) {
+                        $targetFile = $this->moveFile($package, $autoloader, $foundFile);
+
+                        if ('.php' == substr($targetFile, '-4', 4)) {
+                            $this->replaceInFile($targetFile, $autoloader);
                         }
-
-                        $replacer->setAutoloader($autoloader);
-                        $contents = $replacer->replace($contents);
-
-                        if ( $replacer instanceof ClassmapReplacer) {
-                            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
-                        }
-
-                        $filesystem->put($targetFile, $contents);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * @param Package $package
+     * @param $autoloader
+     * @param $file
+     * @param $path
+     * @return mixed
+     */
+    public function moveFile(Package $package, $autoloader, $file, $path = '')
+    {
+        if ($autoloader instanceof NamespaceAutoloader) {
+            $namespacePath = $autoloader->getNamespacePath();
+            $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
+            $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
+        } else {
+            $namespacePath = $package->config->name;
+            $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
+            $targetFile = str_replace('/vendor/' . $package->config->name . '/', '/', $targetFile);
+        }
+
+        $this->filesystem->copy(
+            str_replace($this->workingDir, '', $file->getRealPath()),
+            $targetFile
+        );
+
+        return $targetFile;
     }
 
     public function replaceClassmapNames()
@@ -117,5 +133,31 @@ class Mover
 
             $filesystem->put($file_path, $contents);
         }
+    }
+
+    /**
+     * @param $targetFile
+     * @param $autoloader
+     */
+    public function replaceInFile($targetFile, $autoloader)
+    {
+        $contents = $this->filesystem->read($targetFile);
+
+        if ($autoloader instanceof NamespaceAutoloader) {
+            $replacer = new NamespaceReplacer();
+            $replacer->dep_namespace = $this->config->dep_namespace;
+        } else {
+            $replacer = new ClassmapReplacer();
+            $replacer->classmap_prefix = $this->config->classmap_prefix;
+        }
+
+        $replacer->setAutoloader($autoloader);
+        $contents = $replacer->replace($contents);
+
+        if ($replacer instanceof ClassmapReplacer) {
+            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
+        }
+
+        $this->filesystem->put($targetFile, $contents);
     }
 }
