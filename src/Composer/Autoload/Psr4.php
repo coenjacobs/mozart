@@ -2,11 +2,15 @@
 
 namespace CoenJacobs\Mozart\Composer\Autoload;
 
-class Psr4 implements Autoloader
+class Psr4 extends NamespaceAutoloader
 {
-    /** @var string */
-    public $namespace = '';
+    public function getSearchNamespace()
+    {
+        return trim($this->namespace, '\\');
+    }
 
-    /** @var array */
-    public $paths = [];
+    public function getNamespacePath()
+    {
+        return str_replace('\\', '/', $this->namespace);
+    }
 }
