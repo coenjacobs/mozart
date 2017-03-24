@@ -123,9 +123,9 @@ class Mover
 
             foreach( $this->replacedClasses as $original => $replacement ) {
                 $contents = preg_replace_callback(
-                    '/\W('.$original.')(?:\(|\:\:)/U',
+                    '/\W(?<!(trait)\ )(?<!(interface)\ )(?<!(class)\ )('.$original.')\W/U',
                     function ($matches) use ($replacement) {
-                        return str_replace($matches[1], $replacement, $matches[0]);
+                        return str_replace($matches[4], $replacement, $matches[0]);
                     },
                     $contents
                 );
