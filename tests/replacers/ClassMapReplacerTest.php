@@ -3,9 +3,11 @@
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
 
-class ClassMapReplacerTest extends TestCase {
+class ClassMapReplacerTest extends TestCase
+{
     /** @test */
-    public function it_replaces_class_declarations() {
+    public function it_replaces_class_declarations()
+    {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
@@ -14,7 +16,8 @@ class ClassMapReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_replaces_abstract_class_declarations() {
+    public function it_replaces_abstract_class_declarations()
+    {
         $contents = 'abstract class Hello_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
@@ -23,7 +26,8 @@ class ClassMapReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_replaces_interface_class_declarations() {
+    public function it_replaces_interface_class_declarations()
+    {
         $contents = 'interface Hello_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
@@ -32,7 +36,8 @@ class ClassMapReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_replaces_class_declarations_that_extend_other_classes() {
+    public function it_replaces_class_declarations_that_extend_other_classes()
+    {
         $contents = 'class Hello_World extends Bye_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
@@ -41,7 +46,8 @@ class ClassMapReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_replaces_class_declarations_that_implement_interfaces() {
+    public function it_replaces_class_declarations_that_implement_interfaces()
+    {
         $contents = 'class Hello_World implements Bye_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
@@ -50,7 +56,8 @@ class ClassMapReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_stores_replaced_class_names() {
+    public function it_stores_replaced_class_names()
+    {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';

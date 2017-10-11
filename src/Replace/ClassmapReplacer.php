@@ -10,7 +10,7 @@ class ClassmapReplacer extends BaseReplacer
     /** @var string */
     public $classmap_prefix;
 
-    public function replace( $contents )
+    public function replace($contents)
     {
         return preg_replace_callback(
             '/(?:[abstract]*class |interface )([a-zA-Z\_]+)(?:[ ]*{| extends| implements)/U',
