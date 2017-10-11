@@ -89,8 +89,7 @@ class Mover
      * @param $path
      * @return mixed
      */
-    public function moveFile(Package $package, $autoloader, $file, $path = '')
-    {
+    public function moveFile(Package $package, $autoloader, $file, $path = '')   {
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
             $replaceWith = $this->config->dep_directory . $namespacePath;
