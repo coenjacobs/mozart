@@ -4,7 +4,8 @@ use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
 
-class NamespaceReplacerTest extends TestCase {
+class NamespaceReplacerTest extends TestCase
+{
     /** @var NamespaceReplacer */
     public $replacer;
 
@@ -20,14 +21,16 @@ class NamespaceReplacerTest extends TestCase {
     }
 
     /** @test */
-    public function it_replaces_namespace_declarations() {
+    public function it_replaces_namespace_declarations()
+    {
         $contents = 'namespace Test\\Test;';
         $contents = $this->replacer->replace($contents);
         $this->assertEquals('namespace Prefix\\Test\\Test;', $contents);
     }
 
     /** @test */
-    public function it_replaces_partial_namespace_declarations() {
+    public function it_replaces_partial_namespace_declarations()
+    {
         $contents = 'namespace Test\\Test\\Another;';
         $contents = $this->replacer->replace($contents);
         $this->assertEquals('namespace Prefix\\Test\\Test\\Another;', $contents);

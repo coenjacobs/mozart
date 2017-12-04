@@ -15,7 +15,7 @@ class Package
     /** @var array */
     public $autoloaders = [];
 
-    public function __construct( $path )
+    public function __construct($path)
     {
         $this->path   = $path;
         $this->config = json_decode(file_get_contents($this->path . '/composer.json'));
@@ -29,10 +29,14 @@ class Package
             'classmap' => 'CoenJacobs\Mozart\Composer\Autoload\Classmap',
         );
 
-        if ( ! isset( $this->config->autoload ) ) return;
+        if (! isset($this->config->autoload)) {
+            return;
+        }
 
-        foreach( $namespace_autoloaders as $key => $value ) {
-            if ( ! isset( $this->config->autoload->$key) ) continue;
+        foreach ($namespace_autoloaders as $key => $value) {
+            if (! isset($this->config->autoload->$key)) {
+                continue;
+            }
 
             $autoconfigs = (array)$this->config->autoload->$key;
 

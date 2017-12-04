@@ -28,7 +28,7 @@ class Mover
     /** @var Filesystem */
     protected $filesystem;
 
-    public function __construct( $workingDir, $config )
+    public function __construct($workingDir, $config)
     {
         $this->workingDir = $workingDir;
         $this->targetDir = $config->dep_directory;
@@ -49,7 +49,7 @@ class Mover
     {
         $finder = new Finder();
 
-        foreach( $package->autoloaders as $autoloader ) {
+        foreach ($package->autoloaders as $autoloader) {
             foreach ($autoloader->paths as $path) {
                 $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
@@ -64,8 +64,8 @@ class Mover
                 }
             }
 
-            if ( $autoloader instanceof Classmap && ! empty($autoloader->files ) ) {
-                foreach( $autoloader->files as $file ) {
+            if ($autoloader instanceof Classmap && ! empty($autoloader->files)) {
+                foreach ($autoloader->files as $file) {
                     $finder = new Finder();
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name;
                     $finder->files()->name($file)->in($source_path);
@@ -89,15 +89,16 @@ class Mover
      * @param $path
      * @return mixed
      */
-    public function moveFile(Package $package, $autoloader, $file, $path = '')
-    {
+    public function moveFile(Package $package, $autoloader, $file, $path = '')   {
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
-            $targetFile = str_replace($this->workingDir, $this->config->dep_directory . $namespacePath, $file->getRealPath());
+            $replaceWith = $this->config->dep_directory . $namespacePath;
+            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
             $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
         } else {
             $namespacePath = $package->config->name;
-            $targetFile = str_replace($this->workingDir, $this->config->classmap_directory . $namespacePath, $file->getRealPath());
+            $replaceWith = $this->config->classmap_directory . $namespacePath;
+            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
             $targetFile = str_replace('/vendor/' . $package->config->name . '/', '/', $targetFile);
         }
 
@@ -121,7 +122,7 @@ class Mover
             $file_path = str_replace($this->workingDir, '', $file->getRealPath());
             $contents = $filesystem->read($file_path);
 
-            foreach( $this->replacedClasses as $original => $replacement ) {
+            foreach ($this->replacedClasses as $original => $replacement) {
                 $contents = preg_replace_callback(
                     '/\W(?<!(trait)\ )(?<!(interface)\ )(?<!(class)\ )('.$original.')\W/U',
                     function ($matches) use ($replacement) {
