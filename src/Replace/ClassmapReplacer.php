@@ -13,7 +13,7 @@ class ClassmapReplacer extends BaseReplacer
     public function replace($contents)
     {
         return preg_replace_callback(
-            '/(?:[abstract]*class |interface )([a-zA-Z\_]+)(?:[ ]*{| extends| implements)/U',
+            '/(?:[abstract]*class |interface )([a-zA-Z\_]+)(?:[ \n]*{| extends| implements)/U',
             function ($matches) {
                 $replace = $this->classmap_prefix . $matches[1];
                 $this->saveReplacedClass($matches[1], $replace);
