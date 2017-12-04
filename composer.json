@@ -22,6 +22,13 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.0"
-    }
+        "phpunit/phpunit": "^4.0",
+        "coenjacobs/php-composter-phpcs": "dev-master"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/coenjacobs/php-composter-phpcs.git"
+        }
+    ]
 }

@@ -27,7 +27,7 @@ class Compose extends Command
         $mover = new Mover($workingDir, $config);
         $mover->deleteTargetDirs();
 
-        foreach( $config->packages as $package_slug ) {
+        foreach ($config->packages as $package_slug) {
             $package = new Package($workingDir . '/vendor/' . $package_slug);
             $package->findAutoloaders();
             $mover->movePackage($package);

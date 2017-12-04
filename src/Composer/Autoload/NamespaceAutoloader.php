@@ -12,9 +12,9 @@ abstract class NamespaceAutoloader implements Autoloader
 
     public function processConfig($config)
     {
-        foreach( $config as $key => $value) {
+        foreach ($config as $key => $value) {
             $this->namespace = $key;
-            array_push( $this->paths, $value);
+            array_push($this->paths, $value);
         }
     }
 
