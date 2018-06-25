@@ -10,12 +10,10 @@ class NamespaceReplacer extends BaseReplacer
     public function replace($contents)
     {
         $searchNamespace = $this->autoloader->getSearchNamespace();
-
         return preg_replace_callback(
-            '/' . addslashes($searchNamespace) . '([\\\|;])/U',
+            '/([^\\?])(' . addslashes($searchNamespace) . '[\\\|;])/U',
             function ($matches) {
-                $replace = trim($matches[0], $matches[1]);
-                return $this->dep_namespace . $replace . $matches[1];
+                return $matches[1] . $this->dep_namespace . $matches[2];
             },
             $contents
         );
