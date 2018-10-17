@@ -15,6 +15,9 @@ class Package
     /** @var array */
     public $autoloaders = [];
 
+    /** @var array */
+    public $dependencies = [];
+
     public function __construct($path)
     {
         $this->path   = $path;
@@ -46,5 +49,21 @@ class Package
 
             array_push($this->autoloaders, $autoloader);
         }
+    }
+
+    public function findDependencies($vendor_path)
+    {
+        $this->dependencies = array_keys((array)$this->config->require);
+        if (isset($this->config->suggest) && $this->config->suggest) {
+            $this->dependencies = array_unique(
+                array_merge($this->dependencies, array_keys((array)$this->config->suggest))
+            );
+        }
+        $this->dependencies = array_filter(
+            $this->dependencies,
+            function ($dependency) use ($vendor_path) {
+                return file_exists($vendor_path . '/' . $dependency);
+            }
+        );
     }
 }
