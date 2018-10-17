@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
+use CoenJacobs\Mozart\Synchronizer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -56,5 +57,26 @@ class Compose extends Command
         }
 
         $mover->replaceClassmapNames();
+
+        if (!$with_dependencies) {
+            return;
+        }
+
+        $synchronizer = new Synchronizer($workingDir, $config);
+
+        foreach ($processed_packages as $package) {
+            if (!$package->dependencies) {
+                continue;
+            }
+            foreach ($package->dependencies as $dependency_name) {
+                $matching_packages = array_filter(
+                    $processed_packages,
+                    function (Package $pack) use ($dependency_name) {
+                        return $pack->config->name === $dependency_name;
+                    }
+                );
+                $synchronizer->syncMovedPackageWithDependency($package, reset($matching_packages));
+            }
+        }
     }
 }
