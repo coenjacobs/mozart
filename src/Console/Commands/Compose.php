@@ -16,10 +16,10 @@ class Compose extends Command
     {
         $this->setName('compose');
         $this->addOption(
-            'with_dependencies',
+            'skip_dependencies',
             null,
             InputOption::VALUE_OPTIONAL,
-            'Process also sub-dependencies.',
+            'Skip processing of package sub-dependencies.',
             false
         );
         $this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
@@ -28,7 +28,7 @@ class Compose extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $with_dependencies = $input->getOption('with_dependencies') !== false;
+        $skip_dependencies = $input->getOption('skip_dependencies') !== false;
         $workingDir = getcwd();
 
         $config = json_decode(file_get_contents($workingDir . '/composer.json'));
@@ -44,7 +44,7 @@ class Compose extends Command
             $package = new Package($workingDir . '/vendor/' . $package_slug);
             $package->findAutoloaders();
             $mover->movePackage($package);
-            if (!$with_dependencies) {
+            if ($skip_dependencies) {
                 continue;
             }
             $package->findDependencies($workingDir . '/vendor');
@@ -58,7 +58,7 @@ class Compose extends Command
 
         $mover->replaceClassmapNames();
 
-        if (!$with_dependencies) {
+        if ($skip_dependencies) {
             return;
         }
 
