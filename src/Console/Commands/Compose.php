@@ -47,10 +47,12 @@ class Compose extends Command
             if ($skip_dependencies) {
                 continue;
             }
-            $package->findDependencies($workingDir . '/vendor');
+            $package->findDependencies();
             $processed_packages[] = $package;
             foreach ($package->dependencies as $dependency) {
-                if (!in_array($dependency, $packages->getArrayCopy())) {
+                if (file_exists($workingDir . '/vendor/' . $dependency) &&
+                    !in_array($dependency, $packages->getArrayCopy())
+                ) {
                     $packages->append($dependency);
                 };
             }
@@ -68,14 +70,20 @@ class Compose extends Command
             if (!$package->dependencies) {
                 continue;
             }
-            foreach ($package->dependencies as $dependency_name) {
+            $dependencies = array_unique(array_merge($package->dependencies, $package->suggested_dependencies));
+            foreach ($dependencies as $dependency_name) {
                 $matching_packages = array_filter(
                     $processed_packages,
                     function (Package $pack) use ($dependency_name) {
                         return $pack->config->name === $dependency_name;
                     }
                 );
-                $synchronizer->syncMovedPackageWithDependency($package, reset($matching_packages));
+                $dependent_package = reset($matching_packages);
+                // Suggested dependency might not be installed
+                if (!$dependent_package) {
+                    continue;
+                }
+                $synchronizer->syncMovedPackageWithDependency($package, $dependent_package);
             }
         }
     }
