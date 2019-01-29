@@ -27,12 +27,37 @@ class Compose extends Command
         $mover = new Mover($workingDir, $config);
         $mover->deleteTargetDirs();
 
-        foreach ($config->packages as $package_slug) {
-            $package = new Package($workingDir . '/vendor/' . $package_slug);
-            $package->findAutoloaders();
+        $packages = $this->findPackages($workingDir, $config->packages, []);
+
+        foreach( $packages as $package ) {
             $mover->movePackage($package);
         }
 
         $mover->replaceClassmapNames();
+    }
+
+    /**
+     * Loops through all dependencies and their dependencies and so on...
+     * will eventually return a list of all packages required by the full tree.
+     */
+    private function findPackages($workingDir, $slugs, $packages)
+    {
+        foreach ($slugs as $package_slug) {
+            $packageDir = $workingDir . '/vendor/' . $package_slug .'/';
+
+            if (! is_dir($packageDir) ) {
+                continue;
+            }
+
+            $package = new Package($packageDir);
+            $package->findAutoloaders();
+            $packages[] = $package;
+
+            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
+            $dependencies = array_keys( (array) $config->require);
+            $packages = $this->findPackages($workingDir, $dependencies, $packages);
+        }
+
+        return $packages;
     }
 }
