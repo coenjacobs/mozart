@@ -27,21 +27,35 @@ class Compose extends Command
         $mover = new Mover($workingDir, $config);
         $mover->deleteTargetDirs();
 
-        $packages = $this->findPackages($workingDir, $config->packages, []);
+        $packages = $this->findPackages($workingDir, $config->packages);
 
         foreach( $packages as $package ) {
-            $mover->movePackage($package);
+            $this->movePackage($package, $mover);
+        }
+    }
+
+    /**
+     * Move all the packages over, one by one, starting on the deepest level of dependencies.
+     */
+    public function movePackage($package, $mover)
+    {
+        if ( ! empty( $package->dependencies ) ) {
+            foreach( $package->dependencies as $dependency ) {
+                $this->movePackage($dependency, $mover);
+            }
         }
 
-        $mover->replaceClassmapNames();
+        $mover->movePackage($package);
     }
 
     /**
      * Loops through all dependencies and their dependencies and so on...
      * will eventually return a list of all packages required by the full tree.
      */
-    private function findPackages($workingDir, $slugs, $packages)
+    private function findPackages($workingDir, $slugs)
     {
+        $packages = [];
+
         foreach ($slugs as $package_slug) {
             $packageDir = $workingDir . '/vendor/' . $package_slug .'/';
 
@@ -51,11 +65,12 @@ class Compose extends Command
 
             $package = new Package($packageDir);
             $package->findAutoloaders();
-            $packages[] = $package;
 
             $config = json_decode(file_get_contents($packageDir . 'composer.json'));
             $dependencies = array_keys( (array) $config->require);
-            $packages = $this->findPackages($workingDir, $dependencies, $packages);
+
+            $package->dependencies = $this->findPackages($workingDir, $dependencies);
+            $packages[] = $package;
         }
 
         return $packages;
