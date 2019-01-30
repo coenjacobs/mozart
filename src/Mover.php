@@ -22,9 +22,6 @@ class Mover
     /** @var \stdClass */
     protected $config;
 
-    /** @var array */
-    protected $replacedClasses = [];
-
     /** @var Filesystem */
     protected $filesystem;
 
@@ -56,11 +53,7 @@ class Mover
                 $finder->files()->in($source_path);
 
                 foreach ($finder as $file) {
-                    $targetFile = $this->moveFile($package, $autoloader, $file, $path);
-
-                    if ('.php' == substr($targetFile, '-4', 4)) {
-                        $this->replaceInFile($targetFile, $autoloader);
-                    }
+                    $this->moveFile($package, $autoloader, $file, $path);
                 }
             }
 
@@ -71,11 +64,7 @@ class Mover
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
-                        $targetFile = $this->moveFile($package, $autoloader, $foundFile);
-
-                        if ('.php' == substr($targetFile, '-4', 4)) {
-                            $this->replaceInFile($targetFile, $autoloader);
-                        }
+                        $this->moveFile($package, $autoloader, $foundFile);
                     }
                 }
             }
@@ -108,57 +97,5 @@ class Mover
         );
 
         return $targetFile;
-    }
-
-    public function replaceClassmapNames()
-    {
-        $classmap_path = $this->workingDir . $this->config->classmap_directory;
-        $finder = new Finder();
-        $finder->files()->in($classmap_path);
-
-        $filesystem = new Filesystem(new Local($this->workingDir));
-
-        foreach ($finder as $file) {
-            $file_path = str_replace($this->workingDir, '', $file->getRealPath());
-            $contents = $filesystem->read($file_path);
-
-            foreach ($this->replacedClasses as $original => $replacement) {
-                $contents = preg_replace_callback(
-                    '/\W(?<!(trait)\ )(?<!(interface)\ )(?<!(class)\ )('.$original.')\W/U',
-                    function ($matches) use ($replacement) {
-                        return str_replace($matches[4], $replacement, $matches[0]);
-                    },
-                    $contents
-                );
-            }
-
-            $filesystem->put($file_path, $contents);
-        }
-    }
-
-    /**
-     * @param $targetFile
-     * @param $autoloader
-     */
-    public function replaceInFile($targetFile, $autoloader)
-    {
-        $contents = $this->filesystem->read($targetFile);
-
-        if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->dep_namespace;
-        } else {
-            $replacer = new ClassmapReplacer();
-            $replacer->classmap_prefix = $this->config->classmap_prefix;
-        }
-
-        $replacer->setAutoloader($autoloader);
-        $contents = $replacer->replace($contents);
-
-        if ($replacer instanceof ClassmapReplacer) {
-            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
-        }
-
-        $this->filesystem->put($targetFile, $contents);
     }
 }

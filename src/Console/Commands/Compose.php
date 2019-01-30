@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
+use CoenJacobs\Mozart\Replacer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,6 +33,12 @@ class Compose extends Command
         foreach( $packages as $package ) {
             $this->movePackage($package, $mover);
         }
+
+        $replacer = new Replacer($workingDir, $config);
+
+        foreach( $packages as $package ) {
+            $this->replacePackage($package, $replacer);
+        }
     }
 
     /**
@@ -46,6 +53,20 @@ class Compose extends Command
         }
 
         $mover->movePackage($package);
+    }
+
+    /**
+     * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
+     */
+    public function replacePackage($package, $replacer)
+    {
+        if ( ! empty( $package->dependencies ) ) {
+            foreach( $package->dependencies as $dependency ) {
+                $this->replacePackage($dependency, $replacer);
+            }
+        }
+
+        $replacer->replacePackage($package);
     }
 
     /**
