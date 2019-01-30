@@ -25,18 +25,37 @@ class Compose extends Command
         $config = json_decode(file_get_contents($workingDir . '/composer.json'));
         $config = $config->extra->mozart;
 
+        $packages = $this->findPackages($workingDir, $config->packages);
+
+        $this->movePackages($workingDir, $config, $packages);
+        $this->replacePackages($workingDir, $config, $packages);
+    }
+
+    /**
+     * @param $workingDir
+     * @param $config
+     * @param array $packages
+     */
+    protected function movePackages($workingDir, $config, $packages)
+    {
         $mover = new Mover($workingDir, $config);
         $mover->deleteTargetDirs();
 
-        $packages = $this->findPackages($workingDir, $config->packages);
-
-        foreach( $packages as $package ) {
+        foreach ($packages as $package) {
             $this->movePackage($package, $mover);
         }
+    }
 
+    /**
+     * @param $workingDir
+     * @param $config
+     * @param array $packages
+     */
+    protected function replacePackages($workingDir, $config, $packages)
+    {
         $replacer = new Replacer($workingDir, $config);
 
-        foreach( $packages as $package ) {
+        foreach ($packages as $package) {
             $this->replacePackage($package, $replacer);
         }
     }
