@@ -39,35 +39,8 @@ class Replacer
 
     public function replacePackage(Package $package)
     {
-        $finder = new Finder();
-
         foreach ($package->autoloaders as $autoloader) {
-            $source_path = $this->workingDir . $this->targetDir . str_replace('\\', '/', $autoloader->namespace) .'/';
-            $finder->files()->in($source_path);
-
-            foreach ($finder as $file) {
-                $targetFile = $file->getPathName();
-
-                if ('.php' == substr($targetFile, '-4', 4)) {
-                    $this->replaceInFile($targetFile, $autoloader);
-                }
-            }
-
-            if ($autoloader instanceof Classmap && ! empty($autoloader->files)) {
-                foreach ($autoloader->files as $file) {
-                    $finder = new Finder();
-                    $source_path = $this->workingDir . $this->targetDir . $package->config->name;
-                    $finder->files()->name($file)->in($source_path);
-
-                    foreach ($finder as $foundFile) {
-                        $targetFile = $foundFile->getRealPath();
-
-                        if ('.php' == substr($targetFile, '-4', 4)) {
-                            $this->replaceInFile($targetFile, $autoloader);
-                        }
-                    }
-                }
-            }
+            $this->replacePackageByAutoloader($package, $autoloader);
         }
     }
 
@@ -122,5 +95,49 @@ class Replacer
         }
 
         $this->filesystem->put($targetFile, $contents);
+    }
+
+    /**
+     * @param Package $package
+     * @param $autoloader
+     */
+    public function replacePackageByAutoloader(Package $package, $autoloader)
+    {
+        if ($autoloader instanceof NamespaceAutoloader) {
+            $source_path = $this->workingDir . $this->targetDir . str_replace('\\', '/', $autoloader->namespace) . '/';
+            $this->replaceInDirectory($autoloader, $source_path);
+        } elseif ($autoloader instanceof Classmap && !empty($autoloader->files)) {
+            foreach ($autoloader->files as $file) {
+                $finder = new Finder();
+                $source_path = $this->workingDir . $this->targetDir . $package->config->name;
+                $finder->files()->name($file)->in($source_path);
+
+                foreach ($finder as $foundFile) {
+                    $targetFile = $foundFile->getRealPath();
+
+                    if ('.php' == substr($targetFile, '-4', 4)) {
+                        $this->replaceInFile($targetFile, $autoloader);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $autoloader
+     * @param $directory
+     */
+    public function replaceInDirectory($autoloader, $directory)
+    {
+        $finder = new Finder();
+        $finder->files()->in($directory);
+
+        foreach ($finder as $file) {
+            $targetFile = $file->getPathName();
+
+            if ('.php' == substr($targetFile, '-4', 4)) {
+                $this->replaceInFile($targetFile, $autoloader);
+            }
+        }
     }
 }

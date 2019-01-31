@@ -11,6 +11,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Compose extends Command
 {
+    /** @var Mover */
+    private $mover;
+
+    /** @var Replacer */
+    private $replacer;
+
+    /** @var string */
+    private $workingDir;
+
+    /** @var */
+    private $config;
+
     protected function configure()
     {
         $this->setName('compose');
@@ -21,28 +33,22 @@ class Compose extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $workingDir = getcwd();
+        $this->workingDir = $workingDir;
 
         $config = json_decode(file_get_contents($workingDir . '/composer.json'));
         $config = $config->extra->mozart;
+        $this->config = $config;
 
-        $packages = $this->findPackages($workingDir, $config->packages);
+        $this->mover = new Mover($workingDir, $config);
+        $this->replacer = new Replacer($workingDir, $config);
 
-        $this->movePackages($workingDir, $config, $packages);
-        $this->replacePackages($workingDir, $config, $packages);
-    }
+        $packages = $this->findPackages($config->packages);
 
-    /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
-     */
-    protected function movePackages($workingDir, $config, $packages)
-    {
-        $mover = new Mover($workingDir, $config);
-        $mover->deleteTargetDirs();
+        $this->movePackages($packages);
+        $this->replacePackages($packages);
 
-        foreach ($packages as $package) {
-            $this->movePackage($package, $mover);
+        foreach( $packages as $package ) {
+            $this->replaceParentPackage($package, null);
         }
     }
 
@@ -51,53 +57,84 @@ class Compose extends Command
      * @param $config
      * @param array $packages
      */
-    protected function replacePackages($workingDir, $config, $packages)
+    protected function movePackages($packages)
     {
-        $replacer = new Replacer($workingDir, $config);
+        $this->mover->deleteTargetDirs();
 
         foreach ($packages as $package) {
-            $this->replacePackage($package, $replacer);
+            $this->movePackage($package);
+        }
+    }
+
+    /**
+     * @param $workingDir
+     * @param $config
+     * @param array $packages
+     */
+    protected function replacePackages($packages)
+    {
+        foreach ($packages as $package) {
+            $this->replacePackage($package);
         }
     }
 
     /**
      * Move all the packages over, one by one, starting on the deepest level of dependencies.
      */
-    public function movePackage($package, $mover)
+    public function movePackage($package)
     {
         if ( ! empty( $package->dependencies ) ) {
             foreach( $package->dependencies as $dependency ) {
-                $this->movePackage($dependency, $mover);
+                $this->movePackage($dependency);
             }
         }
 
-        $mover->movePackage($package);
+        $this->mover->movePackage($package);
     }
 
     /**
      * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
      */
-    public function replacePackage($package, $replacer)
+    public function replacePackage($package)
     {
         if ( ! empty( $package->dependencies ) ) {
             foreach( $package->dependencies as $dependency ) {
-                $this->replacePackage($dependency, $replacer);
+                $this->replacePackage($dependency);
             }
         }
 
-        $replacer->replacePackage($package);
+        $this->replacer->replacePackage($package);
+    }
+
+    protected function replaceParentPackage(Package $package, $parent)
+    {
+        if ( $parent !== null ) {
+            // Replace everything in parent, based on the dependencies
+            foreach( $parent->autoloaders as $parentAutoloader ) {
+                foreach( $package->autoloaders as $autoloader ) {
+                    $directory = $this->workingDir . $this->config->dep_directory . str_replace('\\', '/', $parentAutoloader->namespace) . '/';
+                    $this->replacer->replaceInDirectory($autoloader, $directory);
+                }
+            }
+        }
+
+        if ( ! empty($package->dependencies)) {
+            foreach ($package->dependencies as $dependency) {
+                $this->replaceParentPackage($dependency, $package);
+            }
+        }
     }
 
     /**
      * Loops through all dependencies and their dependencies and so on...
      * will eventually return a list of all packages required by the full tree.
      */
-    private function findPackages($workingDir, $slugs)
+    private function findPackages($slugs)
     {
         $packages = [];
 
         foreach ($slugs as $package_slug) {
-            $packageDir = $workingDir . '/vendor/' . $package_slug .'/';
+            $packageDir = $this->workingDir . '/vendor/' . $package_slug .'/';
 
             if (! is_dir($packageDir) ) {
                 continue;
@@ -107,9 +144,13 @@ class Compose extends Command
             $package->findAutoloaders();
 
             $config = json_decode(file_get_contents($packageDir . 'composer.json'));
-            $dependencies = array_keys( (array) $config->require);
 
-            $package->dependencies = $this->findPackages($workingDir, $dependencies);
+            $dependencies = [];
+            if ( isset( $config->require) ) {
+                $dependencies = array_keys((array)$config->require);
+            }
+
+            $package->dependencies = $this->findPackages($dependencies);
             $packages[] = $package;
         }
 

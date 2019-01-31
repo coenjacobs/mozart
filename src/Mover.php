@@ -5,8 +5,6 @@ namespace CoenJacobs\Mozart;
 use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
-use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -86,7 +84,7 @@ class Mover
             $targetFile = str_replace('/vendor/' . $package->config->name . '/' . $path, '', $targetFile);
         } else {
             $namespacePath = $package->config->name;
-            $replaceWith = $this->config->classmap_directory . $namespacePath;
+            $replaceWith = $this->config->classmap_directory . '/' . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
             $targetFile = str_replace('/vendor/' . $package->config->name . '/', '/', $targetFile);
         }
