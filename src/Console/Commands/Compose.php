@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
+use CoenJacobs\Mozart\Composer\Autoload\Classmap;
+use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
@@ -112,8 +114,25 @@ class Compose extends Command
             // Replace everything in parent, based on the dependencies
             foreach( $parent->autoloaders as $parentAutoloader ) {
                 foreach( $package->autoloaders as $autoloader ) {
-                    $directory = $this->workingDir . $this->config->dep_directory . str_replace('\\', '/', $parentAutoloader->namespace) . '/';
-                    $this->replacer->replaceInDirectory($autoloader, $directory);
+                    if ($parentAutoloader instanceof NamespaceAutoloader) {
+                        $directory = $this->workingDir . $this->config->dep_directory . str_replace('\\', '/', $parentAutoloader->namespace) . '/';
+
+                        if ( $autoloader instanceof NamespaceAutoloader ) {
+                            $this->replacer->replaceInDirectory($autoloader, $directory);
+                        } else {
+                            $directory = str_replace($this->workingDir, '', $directory);
+                            $this->replacer->replaceParentClassesInDirectory($directory);
+                        }
+                    } else {
+                        $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
+
+                        if ( $autoloader instanceof NamespaceAutoloader ) {
+                            $this->replacer->replaceInDirectory($autoloader, $directory);
+                        } else {
+                            $directory = str_replace($this->workingDir, '', $directory);
+                            $this->replacer->replaceParentClassesInDirectory($directory);
+                        }
+                    }
                 }
             }
         }

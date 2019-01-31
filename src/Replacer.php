@@ -99,6 +99,33 @@ class Replacer
      * @param $autoloader
      * @param $directory
      */
+    public function replaceParentClassesInDirectory($directory)
+    {
+        $directory = trim($directory, '//');
+        $finder = new Finder();
+        $finder->files()->in($directory);
+
+        $replacedClasses = $this->replacedClasses;
+
+        foreach ($finder as $file) {
+            $targetFile = $file->getPathName();
+
+            if ('.php' == substr($targetFile, '-4', 4)) {
+                $contents = $this->filesystem->read($targetFile);
+
+                foreach( $replacedClasses as $key => $value ) {
+                    $contents = str_replace($key, $value, $contents);
+                }
+
+                $this->filesystem->put($targetFile, $contents);
+            }
+        }
+    }
+
+    /**
+     * @param $autoloader
+     * @param $directory
+     */
     public function replaceInDirectory($autoloader, $directory)
     {
         $finder = new Finder();
