@@ -49,7 +49,7 @@ class Compose extends Command
         $this->movePackages($packages);
         $this->replacePackages($packages);
 
-        foreach( $packages as $package ) {
+        foreach ($packages as $package) {
             $this->replaceParentPackage($package, null);
         }
     }
@@ -85,8 +85,8 @@ class Compose extends Command
      */
     public function movePackage($package)
     {
-        if ( ! empty( $package->dependencies ) ) {
-            foreach( $package->dependencies as $dependency ) {
+        if (! empty($package->dependencies)) {
+            foreach ($package->dependencies as $dependency) {
                 $this->movePackage($dependency);
             }
         }
@@ -99,8 +99,8 @@ class Compose extends Command
      */
     public function replacePackage($package)
     {
-        if ( ! empty( $package->dependencies ) ) {
-            foreach( $package->dependencies as $dependency ) {
+        if (! empty($package->dependencies)) {
+            foreach ($package->dependencies as $dependency) {
                 $this->replacePackage($dependency);
             }
         }
@@ -110,14 +110,15 @@ class Compose extends Command
 
     protected function replaceParentPackage(Package $package, $parent)
     {
-        if ( $parent !== null ) {
+        if ($parent !== null) {
             // Replace everything in parent, based on the dependencies
-            foreach( $parent->autoloaders as $parentAutoloader ) {
-                foreach( $package->autoloaders as $autoloader ) {
+            foreach ($parent->autoloaders as $parentAutoloader) {
+                foreach ($package->autoloaders as $autoloader) {
                     if ($parentAutoloader instanceof NamespaceAutoloader) {
-                        $directory = $this->workingDir . $this->config->dep_directory . str_replace('\\', '/', $parentAutoloader->namespace) . '/';
+                        $namespace = str_replace('\\', '/', $parentAutoloader->namespace);
+                        $directory = $this->workingDir . $this->config->dep_directory . $namespace . '/';
 
-                        if ( $autoloader instanceof NamespaceAutoloader ) {
+                        if ($autoloader instanceof NamespaceAutoloader) {
                             $this->replacer->replaceInDirectory($autoloader, $directory);
                         } else {
                             $directory = str_replace($this->workingDir, '', $directory);
@@ -126,7 +127,7 @@ class Compose extends Command
                     } else {
                         $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
 
-                        if ( $autoloader instanceof NamespaceAutoloader ) {
+                        if ($autoloader instanceof NamespaceAutoloader) {
                             $this->replacer->replaceInDirectory($autoloader, $directory);
                         } else {
                             $directory = str_replace($this->workingDir, '', $directory);
@@ -137,7 +138,7 @@ class Compose extends Command
             }
         }
 
-        if ( ! empty($package->dependencies)) {
+        if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
                 $this->replaceParentPackage($dependency, $package);
             }
@@ -155,7 +156,7 @@ class Compose extends Command
         foreach ($slugs as $package_slug) {
             $packageDir = $this->workingDir . '/vendor/' . $package_slug .'/';
 
-            if (! is_dir($packageDir) ) {
+            if (! is_dir($packageDir)) {
                 continue;
             }
 
@@ -165,7 +166,7 @@ class Compose extends Command
             $config = json_decode(file_get_contents($packageDir . 'composer.json'));
 
             $dependencies = [];
-            if ( isset( $config->require) ) {
+            if (isset($config->require)) {
                 $dependencies = array_keys((array)$config->require);
             }
 

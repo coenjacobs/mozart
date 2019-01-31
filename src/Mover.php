@@ -45,7 +45,7 @@ class Mover
         $finder = new Finder();
 
         foreach ($package->autoloaders as $autoloader) {
-            if ($autoloader instanceof NamespaceAutoloader ) {
+            if ($autoloader instanceof NamespaceAutoloader) {
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
@@ -86,7 +86,8 @@ class Mover
      * @param $path
      * @return mixed
      */
-    public function moveFile(Package $package, $autoloader, $file, $path = '')   {
+    public function moveFile(Package $package, $autoloader, $file, $path = '')
+    {
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
             $replaceWith = $this->config->dep_directory . $namespacePath;

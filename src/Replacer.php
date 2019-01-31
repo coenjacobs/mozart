@@ -113,7 +113,7 @@ class Replacer
             if ('.php' == substr($targetFile, '-4', 4)) {
                 $contents = $this->filesystem->read($targetFile);
 
-                foreach( $replacedClasses as $key => $value ) {
+                foreach ($replacedClasses as $key => $value) {
                     $contents = str_replace($key, $value, $contents);
                 }
 
