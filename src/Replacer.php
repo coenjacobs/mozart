@@ -44,32 +44,6 @@ class Replacer
         }
     }
 
-    public function replaceClassmapNames()
-    {
-        $classmap_path = $this->workingDir . $this->config->classmap_directory;
-        $finder = new Finder();
-        $finder->files()->in($classmap_path);
-
-        $filesystem = new Filesystem(new Local($this->workingDir));
-
-        foreach ($finder as $file) {
-            $file_path = str_replace($this->workingDir, '', $file->getPath());
-            $contents = $filesystem->read($file_path);
-
-            foreach ($this->replacedClasses as $original => $replacement) {
-                $contents = preg_replace_callback(
-                    '/\W(?<!(trait)\ )(?<!(interface)\ )(?<!(class)\ )('.$original.')\W/U',
-                    function ($matches) use ($replacement) {
-                        return str_replace($matches[4], $replacement, $matches[0]);
-                    },
-                    $contents
-                );
-            }
-
-            $filesystem->put($file_path, $contents);
-        }
-    }
-
     /**
      * @param $targetFile
      * @param $autoloader
@@ -106,18 +80,16 @@ class Replacer
         if ($autoloader instanceof NamespaceAutoloader) {
             $source_path = $this->workingDir . $this->targetDir . str_replace('\\', '/', $autoloader->namespace) . '/';
             $this->replaceInDirectory($autoloader, $source_path);
-        } elseif ($autoloader instanceof Classmap && !empty($autoloader->files)) {
-            foreach ($autoloader->files as $file) {
-                $finder = new Finder();
-                $source_path = $this->workingDir . $this->targetDir . $package->config->name;
-                $finder->files()->name($file)->in($source_path);
+        } elseif ($autoloader instanceof Classmap) {
+            $finder = new Finder();
+            $source_path = $this->workingDir . $this->config->classmap_directory . '/' . $package->config->name;
+            $finder->files()->in($source_path);
 
-                foreach ($finder as $foundFile) {
-                    $targetFile = $foundFile->getRealPath();
+            foreach ($finder as $foundFile) {
+                $targetFile = $foundFile->getRealPath();
 
-                    if ('.php' == substr($targetFile, '-4', 4)) {
-                        $this->replaceInFile($targetFile, $autoloader);
-                    }
+                if ('.php' == substr($targetFile, '-4', 4)) {
+                    $this->replaceInFile($targetFile, $autoloader);
                 }
             }
         }
