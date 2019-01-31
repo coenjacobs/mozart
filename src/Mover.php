@@ -45,17 +45,17 @@ class Mover
         $finder = new Finder();
 
         foreach ($package->autoloaders as $autoloader) {
-            foreach ($autoloader->paths as $path) {
-                $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
+            if ($autoloader instanceof NamespaceAutoloader ) {
+                foreach ($autoloader->paths as $path) {
+                    $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
-                $finder->files()->in($source_path);
+                    $finder->files()->in($source_path);
 
-                foreach ($finder as $file) {
-                    $this->moveFile($package, $autoloader, $file, $path);
+                    foreach ($finder as $file) {
+                        $this->moveFile($package, $autoloader, $file, $path);
+                    }
                 }
-            }
-
-            if ($autoloader instanceof Classmap && ! empty($autoloader->files)) {
+            } elseif ($autoloader instanceof Classmap) {
                 foreach ($autoloader->files as $file) {
                     $finder = new Finder();
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name;
@@ -63,6 +63,16 @@ class Mover
 
                     foreach ($finder as $foundFile) {
                         $this->moveFile($package, $autoloader, $foundFile);
+                    }
+                }
+
+                foreach ($autoloader->paths as $path) {
+                    $source_path = $this->workingDir . '/vendor/' . $package->config->name;
+
+                    $finder->files()->in($source_path);
+
+                    foreach ($finder as $file) {
+                        $this->moveFile($package, $autoloader, $file);
                     }
                 }
             }
