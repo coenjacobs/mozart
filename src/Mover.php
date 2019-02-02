@@ -42,10 +42,10 @@ class Mover
 
     public function movePackage(Package $package)
     {
-        $finder = new Finder();
-
         foreach ($package->autoloaders as $autoloader) {
             if ($autoloader instanceof NamespaceAutoloader) {
+                $finder = new Finder();
+
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
@@ -56,8 +56,9 @@ class Mover
                     }
                 }
             } elseif ($autoloader instanceof Classmap) {
+                $finder = new Finder();
+
                 foreach ($autoloader->files as $file) {
-                    $finder = new Finder();
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name;
                     $finder->files()->name($file)->in($source_path);
 
@@ -65,6 +66,8 @@ class Mover
                         $this->moveFile($package, $autoloader, $foundFile);
                     }
                 }
+
+                $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
