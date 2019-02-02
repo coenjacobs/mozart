@@ -139,4 +139,41 @@ class Replacer
             }
         }
     }
+
+    public function replaceParentPackage(Package $package, $parent)
+    {
+        if ($parent !== null) {
+            // Replace everything in parent, based on the dependencies
+            foreach ($parent->autoloaders as $parentAutoloader) {
+                foreach ($package->autoloaders as $autoloader) {
+                    if ($parentAutoloader instanceof NamespaceAutoloader) {
+                        $namespace = str_replace('\\', '/', $parentAutoloader->namespace);
+                        $directory = $this->workingDir . $this->config->dep_directory . $namespace . '/';
+
+                        if ($autoloader instanceof NamespaceAutoloader) {
+                            $this->replaceInDirectory($autoloader, $directory);
+                        } else {
+                            $directory = str_replace($this->workingDir, '', $directory);
+                            $this->replaceParentClassesInDirectory($directory);
+                        }
+                    } else {
+                        $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
+
+                        if ($autoloader instanceof NamespaceAutoloader) {
+                            $this->replaceInDirectory($autoloader, $directory);
+                        } else {
+                            $directory = str_replace($this->workingDir, '', $directory);
+                            $this->replaceParentClassesInDirectory($directory);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (! empty($package->dependencies)) {
+            foreach ($package->dependencies as $dependency) {
+                $this->replaceParentPackage($dependency, $package);
+            }
+        }
+    }
 }

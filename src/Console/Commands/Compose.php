@@ -50,7 +50,7 @@ class Compose extends Command
         $this->replacePackages($packages);
 
         foreach ($packages as $package) {
-            $this->replaceParentPackage($package, null);
+            $this->replacer->replaceParentPackage($package, null);
         }
     }
 
@@ -106,43 +106,6 @@ class Compose extends Command
         }
 
         $this->replacer->replacePackage($package);
-    }
-
-    protected function replaceParentPackage(Package $package, $parent)
-    {
-        if ($parent !== null) {
-            // Replace everything in parent, based on the dependencies
-            foreach ($parent->autoloaders as $parentAutoloader) {
-                foreach ($package->autoloaders as $autoloader) {
-                    if ($parentAutoloader instanceof NamespaceAutoloader) {
-                        $namespace = str_replace('\\', '/', $parentAutoloader->namespace);
-                        $directory = $this->workingDir . $this->config->dep_directory . $namespace . '/';
-
-                        if ($autoloader instanceof NamespaceAutoloader) {
-                            $this->replacer->replaceInDirectory($autoloader, $directory);
-                        } else {
-                            $directory = str_replace($this->workingDir, '', $directory);
-                            $this->replacer->replaceParentClassesInDirectory($directory);
-                        }
-                    } else {
-                        $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
-
-                        if ($autoloader instanceof NamespaceAutoloader) {
-                            $this->replacer->replaceInDirectory($autoloader, $directory);
-                        } else {
-                            $directory = str_replace($this->workingDir, '', $directory);
-                            $this->replacer->replaceParentClassesInDirectory($directory);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->replaceParentPackage($dependency, $package);
-            }
-        }
     }
 
     /**
