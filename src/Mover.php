@@ -67,7 +67,7 @@ class Mover
                 }
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . '/vendor/' . $package->config->name;
+                    $source_path = $this->workingDir . '/vendor/' . $package->config->name . '/' . $path;
 
                     $finder->files()->in($source_path);
 
