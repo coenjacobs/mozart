@@ -39,18 +39,20 @@ The following configuration values are required:
 - `classmap_prefix` defines the prefix that will be applied to all classes inside the classmap of the package you bundle. Say a class named `Pimple` and the defined prefix of `CJTP_` will result in the class name `CJTP_Pimple`.
 - `packages` is an array that defines the packages that need to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list.
 
-After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration.
+After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
 
 ## Scripts
-Mozart is designed to install and be forgotten about. Using Composer scripts, the Mozart script can be run as soon as Composer either installs a new package, or updates an already installed one. This ensures that the packages you want to bundle, are always bundled in the latest installed version, automatically:
+Mozart is designed to install and be forgotten about. Using Composer scripts, the Mozart script can be run as soon as Composer either installs a new package, or updates an already installed one. This ensures that the packages you want to bundle, are always bundled in the latest installed version, automatically. These scripts also offer you the possibility to script dumping the autoloader, after Mozart is finished running:
 
 ```
 "scripts": {
     "post-install-cmd": [
-        "\"vendor/bin/mozart\" compose"
+        "\"vendor/bin/mozart\" compose",
+        "composer dump-autoload"
     ],
     "post-update-cmd": [
-        "\"vendor/bin/mozart\" compose"
+        "\"vendor/bin/mozart\" compose",
+        "composer dump-autoload"
     ]
 }
 ```
