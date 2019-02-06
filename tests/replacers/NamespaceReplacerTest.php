@@ -30,7 +30,8 @@ class NamespaceReplacerTest extends TestCase
 
 
     /** @test */
-    public function it_doesnt_replaces_namespace_inside_namespace() {
+    public function it_doesnt_replaces_namespace_inside_namespace()
+    {
 
         $autoloader = new Psr0();
         $autoloader->namespace = 'Test';

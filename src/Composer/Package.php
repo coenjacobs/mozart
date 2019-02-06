@@ -15,6 +15,9 @@ class Package
     /** @var array */
     public $autoloaders = [];
 
+    /** @var array */
+    public $dependencies = [];
+
     public function __construct($path)
     {
         $this->path   = $path;

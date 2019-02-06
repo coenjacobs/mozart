@@ -66,7 +66,8 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_class_declarations_psr2() {
+    public function it_replaces_class_declarations_psr2()
+    {
         $contents = "class Hello_World\n{";
         $replacer = new ClassmapReplacer();
         $replacer->classmap_prefix = 'Mozart_';
