@@ -9,7 +9,7 @@ class NamespaceReplacerTest extends TestCase
     /** @var NamespaceReplacer */
     public $replacer;
 
-    public function setUp()
+    protected function setUp()
     {
         $autoloader = new Psr0();
         $autoloader->namespace = 'Test\\Test';
