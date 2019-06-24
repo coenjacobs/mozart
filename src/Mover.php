@@ -23,6 +23,9 @@ class Mover
     /** @var Filesystem */
     protected $filesystem;
 
+    /** @var array */
+    protected $movedPackages = [];
+
     public function __construct($workingDir, $config)
     {
         $this->workingDir = $workingDir;
@@ -42,6 +45,10 @@ class Mover
 
     public function movePackage(Package $package)
     {
+        if ( in_array( $package->config->name, $this->movedPackages ) ) {
+            return;
+        }
+
         foreach ($package->autoloaders as $autoloader) {
             if ($autoloader instanceof NamespaceAutoloader) {
                 $finder = new Finder();
@@ -79,6 +86,8 @@ class Mover
                     }
                 }
             }
+
+            $this->movedPackages[] = $package->config->name;
         }
     }
 
