@@ -45,7 +45,7 @@ class Mover
 
     public function movePackage(Package $package)
     {
-        if ( in_array( $package->config->name, $this->movedPackages ) ) {
+        if (in_array($package->config->name, $this->movedPackages)) {
             return;
         }
 
@@ -111,8 +111,8 @@ class Mover
             $namespacePath = $package->config->name;
             $replaceWith = $this->config->classmap_directory . '/' . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
-			$packageVendorPath = '/vendor/' . $package->config->name . '/';
-			$osSpecificPackageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
+            $packageVendorPath = '/vendor/' . $package->config->name . '/';
+            $osSpecificPackageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($osSpecificPackageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
         }
 
