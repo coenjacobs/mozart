@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
@@ -6,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 class ClassMapReplacerTest extends TestCase
 {
     /** @test */
-    public function it_replaces_class_declarations()
+    public function it_replaces_class_declarations(): void
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
@@ -16,7 +17,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_abstract_class_declarations()
+    public function it_replaces_abstract_class_declarations(): void
     {
         $contents = 'abstract class Hello_World {';
         $replacer = new ClassmapReplacer();
@@ -26,7 +27,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_interface_class_declarations()
+    public function it_replaces_interface_class_declarations(): void
     {
         $contents = 'interface Hello_World {';
         $replacer = new ClassmapReplacer();
@@ -36,7 +37,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_class_declarations_that_extend_other_classes()
+    public function it_replaces_class_declarations_that_extend_other_classes(): void
     {
         $contents = 'class Hello_World extends Bye_World {';
         $replacer = new ClassmapReplacer();
@@ -46,7 +47,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_class_declarations_that_implement_interfaces()
+    public function it_replaces_class_declarations_that_implement_interfaces(): void
     {
         $contents = 'class Hello_World implements Bye_World {';
         $replacer = new ClassmapReplacer();
@@ -56,7 +57,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_stores_replaced_class_names()
+    public function it_stores_replaced_class_names(): void
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
@@ -66,7 +67,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_class_declarations_psr2()
+    public function it_replaces_class_declarations_psr2(): void
     {
         $contents = "class Hello_World\n{";
         $replacer = new ClassmapReplacer();

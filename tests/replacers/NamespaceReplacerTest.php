@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
@@ -9,7 +10,7 @@ class NamespaceReplacerTest extends TestCase
     /** @var NamespaceReplacer */
     public $replacer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $autoloader = new Psr0();
         $autoloader->namespace = 'Test\\Test';
@@ -21,7 +22,7 @@ class NamespaceReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_namespace_declarations()
+    public function it_replaces_namespace_declarations(): void
     {
         $contents = 'namespace Test\\Test;';
         $contents = $this->replacer->replace($contents);
@@ -30,7 +31,7 @@ class NamespaceReplacerTest extends TestCase
 
 
     /** @test */
-    public function it_doesnt_replaces_namespace_inside_namespace()
+    public function it_doesnt_replaces_namespace_inside_namespace(): void
     {
 
         $autoloader = new Psr0();
@@ -47,7 +48,7 @@ class NamespaceReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_replaces_partial_namespace_declarations()
+    public function it_replaces_partial_namespace_declarations(): void
     {
         $contents = 'namespace Test\\Test\\Another;';
         $contents = $this->replacer->replace($contents);
