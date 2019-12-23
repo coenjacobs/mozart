@@ -12,9 +12,9 @@
     "prefer-stable": true,
     "license": "MIT",
     "require": {
-        "php": "^7.1",
-        "symfony/console": "^4",
-        "symfony/finder": "^4",
+        "php": "^7.2",
+        "symfony/console": "^4|^5",
+        "symfony/finder": "^4|^5",
         "league/flysystem": "^1.0"
     },
     "autoload": {
@@ -23,7 +23,6 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.5",
-        "coenjacobs/php-composter-phpcs": "^0.1.0"
+        "phpunit/phpunit": "^8.5"
     }
 }
