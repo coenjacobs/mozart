@@ -89,6 +89,8 @@ class Mover
 
             $this->movedPackages[] = $package->config->name;
         }
+
+        $this->deletePackageVendorDirectories();
     }
 
     /**
@@ -124,5 +126,18 @@ class Mover
         );
 
         return $targetFile;
+    }
+
+    /**
+     * Deletes all the packages that are moved from the /vendor/ directory to
+     * prevent packages that are prefixed/namespaced from being used or
+     * influencing the output of the code. They just need to be gone.
+     */
+    protected function deletePackageVendorDirectories()
+    {
+        foreach ($this->movedPackages as $movedPackage) {
+            $packageDir = '/vendor/' . $movedPackage;
+            $this->filesystem->deleteDir($packageDir);
+        }
     }
 }
