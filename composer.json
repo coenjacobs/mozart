@@ -13,8 +13,8 @@
     "license": "MIT",
     "require": {
         "php": "^7.2",
-        "symfony/console": "^4",
-        "symfony/finder": "^4",
+        "symfony/console": "^4|^5",
+        "symfony/finder": "^4|^5",
         "league/flysystem": "^1.0"
     },
     "autoload": {
