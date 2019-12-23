@@ -12,7 +12,7 @@
     "prefer-stable": true,
     "license": "MIT",
     "require": {
-        "php": "^7.1",
+        "php": "^7.2",
         "symfony/console": "^4",
         "symfony/finder": "^4",
         "league/flysystem": "^1.0"
