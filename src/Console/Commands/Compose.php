@@ -52,6 +52,8 @@ class Compose extends Command
         foreach ($packages as $package) {
             $this->replacer->replaceParentPackage($package, null);
         }
+
+        return 0;
     }
 
     /**
