@@ -89,6 +89,11 @@ class Mover
 
             $this->movedPackages[] = $package->config->name;
         }
+
+        foreach( $this->movedPackages as $movedPackage ) {
+            $packageDir = $this->workingDir . '/vendor/' . $movedPackage;
+            $this->filesystem->deleteDir($packageDir);
+        }
     }
 
     /**
