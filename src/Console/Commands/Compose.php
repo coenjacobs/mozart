@@ -39,6 +39,9 @@ class Compose extends Command
 
         $config = json_decode(file_get_contents($workingDir . '/composer.json'));
         $config = $config->extra->mozart;
+
+	    $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
+
         $this->config = $config;
 
         $this->mover = new Mover($workingDir, $config);
