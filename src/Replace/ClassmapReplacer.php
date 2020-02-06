@@ -16,7 +16,8 @@ class ClassmapReplacer extends BaseReplacer
             '/(?:[abstract]*class |interface )([a-zA-Z\_]+)(?:[ \n]*{| extends| implements)/U',
             function ($matches) {
                 // If it matches any of the namespaces to skip, then do nothing
-                foreach ($this->namespacesToSkip as $namespaceToSkip) {
+                $namespacesToSkip = $this->namespacesToSkip ?? [];
+                foreach ($namespacesToSkip as $namespaceToSkip) {
                     if (strlen($matches[1]) >= strlen($namespaceToSkip) && substr($matches[1], 0, strlen($namespaceToSkip)) == $namespaceToSkip) {
                         return $matches[0];
                     }
