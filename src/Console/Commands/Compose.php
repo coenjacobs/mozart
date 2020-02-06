@@ -45,12 +45,13 @@ class Compose extends Command
         $this->replacer = new Replacer($workingDir, $config);
 
         $packages = $this->findPackages($config->packages);
+        $namespacesToSkip = $this->config->namespaces_to_skip ?? [];
 
         $this->movePackages($packages);
-        $this->replacePackages($packages);
+        $this->replacePackages($packages, $namespacesToSkip);
 
         foreach ($packages as $package) {
-            $this->replacer->replaceParentPackage($package, null);
+            $this->replacer->replaceParentPackage($package, null, $namespacesToSkip);
         }
 
         return 0;
@@ -75,10 +76,10 @@ class Compose extends Command
      * @param $config
      * @param array $packages
      */
-    protected function replacePackages($packages)
+    protected function replacePackages($packages, array $namespacesToSkip)
     {
         foreach ($packages as $package) {
-            $this->replacePackage($package);
+            $this->replacePackage($package, $namespacesToSkip);
         }
     }
 
@@ -99,15 +100,15 @@ class Compose extends Command
     /**
      * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
      */
-    public function replacePackage($package)
+    public function replacePackage($package, array $namespacesToSkip)
     {
         if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
-                $this->replacePackage($dependency);
+                $this->replacePackage($dependency, $namespacesToSkip);
             }
         }
 
-        $this->replacer->replacePackage($package);
+        $this->replacer->replacePackage($package, $namespacesToSkip);
     }
 
     /**

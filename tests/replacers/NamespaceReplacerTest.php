@@ -17,6 +17,7 @@ class NamespaceReplacerTest extends TestCase
 
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
+        $replacer->setNamespacesToSkip([]);
         $replacer->dep_namespace = 'Prefix\\';
         $this->replacer = $replacer;
     }
@@ -39,6 +40,7 @@ class NamespaceReplacerTest extends TestCase
 
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
+        $replacer->setNamespacesToSkip([]);
         $replacer->dep_namespace = 'Prefix\\';
         $this->replacer = $replacer;
 

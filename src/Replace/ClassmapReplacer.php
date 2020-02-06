@@ -15,6 +15,12 @@ class ClassmapReplacer extends BaseReplacer
         return preg_replace_callback(
             '/(?:[abstract]*class |interface )([a-zA-Z\_]+)(?:[ \n]*{| extends| implements)/U',
             function ($matches) {
+                // If it matches any of the namespaces to skip, then do nothing
+                foreach ($this->namespacesToSkip as $namespaceToSkip) {
+                    if (strlen($matches[1]) >= strlen($namespaceToSkip) && substr($matches[1], 0, strlen($namespaceToSkip)) == $namespaceToSkip) {
+                        return $matches[0];
+                    }
+                }
                 $replace = $this->classmap_prefix . $matches[1];
                 $this->saveReplacedClass($matches[1], $replace);
                 return str_replace($matches[1], $replace, $matches[0]);
