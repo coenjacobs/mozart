@@ -105,7 +105,7 @@ class Mover
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
             $replaceWith = $this->config->dep_directory . $namespacePath;
-            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
+            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
             $packageVendorPath = '/vendor/' . $package->config->name . '/' . $path;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
@@ -113,7 +113,7 @@ class Mover
         } else {
             $namespacePath = $package->config->name;
             $replaceWith = $this->config->classmap_directory . '/' . $namespacePath;
-            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getRealPath());
+            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
             $packageVendorPath = '/vendor/' . $package->config->name . '/';
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
@@ -121,7 +121,7 @@ class Mover
         }
 
         $this->filesystem->copy(
-            str_replace($this->workingDir, '', $file->getRealPath()),
+            str_replace($this->workingDir, '', $file->getPathname()),
             $targetFile
         );
 
