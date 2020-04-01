@@ -2,12 +2,14 @@
 
 namespace CoenJacobs\Mozart;
 
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class Mover
 {
@@ -95,10 +97,10 @@ class Mover
 
     /**
      * @param Package $package
-     * @param $autoloader
-     * @param $file
-     * @param $path
-     * @return mixed
+     * @param Autoloader $autoloader
+     * @param SplFileInfo $file
+     * @param string $path
+     * @return string
      */
     public function moveFile(Package $package, $autoloader, $file, $path = '')
     {
