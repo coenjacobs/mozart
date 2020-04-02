@@ -43,6 +43,17 @@ class Mover
         $this->filesystem->createDir($this->config->classmap_directory);
     }
 
+	public function deleteEmptyDirs()
+	{
+		if(count($this->filesystem->listContents($this->config->dep_directory, true)) === 0) {
+			$this->filesystem->deleteDir($this->config->dep_directory);
+		}
+
+		if(count($this->filesystem->listContents($this->config->classmap_directory, true)) === 0) {
+			$this->filesystem->deleteDir($this->config->classmap_directory);
+		}
+	}
+	
     public function movePackage(Package $package)
     {
         if (in_array($package->config->name, $this->movedPackages)) {
