@@ -18,10 +18,14 @@ class Package
     /** @var array */
     public $dependencies = [];
 
-    public function __construct($path)
-    {
-        $this->path   = $path;
-        $this->config = json_decode(file_get_contents($this->path . '/composer.json'));
+	public function __construct($path, $overrideAutoload = null)
+	{
+		$this->path   = $path;
+		$this->config = json_decode(file_get_contents($this->path . '/composer.json'));
+
+		if (isset($overrideAutoload)) {
+			$this->config->autoload = $overrideAutoload;
+		}
     }
 
     public function findAutoloaders()
