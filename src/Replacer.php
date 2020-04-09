@@ -71,6 +71,28 @@ class Replacer
         $this->filesystem->put($targetFile, $contents);
     }
 
+	/**
+	 * @param $targetFile
+	 * @param array $replacedClasses
+	 */
+	public function replaceClassesInFile($targetFile, $replacedClasses)
+	{
+		$targetFile = str_replace($this->workingDir, '', $targetFile);
+		$contents = $this->filesystem->read($targetFile);
+
+		foreach($replacedClasses as $original => $replacement) {
+			$contents = preg_replace_callback(
+				'/([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
+				function ($matches) use ($replacement) {
+					return $matches[1] . $replacement . $matches[2];
+				},
+				$contents
+			);
+		}
+
+		$this->filesystem->put($targetFile, $contents);
+	}
+
     /**
      * @param Package $package
      * @param $autoloader
@@ -92,6 +114,14 @@ class Replacer
                     $this->replaceInFile($targetFile, $autoloader);
                 }
             }
+
+	        foreach ($finder as $foundFile) {
+		        $targetFile = $foundFile->getRealPath();
+
+		        if ('.php' == substr($targetFile, '-4', 4)) {
+			        $this->replaceClassesInFile($targetFile, $this->replacedClasses);
+		        }
+	        }
         }
     }
 
