@@ -90,7 +90,9 @@ class Mover
             $this->movedPackages[] = $package->config->name;
         }
 
-        $this->deletePackageVendorDirectories();
+        if (!isset($this->config->delete_vendor_directories) || $this->config->delete_vendor_directories === true) {
+	        $this->deletePackageVendorDirectories();
+        }
     }
 
     /**

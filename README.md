@@ -26,7 +26,8 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "classmap_prefix": "CJTP_",
         "packages": [
             "pimple/pimple"
-        ]
+        ],
+        "delete_vendor_directories": true
     }
 },
 ```
@@ -40,6 +41,10 @@ The following configuration values are required:
 - `packages` is an array that defines the packages that need to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list.
 
 **Important:** Since Mozart automatically processes the full dependency tree of the packages you specify, you **need to specify all these configuration options**, because you can't reliably determine what kind of autoloaders are being used in the full dependency tree. A package way down the tree might suddenly use a classmap autoloader for example. Make sure you also include the namespace directory and classmap directory in your own autoloader, so they are always loaded.
+
+The following configuration is optional:
+
+- `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
 
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
 
