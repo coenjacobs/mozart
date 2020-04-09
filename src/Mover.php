@@ -139,6 +139,9 @@ class Mover
     {
         foreach ($this->movedPackages as $movedPackage) {
             $packageDir = '/vendor/' . $movedPackage;
+            if (is_link($packageDir)) {
+            	continue;
+            }
             $this->filesystem->deleteDir($packageDir);
         }
     }
