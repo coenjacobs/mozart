@@ -11,7 +11,7 @@ class NamespaceReplacer extends BaseReplacer
     {
         $searchNamespace = $this->autoloader->getSearchNamespace();
         return preg_replace_callback(
-            '/([^\\\?])(' . addslashes($searchNamespace) . '[\\\|;])/U',
+            '/([^a-zA-Z0-9_\x7f-\xff])(' . addslashes($searchNamespace) . '[\\\|;])/U',
             function ($matches) {
                 return $matches[1] . $this->dep_namespace . $matches[2];
             },
