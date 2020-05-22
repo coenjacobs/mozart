@@ -65,7 +65,7 @@ class Replacer
         }
 
         $replacer->setAutoloader($autoloader);
-        $contents = $replacer->replace($contents);
+        $contents = $replacer->replace($contents, $targetFile);
 
         if ($replacer instanceof ClassmapReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
