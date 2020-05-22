@@ -116,9 +116,12 @@ class Replacer
 
 	            foreach ($replacedClasses as $original => $replacement) {
 		            $contents = preg_replace_callback(
-			            '/([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
+			            '/(.*)([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
 			            function ($matches) use ($replacement) {
-				            return $matches[1] . $replacement . $matches[2];
+				            if(preg_match('/(include|require)/', $matches[0], $output_array)) {
+					            return $matches[0];
+				            }
+				            return $matches[2] . $replacement . $matches[3];
 			            },
 			            $contents
 		            );
