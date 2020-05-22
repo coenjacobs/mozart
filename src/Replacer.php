@@ -25,7 +25,10 @@ class Replacer
     /** @var array */
     protected $replacedClasses = [];
 
-    /** @var Filesystem */
+	/** @var array */
+	public $classmap = [];
+
+	/** @var Filesystem */
     protected $filesystem;
 
     public function __construct($workingDir, $config)
@@ -66,6 +69,7 @@ class Replacer
 
         if ($replacer instanceof ClassmapReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
+	        $this->classmap = array_merge($this->classmap, $replacer->classmap);
         }
 
         $this->filesystem->put($targetFile, $contents);
