@@ -121,7 +121,7 @@ class Replacer
 				            if(preg_match('/(include|require)/', $matches[0], $output_array)) {
 					            return $matches[0];
 				            }
-				            return $matches[2] . $replacement . $matches[3];
+				            return $matches[1] . $matches[2] . $replacement . $matches[3];
 			            },
 			            $contents
 		            );
