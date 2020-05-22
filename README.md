@@ -25,9 +25,9 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "classmap_directory": "/classes/dependencies/",
         "classmap_prefix": "CJTP_",
         "classmap_output": {
-                "filename": "src/autoload_classmap.php",
-                "relative_path": "/src"
-            },
+            "filename": "src/autoload_classmap.php",
+            "relative_path": "/src"
+        },
         "packages": [
             "pimple/pimple"
         ],
@@ -39,10 +39,10 @@ Mozart requires little configuration. All you need to do is tell it where the bu
             }
         }
         "delete_vendor_directories": true
- 	     "classmap_output": {
-	        "filename": "src/autoload_classmap.php",
+        "classmap_output": {
+            "filename": "src/autoload_classmap.php",
 	        "relative_path": "/src"
-	     }
+	    }
 }
 ```
 
