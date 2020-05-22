@@ -26,7 +26,14 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "classmap_prefix": "CJTP_",
         "packages": [
             "pimple/pimple"
-        ]
+        ],
+        "override_autoload": {
+            "google/apiclient": {
+                "classmap": [
+                    "src/"
+                ]
+            }
+        }
     }
 },
 ```
@@ -41,6 +48,10 @@ The following configuration values are required:
 
 **Important:** Since Mozart automatically processes the full dependency tree of the packages you specify, you **need to specify all these configuration options**, because you can't reliably determine what kind of autoloaders are being used in the full dependency tree. A package way down the tree might suddenly use a classmap autoloader for example. Make sure you also include the namespace directory and classmap directory in your own autoloader, so they are always loaded.
 
+  The following configuration is optional:
+  
+- `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
+                
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
 
 ## Scripts
