@@ -40,14 +40,16 @@ class Compose extends Command
         $config = json_decode(file_get_contents($workingDir . '/composer.json'));
         $config = $config->extra->mozart;
 
-	    $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
+        $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
 
         $this->config = $config;
 
         $this->mover = new Mover($workingDir, $config);
         $this->replacer = new Replacer($workingDir, $config);
 
-        $packages = $this->findPackages($config->packages);
+        $require = empty($config->packages) ? array_keys(get_object_vars($composer->require)) : $config->packages;
+
+        $packages = $this->findPackages($require);
 
         $this->movePackages($packages);
         $this->replacePackages($packages);
