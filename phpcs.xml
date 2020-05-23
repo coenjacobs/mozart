@@ -3,6 +3,5 @@
 <ruleset name="mozart">
     <description>Coding standard ruleset based on the PSR-2 coding standard.</description>
     <rule ref="PSR2"/>
-    <exclude-pattern>vendor/*</exclude-pattern>
-    <exclude-pattern>tests/*</exclude-pattern>
+    <file>./src</file>
 </ruleset>
