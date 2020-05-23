@@ -5,7 +5,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
-use Mozart\Composer\Config;
+use CoenJacobs\Mozart\Composer\Config;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

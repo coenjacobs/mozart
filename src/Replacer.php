@@ -9,7 +9,7 @@ use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use Mozart\Composer\Config;
+use CoenJacobs\Mozart\Composer\Config;
 use Symfony\Component\Finder\Finder;
 
 class Replacer

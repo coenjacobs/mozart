@@ -3,7 +3,6 @@
 namespace CoenJacobs\Mozart\Composer;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use Mozart\Composer\Config;
 
 class Package
 {

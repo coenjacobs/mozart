@@ -1,6 +1,6 @@
 <?php
 
-namespace Mozart\Composer;
+namespace CoenJacobs\Mozart\Composer;
 
 class Config
 {
