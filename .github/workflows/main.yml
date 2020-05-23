@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-suggest --no-progress
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: composer run test
   lint:
     runs-on: ubuntu-latest
     name: Lint project files
