@@ -27,9 +27,11 @@
         "squizlabs/php_codesniffer": "^3.5"
     },
     "scripts": {
-        "test": [
+        "lint": [
             "composer validate",
-            "phpcs",
+            "phpcs"
+        ],
+        "test": [
             "phpunit"
         ]
     }
