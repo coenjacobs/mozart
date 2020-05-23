@@ -130,12 +130,12 @@ class Compose extends Command
                 continue;
             }
 
-	        $autoloaders = null;
-	        if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug) ){
-		        $autoloaders = $this->config->override_autoload->$package_slug;
-	        }
+            $autoloaders = null;
+            if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug)) {
+                $autoloaders = $this->config->override_autoload->$package_slug;
+            }
 
-	        $package = new Package($packageDir, $autoloaders);
+            $package = new Package($packageDir, $autoloaders);
             $package->findAutoloaders();
 
             $config = json_decode(file_get_contents($packageDir . 'composer.json'));
