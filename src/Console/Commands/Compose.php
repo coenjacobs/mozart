@@ -47,7 +47,7 @@ class Compose extends Command
         $this->mover = new Mover($workingDir, $config);
         $this->replacer = new Replacer($workingDir, $config);
 
-        $require = empty($config->packages) ? array_keys(get_object_vars($composer->require)) : $config->packages;
+        $require = empty($config->packages) ? array_keys(get_object_vars($this->config->require)) : $config->packages;
 
         $packages = $this->findPackages($require);
 
