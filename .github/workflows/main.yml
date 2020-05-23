@@ -1,4 +1,4 @@
-name: Test
+name: Lint and test
 
 on: [push]
 
@@ -24,3 +24,21 @@ jobs:
         run: composer install --prefer-dist --no-suggest --no-progress
       - name: Run tests
         run: vendor/bin/phpunit
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint project files
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install PHP
+        uses: shivammathur/setup-php@1.3.7
+        with:
+          php-version: '7.4'
+      - name: Debugging
+        run: |
+          php --version
+          php -m
+          composer --version
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-suggest --no-progress
+      - name: Run validate
+        run: composer run lint
