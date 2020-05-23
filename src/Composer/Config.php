@@ -15,6 +15,12 @@ class Config
         $this->data = $data;
     }
 
+    public static function loadFromFile($filePath)
+    {
+        $config = json_decode(file_get_contents($filePath));
+        return new self($config);
+    }
+
     /**
      * @param string $key
      * @return bool|mixed
