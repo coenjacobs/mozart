@@ -137,8 +137,7 @@ class Compose extends Command
                 $autoloaders = $override_autoload->$package_slug;
             }
 
-            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
-            $config = new Config($config);
+            $config = Config::loadFromFile($packageDir . 'composer.json');
 
             $package = new Package($packageDir, $config, $autoloaders);
             $package->findAutoloaders();

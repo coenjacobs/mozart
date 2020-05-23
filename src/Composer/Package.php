@@ -24,8 +24,7 @@ class Package
         $this->path   = $path;
 
         if (isset($config)) {
-            $config = json_decode(file_get_contents($this->path . '/composer.json'));
-            $config = new Config($config);
+            $config = Config::loadFromFile($this->path . '/composer.json');
         }
         $this->config = $config;
 
