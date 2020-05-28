@@ -37,8 +37,26 @@ class Compose extends Command
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
 
-        $config = json_decode(file_get_contents($workingDir . '/composer.json'));
-        $config = $config->extra->mozart;
+        $composerFile = $workingDir . '/composer.json';
+        if (!file_exists($composerFile)) {
+            $output->write('No composer.json found at current directory: ' . $workingDir);
+            return 1;
+        }
+
+        $composer = json_decode(file_get_contents($composerFile));
+        // If the json was malformed.
+        if (!is_object($composer)) {
+            $output->write('Unable to parse composer.json read at: ' . $workingDir);
+            return 1;
+        }
+
+        // if `extra` is missing or not an object or if it does not have a `mozart` key which is an object.
+        if (!isset($composer->extra) || !is_object($composer->extra)
+            || !isset($composer->extra->mozart) || !is_object($composer->extra->mozart)) {
+            $output->write('Mozart config not readable in composer.json at extra->mozart');
+            return 1;
+        }
+        $config = $composer->extra->mozart;
 
         $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
 
