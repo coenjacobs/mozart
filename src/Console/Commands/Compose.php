@@ -68,8 +68,8 @@ class Compose extends Command
         $require = array();
         if (isset($config->packages) && is_array($config->packages)) {
             $require = $config->packages;
-        } elseif (isset($composer->require) && is_array($composer->require)) {
-            $require = $composer->require;
+        } elseif (isset($composer->require) && is_object($composer->require)) {
+	        $require = array_keys(get_object_vars($composer->require));
         }
 
         $packages = $this->findPackages($require);
