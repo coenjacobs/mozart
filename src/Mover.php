@@ -43,6 +43,7 @@ class Mover
         $this->filesystem->createDir($this->config->dep_directory);
         $this->filesystem->deleteDir($this->config->classmap_directory);
         $this->filesystem->createDir($this->config->classmap_directory);
+        $this->filesystem->put($this->config->classmap_directory . '/.gitkeep', '');
     }
 
     public function movePackage(Package $package)
