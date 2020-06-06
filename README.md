@@ -38,11 +38,7 @@ Mozart requires little configuration. All you need to do is tell it where the bu
                 ]
             }
         }
-        "delete_vendor_directories": true,
-        "classmap_output": {
-            "filename": "src/autoload_classmap.php",
-	        "relative_path": "/src"
-	    }
+        "delete_vendor_directories": true
 },
 ```
 
