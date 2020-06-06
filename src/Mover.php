@@ -43,6 +43,7 @@ class Mover
         $this->filesystem->createDir($this->config->dep_directory);
         $this->filesystem->deleteDir($this->config->classmap_directory);
         $this->filesystem->createDir($this->config->classmap_directory);
+        $this->filesystem->put($this->config->classmap_directory . '/.gitkeep', '');
     }
 
 	public function deleteEmptyDirs()
@@ -104,7 +105,7 @@ class Mover
         }
 
         if (!isset($this->config->delete_vendor_directories) || $this->config->delete_vendor_directories === true) {
-	        $this->deletePackageVendorDirectories();
+            $this->deletePackageVendorDirectories();
         }
     }
 
@@ -153,7 +154,7 @@ class Mover
         foreach ($this->movedPackages as $movedPackage) {
             $packageDir = '/vendor/' . $movedPackage;
             if (is_link($packageDir)) {
-            	continue;
+                continue;
             }
             $this->filesystem->deleteDir($packageDir);
         }
