@@ -5,6 +5,8 @@ namespace CoenJacobs\Mozart;
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
+use CoenJacobs\Mozart\Composer\Autoload\Psr0;
+use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use CoenJacobs\Mozart\Composer\Package;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
@@ -37,13 +39,52 @@ class Mover
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
 
-    public function deleteTargetDirs()
+    /**
+     * Create the required `dep_directory` and `classmap_directory` and delete targetDirs of packages about to be moved.
+     *
+     * @param Package[] $packages The packages that, in the next step, will be moved.
+     */
+    public function deleteTargetDirs($packages)
     {
-        $this->filesystem->deleteDir($this->config->dep_directory);
         $this->filesystem->createDir($this->config->dep_directory);
-        $this->filesystem->deleteDir($this->config->classmap_directory);
+
         $this->filesystem->createDir($this->config->classmap_directory);
-        $this->filesystem->put($this->config->classmap_directory . '/.gitkeep', '');
+
+        foreach ($packages as $package) {
+            $this->deleteDepTargetDirs($package);
+        }
+    }
+
+    /**
+     * Delete the directories about to be used for packages earmarked for Mozart namespacing.
+     *
+     * @visibility private to allow recursion through packages and subpackages.
+     *
+     * @param Package $package
+     */
+    private function deleteDepTargetDirs($package)
+    {
+        foreach ($package->autoloaders as $packageAutoloader) {
+            $autoloaderType = get_class($packageAutoloader);
+
+            switch ($autoloaderType) {
+                case Psr0::class:
+                case Psr4::class:
+                    $outputDir = $this->config->dep_directory . $packageAutoloader->namespace;
+                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
+                    $this->filesystem->deleteDir($outputDir);
+                    break;
+                case Classmap::class:
+                    $outputDir = $this->config->classmap_directory . $package->config->name;
+                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
+                    $this->filesystem->deleteDir($outputDir);
+                    break;
+            }
+        }
+
+        foreach ($package->dependencies as $subPackage) {
+            $this->deleteDepTargetDirs($subPackage);
+        }
     }
 
     public function movePackage(Package $package)

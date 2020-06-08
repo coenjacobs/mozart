@@ -10,9 +10,9 @@ class Classmap implements Autoloader
     /** @var array */
     public $paths = [];
 
-    public function processConfig($config)
+    public function processConfig($autoloadConfig)
     {
-        foreach ($config as $value) {
+        foreach ($autoloadConfig as $value) {
             if ('.php' == substr($value, '-4', 4)) {
                 array_push($this->files, $value);
             } else {
