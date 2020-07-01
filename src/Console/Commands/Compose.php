@@ -62,9 +62,6 @@ class Compose extends Command
 
         $this->config = $config;
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
-
         $require = array();
         if (isset($config->packages) && is_array($config->packages)) {
             $require = $config->packages;
@@ -74,6 +71,10 @@ class Compose extends Command
 
         $packages = $this->findPackages($require);
 
+        $this->mover = new Mover($workingDir, $config);
+        $this->replacer = new Replacer($workingDir, $config);
+
+        $this->mover->deleteTargetDirs($packages);
         $this->movePackages($packages);
         $this->replacePackages($packages);
 
@@ -81,7 +82,7 @@ class Compose extends Command
             $this->replacer->replaceParentPackage($package, null);
         }
 
-	    $this->replacer->replaceParentClassesInDirectory( $this->config->classmap_directory );
+        $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
         
         return 0;
     }
@@ -93,8 +94,6 @@ class Compose extends Command
      */
     protected function movePackages($packages)
     {
-        $this->mover->deleteTargetDirs();
-
         foreach ($packages as $package) {
             $this->movePackage($package);
         }
