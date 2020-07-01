@@ -81,7 +81,7 @@ class Compose extends Command
             $this->replacer->replaceParentPackage($package, null);
         }
 
-	    $this->replacer->replaceParentClassesInDirectory( $this->config->classmap_directory );
+        $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
         
         return 0;
     }
