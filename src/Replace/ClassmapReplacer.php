@@ -5,10 +5,10 @@ namespace CoenJacobs\Mozart\Replace;
 class ClassmapReplacer extends BaseReplacer
 {
     /** @var array */
-	public $replacedClasses = [];
+    public $replacedClasses = [];
 
-	/** @var array */
-	public $classmap = [];
+    /** @var array */
+    public $classmap = [];
 
     /** @var string */
     public $classmap_prefix;
@@ -29,6 +29,6 @@ class ClassmapReplacer extends BaseReplacer
     public function saveReplacedClass($classname, $replacedName, $file)
     {
         $this->replacedClasses[ $classname ] = $replacedName;
-	    $this->classmap[ $replacedName ] = $file;
+        $this->classmap[ $replacedName ] = $file;
     }
 }
