@@ -37,7 +37,7 @@ class Compose extends Command
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
 
-        $composerFile = $workingDir . '/composer.json';
+        $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         if (!file_exists($composerFile)) {
             $output->write('No composer.json found at current directory: ' . $workingDir);
             return 1;
@@ -148,7 +148,8 @@ class Compose extends Command
         $packages = [];
 
         foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . '/vendor/' . $package_slug .'/';
+            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                          . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
 
             if (! is_dir($packageDir)) {
                 continue;
