@@ -197,7 +197,8 @@ class Compose extends Command
         }
         $output_filename = $this->config->classmap_output->filename;
 
-        $relative_path = isset($this->config->classmap_output->relative_path) ? $this->config->classmap_output->relative_path : null;
+        $relative_path = isset($this->config->classmap_output->relative_path)
+	        ? $this->config->classmap_output->relative_path : null;
 
         $output = "<?php\n\n";
 
