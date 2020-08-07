@@ -69,7 +69,7 @@ class Compose extends Command
             $this->movePackage($package);
         }
 
-	    $this->mover->deleteEmptyDirs();
+        $this->mover->deleteEmptyDirs();
     }
 
     /**
