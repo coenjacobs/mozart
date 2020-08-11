@@ -98,8 +98,9 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->config->name . DIRECTORY_SEPARATOR . $path;
+                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
+                                   . str_replace('/', DIRECTORY_SEPARATOR, $package->config->name)
+                                   . DIRECTORY_SEPARATOR . $path;
 
                     $finder->files()->in($source_path);
 
