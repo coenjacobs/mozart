@@ -101,7 +101,7 @@ class Mover
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
                                    . $package->config->name . DIRECTORY_SEPARATOR . $path;
 
-	                $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path );
+                    $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
 
                     $finder->files()->in($source_path);
 
