@@ -99,8 +99,9 @@ class Mover
 
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-                                   . str_replace('/', DIRECTORY_SEPARATOR, $package->config->name)
-                                   . DIRECTORY_SEPARATOR . $path;
+                                   . $package->config->name . DIRECTORY_SEPARATOR . $path;
+
+	                $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path );
 
                     $finder->files()->in($source_path);
 
