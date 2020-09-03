@@ -13,4 +13,15 @@ class Psr4 extends NamespaceAutoloader
     {
         return str_replace('\\', '/', $this->namespace);
     }
+
+    public static function processConfig($autoloadConfig)
+    {
+        $autoloaders = array();
+
+        foreach ($autoloadConfig as $key => $value) {
+            $autoloaders[] = new self($key, $value);
+        }
+
+        return $autoloaders;
+    }
 }

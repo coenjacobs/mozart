@@ -10,14 +10,28 @@ class Classmap implements Autoloader
     /** @var array */
     public $paths = [];
 
-    public function processConfig($autoloadConfig)
+    public function __construct($files, $paths)
     {
+
+        $this->files = $files;
+        $this->paths = $paths;
+    }
+
+    public static function processConfig($autoloadConfig)
+    {
+        $files = array();
+        $paths = array();
+
         foreach ($autoloadConfig as $value) {
             if ('.php' == substr($value, '-4', 4)) {
-                array_push($this->files, $value);
+                array_push($files, $value);
             } else {
-                array_push($this->paths, $value);
+                array_push($paths, $value);
             }
         }
+
+        $classmapAutoloader = new self($files, $paths);
+
+        return [ $classmapAutoloader ] ;
     }
 }

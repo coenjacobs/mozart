@@ -56,11 +56,10 @@ class Package
 
             $autoloadConfig = (array)$this->config->autoload->$key;
 
-            /** @var $autoloader Autoloader */
-            $autoloader = new $value();
-            $autoloader->processConfig($autoloadConfig);
+            /** @var Autoloader[] */
+            $autoloaders = call_user_func(array( $value, 'processConfig' ), $autoloadConfig);
 
-            array_push($this->autoloaders, $autoloader);
+            $this->autoloaders = array_merge($this->autoloaders, $autoloaders);
         }
     }
 }
