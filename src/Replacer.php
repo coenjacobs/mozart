@@ -101,6 +101,10 @@ class Replacer
      */
     public function replaceParentClassesInDirectory($directory)
     {
+        if (count($this->replacedClasses)===0) {
+            return;
+        }
+        
         $directory = trim($directory, '//');
         $finder = new Finder();
         $finder->files()->in($directory);

@@ -97,6 +97,8 @@ class Compose extends Command
         foreach ($packages as $package) {
             $this->movePackage($package);
         }
+
+        $this->mover->deleteEmptyDirs();
     }
 
     /**
