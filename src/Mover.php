@@ -184,10 +184,12 @@ class Mover
             $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
         }
 
-        $this->filesystem->copy(
-            str_replace($this->workingDir, '', $file->getPathname()),
-            $targetFile
-        );
+        if (!$this->filesystem->has($targetFile)) {
+            $this->filesystem->copy(
+                str_replace($this->workingDir, '', $file->getPathname()),
+                $targetFile
+            );
+        }
 
         return $targetFile;
     }
