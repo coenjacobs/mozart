@@ -41,4 +41,4 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-suggest --no-progress
       - name: Run validate
-        run: composer run lint
+        run: vendor/bin/phpcs --report=GitHubActionsAnnotations
