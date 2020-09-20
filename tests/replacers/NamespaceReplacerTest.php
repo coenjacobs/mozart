@@ -12,13 +12,26 @@ class NamespaceReplacerTest extends TestCase
 
     protected function setUp(): void
     {
-        $autoloader = new Psr0();
-        $autoloader->namespace = 'Test\\Test';
+        $this->replacer = self::createReplacer('Test\\Test', 'Prefix\\');
+    }
 
+    /**
+     * Creates a NamespaceReplacer, given a namespace and a prefix.
+     *
+     * @param string $namespace
+     * @param string $prefix
+     *
+     * @return Psr0
+     */
+    protected static function createReplacer(string $namespace, string $prefix) : NamespaceReplacer
+    {
+        $autoloader = new Psr0;
+        $autoloader->namespace = $namespace;
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
-        $replacer->dep_namespace = 'Prefix\\';
-        $this->replacer = $replacer;
+        $replacer->dep_namespace = $prefix;
+
+        return $replacer;
     }
 
     /** @test */
@@ -26,6 +39,7 @@ class NamespaceReplacerTest extends TestCase
     {
         $contents = 'namespace Test\\Test;';
         $contents = $this->replacer->replace($contents);
+
         $this->assertEquals('namespace Prefix\\Test\\Test;', $contents);
     }
 
@@ -33,17 +47,11 @@ class NamespaceReplacerTest extends TestCase
     /** @test */
     public function it_doesnt_replaces_namespace_inside_namespace(): void
     {
+        $replacer = self::createReplacer('Test', 'Prefix\\');
 
-        $autoloader = new Psr0();
-        $autoloader->namespace = 'Test';
+        $contents = "namespace Test\\Something;\n\nuse Test\\Test;";
+        $contents = $replacer->replace($contents);
 
-        $replacer = new NamespaceReplacer();
-        $replacer->setAutoloader($autoloader);
-        $replacer->dep_namespace = 'Prefix\\';
-        $this->replacer = $replacer;
-
-        $contents ="namespace Test\\Something;\n\nuse Test\\Test;";
-        $contents = $this->replacer->replace($contents);
         $this->assertEquals("namespace Prefix\\Test\\Something;\n\nuse Prefix\\Test\\Test;", $contents);
     }
 
@@ -52,20 +60,18 @@ class NamespaceReplacerTest extends TestCase
     {
         $contents = 'namespace Test\\Test\\Another;';
         $contents = $this->replacer->replace($contents);
+
         $this->assertEquals('namespace Prefix\\Test\\Test\\Another;', $contents);
     }
 
-    /** @test */
+	/** @test */
     public function it_doesnt_prefix_already_prefixed_namespace(): void
     {
-        $autoloader = new Psr0();
-        $autoloader->namespace = 'Test\\Another';
-
-        $replacer = new NamespaceReplacer();
-        $replacer->setAutoloader($autoloader);
+        $replacer = self::createReplacer('Test\\Another', 'Prefix\\');
 
         $contents = 'namespace Prefix\\Test\\Another;';
-        $contents = $this->replacer->replace($contents);
+        $contents = $replacer->replace($contents);
+
         $this->assertEquals('namespace Prefix\\Test\\Another;', $contents);
     }
 }
