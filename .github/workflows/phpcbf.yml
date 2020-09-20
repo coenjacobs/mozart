@@ -1,0 +1,36 @@
+name: Run PHP CodeSniffer
+
+# Run PHPCBF to fix changes then PHPCS with GitHubActionsAnnotations report
+# https://github.com/squizlabs/PHP_CodeSniffer/pull/2918
+#
+# NB: Pull requests from forks do not have access to repository secrets so cannot commit changes.
+#
+# @author BrianHenryIE
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  php-codesniffer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run Composer install
+        uses: php-actions/composer@v1
+
+      - name: Run PHPCBF to fix what it can
+        continue-on-error: true
+        run: vendor/bin/phpcbf
+
+      - name: Commit PHPCBF changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        with:
+          commit_message: "PHPCBF"
+
+      - name: Run PHPCS to add annotations to the commit
+        continue-on-error: true
+        run: vendor/bin/phpcs --report=GitHubActionsAnnotations
