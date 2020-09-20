@@ -76,4 +76,22 @@ class NamespaceReplacerTest extends TestCase
 
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Another;', $contents);
     }
+
+    /** @test */
+    public function it_doesnt_double_replace_namespaces_that_also_exist_inside_another_namespace(): void
+    {
+        $chickenReplacer = self::createReplacer('Chicken');
+        $eggReplacer = self::createReplacer('Egg');
+
+        // This is a tricky situation. We are referencing Chicken\Egg,
+        // but Egg *also* exists as a separate top level class.
+        $contents = 'use Chicken\\Egg;';
+        $expected = 'use My\\Mozart\\Prefix\\Chicken\\Egg;';
+
+        // First, we test that eggReplacer(chickenReplacer()) yields the expected result.
+        $this->assertEquals($expected, $eggReplacer->replace($chickenReplacer->replace($contents)));
+
+        // Then, we test that chickenReplacer(eggReplacer()) yields the expected result.
+        $this->assertEquals($expected, $chickenReplacer->replace($eggReplacer->replace($contents)));
+    }
 }
