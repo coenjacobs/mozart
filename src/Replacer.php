@@ -82,11 +82,14 @@ class Replacer
     public function replacePackageByAutoloader(Package $package, $autoloader)
     {
         if ($autoloader instanceof NamespaceAutoloader) {
-            $source_path = $this->workingDir . $this->targetDir . str_replace('\\', '/', $autoloader->namespace) . '/';
+            $source_path = $this->workingDir . $this->targetDir
+                           . str_replace('\\', DIRECTORY_SEPARATOR, $autoloader->namespace)
+                           . DIRECTORY_SEPARATOR;
             $this->replaceInDirectory($autoloader, $source_path);
         } elseif ($autoloader instanceof Classmap) {
             $finder = new Finder();
-            $source_path = $this->workingDir . $this->config->classmap_directory . '/' . $package->config->name;
+            $source_path = $this->workingDir . $this->config->classmap_directory . DIRECTORY_SEPARATOR
+                           . $package->config->name;
             $finder->files()->in($source_path);
 
             foreach ($finder as $foundFile) {
@@ -105,6 +108,10 @@ class Replacer
      */
     public function replaceParentClassesInDirectory($directory)
     {
+        if (count($this->replacedClasses)===0) {
+            return;
+        }
+        
         $directory = trim($directory, '//');
         $finder = new Finder();
         $finder->files()->in($directory);
@@ -160,8 +167,9 @@ class Replacer
             foreach ($parent->autoloaders as $parentAutoloader) {
                 foreach ($package->autoloaders as $autoloader) {
                     if ($parentAutoloader instanceof NamespaceAutoloader) {
-                        $namespace = str_replace('\\', '/', $parentAutoloader->namespace);
-                        $directory = $this->workingDir . $this->config->dep_directory . $namespace . '/';
+                        $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
+                        $directory = $this->workingDir . $this->config->dep_directory . $namespace
+                                     . DIRECTORY_SEPARATOR;
 
                         if ($autoloader instanceof NamespaceAutoloader) {
                             $this->replaceInDirectory($autoloader, $directory);

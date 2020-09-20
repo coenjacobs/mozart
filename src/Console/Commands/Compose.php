@@ -37,7 +37,7 @@ class Compose extends Command
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
 
-        $composerFile = $workingDir . '/composer.json';
+        $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         if (!file_exists($composerFile)) {
             $output->write('No composer.json found at current directory: ' . $workingDir);
             return 1;
@@ -62,9 +62,6 @@ class Compose extends Command
 
         $this->config = $config;
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
-
         $require = array();
         if (isset($config->packages) && is_array($config->packages)) {
             $require = $config->packages;
@@ -74,6 +71,10 @@ class Compose extends Command
 
         $packages = $this->findPackages($require);
 
+        $this->mover = new Mover($workingDir, $config);
+        $this->replacer = new Replacer($workingDir, $config);
+
+        $this->mover->deleteTargetDirs($packages);
         $this->movePackages($packages);
         $this->replacePackages($packages);
 
@@ -82,7 +83,6 @@ class Compose extends Command
         }
 
         $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
-
         $this->generateClassmapAutoloader();
 
         return 0;
@@ -95,11 +95,11 @@ class Compose extends Command
      */
     protected function movePackages($packages)
     {
-        $this->mover->deleteTargetDirs();
-
         foreach ($packages as $package) {
             $this->movePackage($package);
         }
+
+        $this->mover->deleteEmptyDirs();
     }
 
     /**
@@ -151,7 +151,8 @@ class Compose extends Command
         $packages = [];
 
         foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . '/vendor/' . $package_slug .'/';
+            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                          . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
 
             if (! is_dir($packageDir)) {
                 continue;
