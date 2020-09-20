@@ -1,0 +1,75 @@
+name: Code Coverage
+
+# Runs PHPUnit with code coverage enabled, commits the html report to
+# GitHub Pages, generates a README badge with the coverage percentage.
+#
+# Requires a gh-pages branch already created.
+#
+#  git checkout --orphan gh-pages
+#  touch index.html
+#  git add index.html
+#  git commit -m 'Set up gh-pages branch' index.html
+#  git push origin gh-pages
+#
+# @author BrianHenryIE
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Checkout GitHub Pages branch for code coverage report
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: tests/reports/html
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-suggest --no-progress
+
+      - name: Clear previous code coverage
+        run: |
+          cd tests/reports/html
+          rm -rf *
+          cd ../../..
+
+      - name: Run tests with code coverage
+        run: vendor/bin/phpunit --coverage-text --coverage-clover tests/reports/clover.xml --coverage-html tests/reports/html
+
+      - name: Edit phpcov html output to work with gh-pages
+        run: |
+          cd tests/reports/html
+          mv .css css; find . -depth -name '*.html' -exec sed -i "s/.css\//css\//" {} +
+          mv .icons icons; find . -depth -name '*.html' -exec sed -i "s/.icons\//icons\//" {} +
+          mv .js js; find . -depth -name '*.html' -exec sed -i "s/.js\//js\//" {} +
+          git add *
+          cd ../../..
+
+      - name: Commit code coverage to gh-pages
+        uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        with:
+          repository: tests/reports/html
+          branch: gh-pages
+          commit_message: "Commit code coverage to gh-pages"
+          commit_options:
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Update README badge
+        run: vendor/bin/php-coverage-badger tests/reports/clover.xml .github/coverage.svg
+
+      - name: Commit code coverage badge
+        uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        with:
+          commit_message: "Commit code coverage badge"
+
+
