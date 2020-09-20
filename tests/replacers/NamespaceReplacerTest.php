@@ -93,5 +93,15 @@ class NamespaceReplacerTest extends TestCase
 
         // Then, we test that chickenReplacer(eggReplacer()) yields the expected result.
         $this->assertEquals($expected, $chickenReplacer->replace($eggReplacer->replace($contents)));
+
+        // Now we do the same thing, but with root-relative references.
+        $contents = 'use \\Chicken\\Egg;';
+        $expected = 'use \\My\\Mozart\\Prefix\\Chicken\\Egg;';
+
+        // First, we test that eggReplacer(chickenReplacer()) yields the expected result.
+        $this->assertEquals($expected, $eggReplacer->replace($chickenReplacer->replace($contents)));
+
+        // Then, we test that chickenReplacer(eggReplacer()) yields the expected result.
+        $this->assertEquals($expected, $chickenReplacer->replace($eggReplacer->replace($contents)));
     }
 }
