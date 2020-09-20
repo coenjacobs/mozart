@@ -40,5 +40,10 @@ jobs:
           composer --version
       - name: Install dependencies
         run: composer install --prefer-dist --no-suggest --no-progress
-      - name: Run validate
+
+      - name: PHPCBF
+        continue-on-error: true
+        run: vendor/bin/phpcbf
+
+      - name: Run PHPCS
         run: vendor/bin/phpcs --report=GitHubActionsAnnotations
