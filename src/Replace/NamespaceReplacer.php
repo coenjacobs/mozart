@@ -12,7 +12,8 @@ class NamespaceReplacer extends BaseReplacer
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->dep_namespace, '/');
 
-        return preg_replace_callback("
+        return preg_replace_callback(
+            "
             /                                # Start the pattern
               ([^a-zA-Z0-9_\x7f-\xff])       # Match the non-class character before the namespace
                 (                            # Start the namespace matcher
