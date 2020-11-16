@@ -69,7 +69,14 @@ class Compose extends Command
             $require = array_keys(get_object_vars($composer->require));
         }
 
-        $packages = $this->findPackages($require);
+        $packagesByName = $this->findPackages($require);
+        $excludedPackagesNames = isset($config->excluded_packages) ? $config->excluded_packages : [];
+        $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
+        $packages = array_values($packagesToMoveByName);
+
+        foreach ($packages as $package) {
+            $package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
+        }
 
         $this->mover = new Mover($workingDir, $config);
         $this->replacer = new Replacer($workingDir, $config);
@@ -173,7 +180,7 @@ class Compose extends Command
             }
 
             $package->dependencies = $this->findPackages($dependencies);
-            $packages[] = $package;
+            $packages[$package_slug] = $package;
         }
 
         return $packages;
