@@ -218,8 +218,9 @@ class Compose extends Command
             /** @var Package $dependency */
             foreach ($dependencies as $dependency) {
                 $this->replacer->replaceParentPackage($dependency, $package);
-                $this->replaceParentInTree($dependency->dependencies);
             }
+
+            $this->replaceParentInTree($package->dependencies);
         }
     }
 }
