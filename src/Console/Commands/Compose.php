@@ -185,4 +185,45 @@ class Compose extends Command
 
         return $packages;
     }
+
+    /**
+     * Get an array containing all the dependencies and dependencies
+     * @param Package $package
+     * @param array   $dependencies
+     * @return array
+     */
+    private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
+    {
+        if (empty($package->dependencies)) {
+            return $dependencies;
+        }
+
+        /** @var Package $dependency */
+        foreach ($package->dependencies as $dependency) {
+            $dependencies[] = $dependency;
+        }
+
+        foreach ($package->dependencies as $dependency) {
+            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
+        }
+
+        return $dependencies;
+    }
+
+    /**
+     * @param array $packages
+     */
+    private function replaceParentInTree(array $packages): void
+    {
+        /** @var Package $package */
+        foreach ($packages as $package) {
+            $dependencies = $this->getAllDependenciesOfPackage($package);
+
+            /** @var Package $dependency */
+            foreach ($dependencies as $dependency) {
+                $this->replacer->replaceParentPackage($dependency, $package);
+                $this->replaceParentInTree($dependency->dependencies);
+            }
+        }
+    }
 }
