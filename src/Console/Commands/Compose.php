@@ -84,13 +84,9 @@ class Compose extends Command
         $this->mover->deleteTargetDirs($packages);
         $this->movePackages($packages);
         $this->replacePackages($packages);
-
-        foreach ($packages as $package) {
-            $this->replacer->replaceParentPackage($package, null);
-        }
-
+        $this->replaceParentInTree($packages);
         $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
-        
+
         return 0;
     }
 
