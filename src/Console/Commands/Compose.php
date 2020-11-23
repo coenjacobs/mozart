@@ -60,6 +60,10 @@ class Compose extends Command
 
         $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
 
+        if (!isset($config->exclude_files)) {
+            $config->exclude_files = [];
+        }
+
         $this->config = $config;
 
         $require = array();
