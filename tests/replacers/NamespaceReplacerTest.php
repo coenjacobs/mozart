@@ -104,4 +104,23 @@ class NamespaceReplacerTest extends TestCase
         // Then, we test that chickenReplacer(eggReplacer()) yields the expected result.
         $this->assertEquals($expected, $chickenReplacer->replace($eggReplacer->replace($contents)));
     }
+
+    /**
+     * @see https://github.com/coenjacobs/mozart/issues/75
+     *
+     * @test
+     */
+    public function it_replaces_namespace_use_as_declarations(): void
+    {
+
+        $namespace = 'Symfony\Polyfill\Mbstring';
+        $prefix = "MBViews\\Dependencies\\";
+
+        $replacer = self::createReplacer($namespace, $prefix);
+
+        $contents = "use Symfony\Polyfill\Mbstring as p;";
+        $expected = "use MBViews\Dependencies\Symfony\Polyfill\Mbstring as p;";
+
+        $this->assertEquals($expected, $replacer->replace($contents));
+    }
 }
