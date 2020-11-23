@@ -107,7 +107,7 @@ class Replacer
         if (count($this->replacedClasses)===0) {
             return;
         }
-        
+
         $directory = trim($directory, '//');
         $finder = new Finder();
         $finder->files()->in($directory);
@@ -156,40 +156,39 @@ class Replacer
         }
     }
 
-    public function replaceParentPackage(Package $package, $parent)
+    /**
+     * Replace everything in parent package, based on the dependency package.
+     * This is done to ensure that package A (which requires package B), is also
+     * updated with the replacements being made in package B.
+     *
+     * @param Package $package
+     * @param Package $parent
+     */
+    public function replaceParentPackage(Package $package, Package $parent)
     {
-        if ($parent !== null) {
-            // Replace everything in parent, based on the dependencies
-            foreach ($parent->autoloaders as $parentAutoloader) {
-                foreach ($package->autoloaders as $autoloader) {
-                    if ($parentAutoloader instanceof NamespaceAutoloader) {
-                        $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                        $directory = $this->workingDir . $this->config->dep_directory . $namespace
-                                     . DIRECTORY_SEPARATOR;
+        foreach ($parent->autoloaders as $parentAutoloader) {
+            foreach ($package->autoloaders as $autoloader) {
+                if ($parentAutoloader instanceof NamespaceAutoloader) {
+                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
+                    $directory = $this->workingDir . $this->config->dep_directory . $namespace
+                                 . DIRECTORY_SEPARATOR;
 
-                        if ($autoloader instanceof NamespaceAutoloader) {
-                            $this->replaceInDirectory($autoloader, $directory);
-                        } else {
-                            $directory = str_replace($this->workingDir, '', $directory);
-                            $this->replaceParentClassesInDirectory($directory);
-                        }
+                    if ($autoloader instanceof NamespaceAutoloader) {
+                        $this->replaceInDirectory($autoloader, $directory);
                     } else {
-                        $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
+                        $directory = str_replace($this->workingDir, '', $directory);
+                        $this->replaceParentClassesInDirectory($directory);
+                    }
+                } else {
+                    $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
 
-                        if ($autoloader instanceof NamespaceAutoloader) {
-                            $this->replaceInDirectory($autoloader, $directory);
-                        } else {
-                            $directory = str_replace($this->workingDir, '', $directory);
-                            $this->replaceParentClassesInDirectory($directory);
-                        }
+                    if ($autoloader instanceof NamespaceAutoloader) {
+                        $this->replaceInDirectory($autoloader, $directory);
+                    } else {
+                        $directory = str_replace($this->workingDir, '', $directory);
+                        $this->replaceParentClassesInDirectory($directory);
                     }
                 }
-            }
-        }
-
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->replaceParentPackage($dependency, $package);
             }
         }
     }
