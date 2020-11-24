@@ -123,13 +123,16 @@ class Mover
             } elseif ($autoloader instanceof Classmap) {
                 $finder = new Finder();
 
+                $files_to_move = array();
+
                 foreach ($autoloader->files as $file) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
                                    . DIRECTORY_SEPARATOR . $package->config->name;
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
-                        $this->moveFile($package, $autoloader, $foundFile);
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
                 }
 
@@ -141,9 +144,14 @@ class Mover
 
                     $finder->files()->in($source_path);
 
-                    foreach ($finder as $file) {
-                        $this->moveFile($package, $autoloader, $file);
+                    foreach ($finder as $foundFile) {
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
+                }
+
+                foreach ($files_to_move as $foundFile) {
+                    $this->moveFile($package, $autoloader, $foundFile);
                 }
             }
 
