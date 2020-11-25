@@ -28,21 +28,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Lint project files
     steps:
-
       - uses: actions/checkout@v1
-
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
           tools: composer, cs2pr
-
       - name: Debugging
         run: |
           php --version
           php -m
           composer --version
-
       - name: Install dependencies
         run: composer install --prefer-dist --no-suggest --no-progress
 
