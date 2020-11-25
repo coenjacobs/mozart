@@ -147,9 +147,7 @@ class Mover
                 }
             }
 
-            if (!in_array($package->config->name, $this->movedPackages)) {
-                $this->movedPackages[] = $package->config->name;
-            }
+            $this->movedPackages[] = $package->config->name;
         }
 
         if (!isset($this->config->delete_vendor_directories) || $this->config->delete_vendor_directories === true) {
@@ -202,25 +200,11 @@ class Mover
     protected function deletePackageVendorDirectories()
     {
         foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
-            if (!is_dir($packageDir) || is_link($packageDir)) {
+            $packageDir = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
+            if (is_link($packageDir)) {
                 continue;
             }
-
             $this->filesystem->deleteDir($packageDir);
-
-            //Delete parent directory too if it became empty
-            //(because that package was the only one from that vendor)
-            $parentDir = dirname($packageDir);
-            if ($this->dirIsEmpty($parentDir)) {
-                $this->filesystem->deleteDir($parentDir);
-            }
         }
-    }
-
-    private function dirIsEmpty($dir)
-    {
-        $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
-        return iterator_count($di) === 0;
     }
 }
