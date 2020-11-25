@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-suggest --no-progress
       - name: Run tests
-        run: composer run test
+        run: vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer
   lint:
     runs-on: ubuntu-latest
     name: Lint project files

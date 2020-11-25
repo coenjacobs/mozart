@@ -7,7 +7,7 @@ class NamespaceReplacer extends BaseReplacer
     /** @var string */
     public $dep_namespace = '';
 
-    public function replace($contents)
+    public function replace($contents, $file)
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->dep_namespace, '/');

@@ -13,169 +13,176 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Compose extends Command
 {
-    /** @var Mover */
-    private $mover;
+	/** @var Mover */
+	private $mover;
 
-    /** @var Replacer */
-    private $replacer;
+	/** @var Replacer */
+	private $replacer;
 
-    /** @var string */
-    private $workingDir;
+	/** @var string */
+	private $workingDir;
 
-    /** @var */
-    private $config;
+	/** @var */
+	private $config;
 
-    protected function configure()
-    {
-        $this->setName('compose');
-        $this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
-        $this->setHelp('');
-    }
+	protected function configure()
+	{
+		$this->setName('compose');
+		$this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
+		$this->setHelp('');
+	}
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $workingDir = getcwd();
-        $this->workingDir = $workingDir;
+	protected function execute(InputInterface $input, OutputInterface $output)
+	{
+		$workingDir = getcwd();
+		$this->workingDir = $workingDir;
 
-        $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
-        if (!file_exists($composerFile)) {
-            $output->write('No composer.json found at current directory: ' . $workingDir);
-            return 1;
-        }
+		$composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
+		if (!file_exists($composerFile)) {
+			$output->write('No composer.json found at current directory: ' . $workingDir);
+			return 1;
+		}
 
-        $composer = json_decode(file_get_contents($composerFile));
-        // If the json was malformed.
-        if (!is_object($composer)) {
-            $output->write('Unable to parse composer.json read at: ' . $workingDir);
-            return 1;
-        }
+		$composer = json_decode(file_get_contents($composerFile));
+		// If the json was malformed.
+		if (!is_object($composer)) {
+			$output->write('Unable to parse composer.json read at: ' . $workingDir);
+			return 1;
+		}
 
-        // if `extra` is missing or not an object or if it does not have a `mozart` key which is an object.
-        if (!isset($composer->extra) || !is_object($composer->extra)
-            || !isset($composer->extra->mozart) || !is_object($composer->extra->mozart)) {
-            $output->write('Mozart config not readable in composer.json at extra->mozart');
-            return 1;
-        }
-        $config = $composer->extra->mozart;
+		// if `extra` is missing or not an object or if it does not have a `mozart` key which is an object.
+		if (!isset($composer->extra) || !is_object($composer->extra)
+		    || !isset($composer->extra->mozart) || !is_object($composer->extra->mozart)) {
+			$output->write('Mozart config not readable in composer.json at extra->mozart');
+			return 1;
+		}
+		$config = $composer->extra->mozart;
 
-        $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
+		$config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
 
-        $this->config = $config;
+		$this->config = $config;
 
-        $require = array();
-        if (isset($config->packages) && is_array($config->packages)) {
-            $require = $config->packages;
-        } elseif (isset($composer->require) && is_object($composer->require)) {
-            $require = array_keys(get_object_vars($composer->require));
-        }
+		$require = array();
+		if (isset($config->packages) && is_array($config->packages)) {
+			$require = $config->packages;
+		} elseif (isset($composer->require) && is_object($composer->require)) {
+			$require = array_keys(get_object_vars($composer->require));
+		}
 
-        $packages = $this->findPackages($require);
+		$packagesByName = $this->findPackages($require);
+		$excludedPackagesNames = isset($config->excluded_packages) ? $config->excluded_packages : [];
+		$packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
+		$packages = array_values($packagesToMoveByName);
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
+		foreach ($packages as $package) {
+			$package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
+		}
 
-        $this->mover->deleteTargetDirs($packages);
-        $this->movePackages($packages);
-        $this->replacePackages($packages);
+		$this->mover = new Mover($workingDir, $config);
+		$this->replacer = new Replacer($workingDir, $config);
 
-        foreach ($packages as $package) {
-            $this->replacer->replaceParentPackage($package, null);
-        }
+		$this->mover->deleteTargetDirs($packages);
+		$this->movePackages($packages);
+		$this->replacePackages($packages);
 
-        $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
-        
-        return 0;
-    }
+		foreach ($packages as $package) {
+			$this->replacer->replaceParentPackage($package, null);
+		}
 
-    /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
-     */
-    protected function movePackages($packages)
-    {
-        foreach ($packages as $package) {
-            $this->movePackage($package);
-        }
+		$this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
 
-        $this->mover->deleteEmptyDirs();
-    }
+		return 0;
+	}
 
-    /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
-     */
-    protected function replacePackages($packages)
-    {
-        foreach ($packages as $package) {
-            $this->replacePackage($package);
-        }
-    }
+	/**
+	 * @param $workingDir
+	 * @param $config
+	 * @param array $packages
+	 */
+	protected function movePackages($packages)
+	{
+		foreach ($packages as $package) {
+			$this->movePackage($package);
+		}
 
-    /**
-     * Move all the packages over, one by one, starting on the deepest level of dependencies.
-     */
-    public function movePackage($package)
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->movePackage($dependency);
-            }
-        }
+		$this->mover->deleteEmptyDirs();
+	}
 
-        $this->mover->movePackage($package);
-    }
+	/**
+	 * @param $workingDir
+	 * @param $config
+	 * @param array $packages
+	 */
+	protected function replacePackages($packages)
+	{
+		foreach ($packages as $package) {
+			$this->replacePackage($package);
+		}
+	}
 
-    /**
-     * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
-     */
-    public function replacePackage($package)
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->replacePackage($dependency);
-            }
-        }
+	/**
+	 * Move all the packages over, one by one, starting on the deepest level of dependencies.
+	 */
+	public function movePackage($package)
+	{
+		if (! empty($package->dependencies)) {
+			foreach ($package->dependencies as $dependency) {
+				$this->movePackage($dependency);
+			}
+		}
 
-        $this->replacer->replacePackage($package);
-    }
+		$this->mover->movePackage($package);
+	}
 
-    /**
-     * Loops through all dependencies and their dependencies and so on...
-     * will eventually return a list of all packages required by the full tree.
-     */
-    private function findPackages($slugs)
-    {
-        $packages = [];
+	/**
+	 * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
+	 */
+	public function replacePackage($package)
+	{
+		if (! empty($package->dependencies)) {
+			foreach ($package->dependencies as $dependency) {
+				$this->replacePackage($dependency);
+			}
+		}
 
-        foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                          . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
+		$this->replacer->replacePackage($package);
+	}
 
-            if (! is_dir($packageDir)) {
-                continue;
-            }
+	/**
+	 * Loops through all dependencies and their dependencies and so on...
+	 * will eventually return a list of all packages required by the full tree.
+	 */
+	private function findPackages($slugs)
+	{
+		$packages = [];
 
-            $autoloaders = null;
-            if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug)) {
-                $autoloaders = $this->config->override_autoload->$package_slug;
-            }
+		foreach ($slugs as $package_slug) {
+			$packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+			              . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
 
-            $package = new Package($packageDir, $autoloaders);
-            $package->findAutoloaders();
+			if (! is_dir($packageDir)) {
+				continue;
+			}
 
-            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
+			$autoloaders = null;
+			if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug)) {
+				$autoloaders = $this->config->override_autoload->$package_slug;
+			}
 
-            $dependencies = [];
-            if (isset($config->require)) {
-                $dependencies = array_keys((array)$config->require);
-            }
+			$package = new Package($packageDir, $autoloaders);
+			$package->findAutoloaders();
 
-            $package->dependencies = $this->findPackages($dependencies);
-            $packages[] = $package;
-        }
+			$config = json_decode(file_get_contents($packageDir . 'composer.json'));
 
-        return $packages;
-    }
+			$dependencies = [];
+			if (isset($config->require)) {
+				$dependencies = array_keys((array)$config->require);
+			}
+
+			$package->dependencies = $this->findPackages($dependencies);
+			$packages[$package_slug] = $package;
+		}
+
+		return $packages;
+	}
 }
