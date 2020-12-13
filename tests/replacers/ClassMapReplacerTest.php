@@ -91,51 +91,52 @@ class ClassMapReplacerTest extends TestCase
     }
 
 
-	/**
-	 * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
-	 * @see https://github.com/coenjacobs/mozart/issues/93
-	 *
-	 * @test
-	 */
-	public function it_does_not_replace_inside_namespace_multiline(): void
-	{
-		$input = "
+    /**
+     * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
+     * @see https://github.com/coenjacobs/mozart/issues/93
+     *
+     * @test
+     */
+    public function it_does_not_replace_inside_namespace_multiline(): void
+    {
+        $input = "
         namespace Mozart;
         class Hello_World
         ";
-		$replacer = new ClassmapReplacer();
-		$replacer->classmap_prefix = 'Mozart_';
-		$result = $replacer->replace($input);
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $result = $replacer->replace($input);
 
-		$this->assertEquals($input, $result);
-	}
+        $this->assertEquals($input, $result);
+    }
 
-	/**
-	 * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
-	 * @see https://github.com/coenjacobs/mozart/issues/93
-	 *
-	 * @test
-	 */
-	public function it_does_not_replace_inside_namespace_singleline(): void
-	{
-		$input = "namespace Mozart; class Hello_World";
-		$replacer = new ClassmapReplacer();
-		$replacer->classmap_prefix = 'Mozart_';
-		$result = $replacer->replace($input);
+    /**
+     * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
+     * @see https://github.com/coenjacobs/mozart/issues/93
+     *
+     * @test
+     */
+    public function it_does_not_replace_inside_namespace_singleline(): void
+    {
+        $input = "namespace Mozart; class Hello_World";
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $result = $replacer->replace($input);
 
-		$this->assertEquals($input, $result);
-	}
+        $this->assertEquals($input, $result);
+    }
 
-	/**
-	 * It's possible to have multiple namespaces inside one file.
-	 *
-	 * To have two classes in one file, one in a namespace and the other not, the global namespace needs to be explicit.
-	 *
-	 * @test
-	 */
-	public function it_does_not_replace_inside_named_namespace_but_does_inside_explicit_global_namespace(): void {
+    /**
+     * It's possible to have multiple namespaces inside one file.
+     *
+     * To have two classes in one file, one in a namespace and the other not, the global namespace needs to be explicit.
+     *
+     * @test
+     */
+    public function it_does_not_replace_inside_named_namespace_but_does_inside_explicit_global_namespace(): void
+    {
 
-		$input = "
+        $input = "
 		
 		namespace My_Project {
 		
@@ -152,10 +153,11 @@ class ClassMapReplacerTest extends TestCase
 		
 		";
 
-		$replacer = new ClassmapReplacer();
-		$replacer->classmap_prefix = 'Mozart_';
-		$result = $replacer->replace($input);
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $result = $replacer->replace($input);
 
-		$this->assertStringContainsString( 'Mozart_B_Class', $result );
-	}
+        $this->assertStringNotContainsString('Mozart_A_Class', $result);
+        $this->assertStringContainsString('Mozart_B_Class', $result);
+    }
 }
