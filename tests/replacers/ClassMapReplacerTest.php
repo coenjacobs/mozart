@@ -137,20 +137,12 @@ class ClassMapReplacerTest extends TestCase
     {
 
         $input = "
-		
 		namespace My_Project {
-		
-		class A_Class { }
-		
+			class A_Class { }
 		}
-		
-		
 		namespace {
-		
-		class B_Class { }
-		
+			class B_Class { }
 		}
-		
 		";
 
         $replacer = new ClassmapReplacer();
