@@ -75,4 +75,18 @@ class ClassMapReplacerTest extends TestCase
         $contents = $replacer->replace($contents);
         $this->assertEquals("class Mozart_Hello_World\n{", $contents);
     }
+
+    /**
+     * @see https://github.com/coenjacobs/mozart/issues/81
+     *
+     * @test
+     */
+    public function it_replaces_class(): void
+    {
+        $contents = "class Hello_World";
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $contents = $replacer->replace($contents);
+        $this->assertEquals("class Mozart_Hello_World", $contents);
+    }
 }
