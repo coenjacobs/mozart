@@ -64,10 +64,6 @@ class ClassmapReplacerIntegrationTest extends TestCase
         $this->composer = $composer;
     }
 
-	/**
-	 * The unit test for issue #81 began failing when addressing #93,
-	 */
-
     /**
      * Issue #93 shows a classname being updated inside a class whose namespace has also been updated
      * by Mozart.
