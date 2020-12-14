@@ -84,7 +84,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
         $composer->require["brianhenryie/wp-logger"] = "dev-master#dd2bb0665e01e11b282178e76a2334198d3860c5";
 
         $composer_json_string = json_encode($composer);
-	    $composer_json_string = str_replace('minimum_stability','minimum-stability', $composer_json_string);
+        $composer_json_string = str_replace('minimum_stability', 'minimum-stability', $composer_json_string);
 
         file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
 
@@ -99,13 +99,13 @@ class ClassmapReplacerIntegrationTest extends TestCase
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $mpdf_php = file_get_contents($this->testsWorkingDir .'/dep_directory/BrianHenryIE/WP_Logger/class-logger.php');
+        $php_string = file_get_contents($this->testsWorkingDir .'/dep_directory/BrianHenryIE/WP_Logger/class-logger.php');
 
         // Confirm problem is gone.
-        $this->assertStringNotContainsString('class Mozart_Logger extends', $mpdf_php);
+        $this->assertStringNotContainsString('class Mozart_Logger extends', $php_string);
 
         // Confirm solution is correct.
-        $this->assertStringContainsString('class Logger extends', $mpdf_php);
+        $this->assertStringContainsString('class Logger extends', $php_string);
     }
 
 
