@@ -27,7 +27,7 @@ class ClassmapReplacer extends BaseReplacer
 						|										# if found, match that much before repeating the search 
 																# on the remainder of the string
 						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
-						([a-zA-Z0-9_\x7f-\xff]*)				# Match the word until the first 
+						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first 
 																# non-classname-valid character
 						\s?										# Allow a space after
 						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends, 
