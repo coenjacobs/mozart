@@ -15,7 +15,11 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class Mover
 {
-    /** @var string */
+    /**
+     * The only path variable with a leading slash.
+     *
+     * @var string
+     */
     protected $workingDir;
 
     /** @var string */
