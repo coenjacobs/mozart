@@ -177,26 +177,25 @@ class Mover
         // The relative path to the file from the project root.
         $sourceFilePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
 
-        $namespacePath = $this->clean($package->config->name);
+        $packageName = $this->clean($package->config->name);
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $this->clean($autoloader->getNamespacePath());
 
             // TODO: Should $path come from the NameSpaceAutoloader object?
-            $packageVendorPath = 'vendor' . DIRECTORY_SEPARATOR . $namespacePath
-                                 . DIRECTORY_SEPARATOR . $this->clean($path);
+	        $sourceVendorPath = $this->clean('vendor' . DIRECTORY_SEPARATOR . $packageName
+                                 . DIRECTORY_SEPARATOR . $path);
 
-            $mozartDepPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
+	        $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
-            $targetFilePath = str_ireplace($packageVendorPath, $mozartDepPath, $sourceFilePath);
+            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-            $classmapDirectory = $this->classmap_directory;
 
-            $packageVendorPath = 'vendor' . DIRECTORY_SEPARATOR . $namespacePath;
+            $sourceVendorPath = 'vendor' . DIRECTORY_SEPARATOR . $packageName;
 
-            $mozartClassesPath = $classmapDirectory . DIRECTORY_SEPARATOR . $namespacePath;
+            $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-            $targetFilePath = str_ireplace($packageVendorPath, $mozartClassesPath, $sourceFilePath);
+            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         }
 
         $this->filesystem->copy($sourceFilePath, $targetFilePath);
