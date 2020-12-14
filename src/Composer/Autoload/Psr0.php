@@ -7,4 +7,9 @@ namespace CoenJacobs\Mozart\Composer\Autoload;
 
 class Psr0 extends NamespaceAutoloader
 {
+
+    public function getNamespacePath(): string
+    {
+        return '';
+    }
 }
