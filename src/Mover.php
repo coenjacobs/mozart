@@ -10,6 +10,7 @@ use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use CoenJacobs\Mozart\Composer\Package;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use stdClass;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -25,6 +26,12 @@ class Mover
     /** @var string */
     protected $dep_directory;
 
+    /** @var string */
+    protected $classmap_directory;
+
+    /** @var stdClass */
+    protected $config;
+
     /** @var Filesystem */
     protected $filesystem;
 
@@ -33,6 +40,7 @@ class Mover
 
     public function __construct($workingDir, $config)
     {
+        $this->config = $config;
         
         $this->workingDir = DIRECTORY_SEPARATOR . $this->clean($workingDir);
 
@@ -73,7 +81,8 @@ class Mover
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
-                    $outputDir = $this->dep_directory . DIRECTORY_SEPARATOR . $this->clean($packageAutoloader->namespace);
+                    $outputDir = $this->dep_directory . DIRECTORY_SEPARATOR .
+                                 $this->clean($packageAutoloader->namespace);
                     $this->filesystem->deleteDir($outputDir);
                     break;
                 case Classmap::class:
