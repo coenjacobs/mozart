@@ -26,21 +26,24 @@ class ClassmapReplacer extends BaseReplacer
 																# a potential second namespace declaration
 						|										# if found, match that much before continuing the search 
 																# on the remainder of the string
-						(?:^|\\\n|;)							# class declatartion must be on a new line or following a ;
+						\s*\\/\\/\s*[^\n]* |					# Skip line comments
+						\s*\\*[^\n]*? |							# Skip multiline comment bodies
+						.*?\\*\\/ |								# Skip multiline comment endings			
 						\s*										# whitespace is allowed before 
 						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
 						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first 
 																# non-classname-valid character
 						\s?										# Allow a space after
-						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends, 
+						(?:{|extends|implements|\n|$)				# Class declaration can be followed by {, extends, 
 																# implements, or a new line
 			/sx", //                                            # dot matches newline, ignore whitespace in regex.
             function ($matches) use ($contents) {
 
-                // If we're inside a namespace other than the global namesspace, just return.
-                if (preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
-                    return $matches[0] ;
+                // If we didn't capture a proper class/interface, return.
+                if( 1 === count( $matches ) ) {
+	                return $matches[0];
                 }
+
 
                 // The prepended class name.
                 $replace = $this->classmap_prefix . $matches[1];
