@@ -152,4 +152,26 @@ class ClassMapReplacerTest extends TestCase
         $this->assertStringNotContainsString('Mozart_A_Class', $result);
         $this->assertStringContainsString('Mozart_B_Class', $result);
     }
+
+
+    /**
+     *
+     * @test
+     */
+    public function it_does_not_treat_comments_as_classes()
+    {
+        $input = "
+    	// A class as good as any.
+    	class Whatever {
+    	
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever', $replacer->replacedClasses);
+    }
+
 }

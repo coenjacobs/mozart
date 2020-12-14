@@ -45,7 +45,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
             public $classmap_prefix = "Mozart_";
             public $dep_directory = "/dep_directory/";
             public $classmap_directory = "/classmap_directory/";
-
+            public $override_autoload;
         };
 
         $composer = new class() {
@@ -108,6 +108,60 @@ class ClassmapReplacerIntegrationTest extends TestCase
         $this->assertStringContainsString('class Logger extends', $mpdf_php);
     }
 
+
+
+    /**
+     * Issue #86 – "class as" appeared in a comment and later the keyword as was prefixed!
+     *
+     * Solved by https://github.com/ziodave
+     */
+    public function test_do_not_parse_comments_to_classnames()
+    {
+
+        $composer = $this->composer;
+
+        $composer->require["pear/pear-core-minimal"] = "v1.10.10";
+
+        $composer->extra->mozart->override_autoload = new class() {
+	        public $pear_pear_code_minimal;
+	        public $pear_console_getopt;
+            public function __construct()
+            {
+                $this->pear_pear_code_minimal = new class() {
+                    public $classmap = array(
+                        "src/"
+                    );
+                };
+                $this->pear_console_getopt = new stdClass();
+            }
+        };
+
+
+        $composer_json_string = json_encode($composer);
+	    $composer_json_string = str_replace("pear_pear_core_minimal", "pear/pear-core-minimal", $composer_json_string);
+	    $composer_json_string = str_replace("pear_console_getopt", "pear/console_getopt", $composer_json_string);
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+
+        chdir($this->testsWorkingDir);
+
+        exec('composer install');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $php_string = file_get_contents($this->testsWorkingDir .'/classmap_directory/pear/pear_exception/PEAR/Exception.php');
+
+        // Confirm problem is gone.
+        $this->assertStringNotContainsString('foreach (self::$_observers Mozart_as $func) {', $php_string);
+
+        // Confirm solution is correct.
+        $this->assertStringContainsString('foreach (self::$_observers as $func) {', $php_string);
+    }
 
     /**
      * Delete $this->testsWorkingDir after each test.

@@ -24,8 +24,10 @@ class ClassmapReplacer extends BaseReplacer
 						namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*?(?=namespace|$) 
 																# Look for a preceeding namespace declaration, up until 
 																# a potential second namespace declaration
-						|										# if found, match that much before repeating the search 
+						|										# if found, match that much before continuing the search 
 																# on the remainder of the string
+						(?:^|\\\n|;)							# class declatartion must be on a new line or following a ;
+						\s*										# whitespace is allowed before 
 						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
 						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first 
 																# non-classname-valid character
