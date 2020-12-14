@@ -2,15 +2,12 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Console\Commands\Compose;
-use League\Flysystem\FileExistsException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * @covers CoenJacobs\Mozart\Mover::
- *
-
+ * @codeCoverageIgnore
  */
 class MoverIntegrationTest extends TestCase
 {
@@ -62,20 +59,40 @@ class MoverIntegrationTest extends TestCase
         $this->composer = $composer;
     }
 
+
     /**
      * Issue 43. Needs "aws/aws-sdk-php".
      *
      * League\Flysystem\FileExistsException : File already exists at path:
      * dep_directory/vendor/guzzle/guzzle/src/Guzzle/Cache/Zf1CacheAdapter.php
      */
-    public function test_aws_sdk_succeeds()
+    public function testAwsSdkSucceeds()
     {
 
         $composer = $this->composer;
 
         $composer->require["aws/aws-sdk-php"] = "2.8.31";
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
+        $composer->extra->mozart->override_autoload = new class() {
+            public $guzzle_guzzle;
+
+            public function __construct()
+            {
+                $this->guzzle_guzzle = new class() {
+                    public $psr_4 = array(
+                        "Guzzle"=>"src/"
+                    );
+                };
+            }
+        };
+
+        $composer_json_string = json_encode($composer);
+
+        $composer_json_string = str_replace("psr_4", "psr-4", $composer_json_string);
+        $composer_json_string = str_replace("guzzle_guzzle", "guzzle/guzzle", $composer_json_string);
+
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
 
         chdir($this->testsWorkingDir);
 
@@ -88,13 +105,9 @@ class MoverIntegrationTest extends TestCase
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        try {
-            $php_string = file_get_contents($this->testsWorkingDir . '/dep_directory/Aws/Ses/Common/Aws.php');
-        } catch (FileExistsException $e) {
-            $this->fail();
-        }
+        $this->assertEquals(0, $result);
 
-//        $this->assertStringContainsString('class Mpdf implements', $php_string);
+        $this->assertFileExists($this->testsWorkingDir . '/dep_directory/Aws/Common/Aws.php');
     }
 
 
@@ -103,7 +116,7 @@ class MoverIntegrationTest extends TestCase
      *
      * Error: "File already exists at path: classmap_directory/tecnickcom/tcpdf/tcpdf.php".
      */
-    public function test_libpdfmerge_succeeds()
+    public function testLibpdfmergeSucceeds()
     {
 
         $composer = $this->composer;
@@ -122,11 +135,13 @@ class MoverIntegrationTest extends TestCase
         $mozartCompose = new Compose();
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
-	    // classmap_directory/tecnickcom/tcpdf/tcpdf.php
-        $php_string = file_get_contents($this->testsWorkingDir .'/dep_directory/iio/libmergepdf/tcpdi/tcpdi.php');
 
-//        // Confirm solution is correct.
-//        $this->assertStringContainsString('class Mpdf implements', $php_string);
+        $this->assertEquals(0, $result);
+
+        // This test would only fail on Windows?
+        $this->assertDirectoryNotExists($this->testsWorkingDir .'classmap_directory/iio/libmergepdf/vendor/iio/libmergepdf/tcpdi');
+
+        $this->assertFileExists($this->testsWorkingDir .'/classmap_directory/iio/libmergepdf/tcpdi/tcpdi.php');
     }
 
 
@@ -146,10 +161,9 @@ class MoverIntegrationTest extends TestCase
 
     protected function delete_dir($dir)
     {
-		if(!file_exists($dir)){
-			return;
-		}
-
+        if (!file_exists($dir)) {
+            return;
+        }
 
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator(
