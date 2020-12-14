@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Composer\Autoload;
 
+use stdClass;
+
 abstract class NamespaceAutoloader implements Autoloader
 {
     /** @var string */
@@ -17,9 +19,9 @@ abstract class NamespaceAutoloader implements Autoloader
     public $paths = [];
 
     /**
-     * A package's composer.json config autoload key's value, where $key is `psr-1`|`psr-4`|`classmap`.
+     * A package's composer.json config autoload key's value, where $key is `psr-0`|`psr-4`|`classmap`.
      *
-     * @param $autoloadConfig
+     * @param stdClass[] $autoloadConfig
      */
     public function processConfig($autoloadConfig)
     {

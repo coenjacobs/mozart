@@ -1,4 +1,7 @@
 <?php
+/**
+ * @see https://www.php-fig.org/psr/psr-0/
+ */
 
 namespace CoenJacobs\Mozart\Composer\Autoload;
 
