@@ -13,6 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Compose extends Command
 {
+
     /** @var Mover */
     private $mover;
 
@@ -223,4 +224,5 @@ class Compose extends Command
             $this->replaceParentInTree($package->dependencies);
         }
     }
+
 }

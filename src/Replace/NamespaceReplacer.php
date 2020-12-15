@@ -11,6 +11,7 @@ class NamespaceReplacer extends BaseReplacer
      */
     public $dep_namespace = '';
 
+
     /**
      * @param string $contents The text to make replacements in.
      * @param null $file Only used in ClassmapReplacer (for recording which files were changed).
