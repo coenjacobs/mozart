@@ -33,4 +33,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: mozart.phar
-          gzip: no
+          gzip: false
