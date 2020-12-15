@@ -20,10 +20,17 @@ jobs:
       - name: Create .phar
         run: |
           vendor/bin/phar-composer build .
+          php mozart.phar
 
-      - name: Upload to release
-        uses: JasonEtco/upload-to-release@master
+#      - name: Upload to release
+#        uses: JasonEtco/upload-to-release@master
+#        with:
+#          args: mozart.phar
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: meeDamian/github-release@2.0
         with:
-          args: mozart.phar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: mozart.phar
+          gzip: no
