@@ -119,8 +119,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-                                   . $this->clean($package->config->name) . DIRECTORY_SEPARATOR . $this->clean($path);
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -132,8 +131,8 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->files as $file) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $this->clean($package->config->name);
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path);
+
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
@@ -144,8 +143,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR .
-                                   $this->clean($package->config->name)  . DIRECTORY_SEPARATOR . $this->clean($path);
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -177,25 +175,23 @@ class Mover
         // The relative path to the file from the project root.
         $sourceFilePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
 
-        $packageName = $this->clean($package->config->name);
+        $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $this->clean($autoloader->getNamespacePath());
 
             // TODO: Should $path come from the NameSpaceAutoloader object?
-	        $sourceVendorPath = $this->clean('vendor' . DIRECTORY_SEPARATOR . $packageName
-                                 . DIRECTORY_SEPARATOR . $path);
+            $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
 
-	        $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
+            $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
             $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-
-            $sourceVendorPath = 'vendor' . DIRECTORY_SEPARATOR . $packageName;
+            $packageName = $this->clean($package->config->name);
 
             $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
+            $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
         }
 
         $this->filesystem->copy($sourceFilePath, $targetFilePath);
