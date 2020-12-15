@@ -6,6 +6,9 @@ This package requires PHP 7.2 or higher in order to run the tool. You can use th
 **Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
 
 ## Installation
+
+### Composer
+
 Install through Composer, only required in development environments:
 
 `composer require coenjacobs/mozart --dev`
@@ -13,6 +16,15 @@ Install through Composer, only required in development environments:
 This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
 
 After configuring Mozart properly, the `mozart compose` command does all the magic.
+
+### Standalone Phar
+
+`mozart.phar` can be [downloaded from the releases](https://github.com/coenjacobs/mozart/releases):
+
+```
+composer install --no-dev
+php mozart.phar compose
+```
 
 ## Configuration
 Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:

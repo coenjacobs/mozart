@@ -1,0 +1,30 @@
+name: Build and attach Mozart.phar to each release
+
+on: release
+
+jobs:
+  create-phar:
+    runs-on: ubuntu-latest
+    name: Create Mozart phar
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@1.3.7
+        with:
+          php-version: 7.2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-suggest --no-progress
+
+      - name: Create .phar
+        run: |
+          vendor/bin/phar-composer build .
+          php mozart.phar --version
+
+      - uses: meeDamian/github-release@2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: mozart.phar
+          gzip: false
+          allow_override: true
