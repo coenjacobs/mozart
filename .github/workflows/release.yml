@@ -34,3 +34,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: mozart.phar
           gzip: false
+          allow_override: true
