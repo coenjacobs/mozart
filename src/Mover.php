@@ -41,8 +41,8 @@ class Mover
     public function __construct($workingDir, $config)
     {
         $this->config = $config;
-        
-        $this->workingDir = DIRECTORY_SEPARATOR . $this->clean($workingDir);
+
+        $this->workingDir = $workingDir;
 
         $this->dep_directory = $this->clean($config->dep_directory);
         $this->classmap_directory = $this->clean($config->classmap_directory);
