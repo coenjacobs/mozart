@@ -48,7 +48,7 @@ class Package
         $namespaceAutoloaders = array(
             'psr-0'    => Psr0::class,
             'psr-4'    => Psr4::class,
-            'classmap' => Classmap:class,
+            'classmap' => Classmap::class,
         );
 
         if (! isset($this->config->autoload)) {
