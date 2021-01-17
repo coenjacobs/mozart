@@ -33,11 +33,11 @@ class ClassmapReplacer extends BaseReplacer
 						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends, 
 																# implements, or a new line
 			/sx", //                                            # dot matches newline, ignore whitespace in regex.
-            function ($matches) use ($contents) {
+            function ($matches) {
 
                 // If we're inside a namespace other than the global namesspace, just return.
                 if (preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
-                    return $matches[0] ;
+                    return $matches[0];
                 }
 
                 // The prepended class name.

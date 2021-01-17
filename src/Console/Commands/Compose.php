@@ -22,7 +22,7 @@ class Compose extends Command
     /** @var string */
     private $workingDir;
 
-    /** @var */
+    /** @var object */
     private $config;
 
     protected function configure()
@@ -91,8 +91,6 @@ class Compose extends Command
     }
 
     /**
-     * @param $workingDir
-     * @param $config
      * @param array $packages
      */
     protected function movePackages($packages)
@@ -105,8 +103,6 @@ class Compose extends Command
     }
 
     /**
-     * @param $workingDir
-     * @param $config
      * @param array $packages
      */
     protected function replacePackages($packages)
