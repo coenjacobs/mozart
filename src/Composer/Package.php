@@ -56,7 +56,7 @@ class Package
         }
 
         foreach ($namespaceAutoloaders as $autoloaderType => $className) {
-            if (! isset($this->config->autoload->$autoloadType)) {
+            if (! isset($this->config->autoload->$autoloaderType)) {
                 continue;
             }
 
