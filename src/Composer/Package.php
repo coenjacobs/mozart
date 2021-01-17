@@ -59,7 +59,7 @@ class Package
 
             $autoloadConfig = (array)$this->config->autoload->$key;
 
-            /** @var $autoloader Autoloader */
+            /** @var Autoloader $autoloader */
             $autoloader = new $value();
             $autoloader->processConfig($autoloadConfig);
 
