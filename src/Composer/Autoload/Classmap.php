@@ -16,7 +16,7 @@ class Classmap implements Autoloader
     public function processConfig($autoloadConfig)
     {
         foreach ($autoloadConfig as $value) {
-            if ('.php' == substr($value, '-4', 4)) {
+            if ('.php' == substr($value, -4, 4)) {
                 array_push($this->files, $value);
             } else {
                 array_push($this->paths, $value);
