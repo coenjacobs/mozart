@@ -3,6 +3,9 @@
 namespace CoenJacobs\Mozart\Composer;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
+use CoenJacobs\Mozart\Composer\Autoload\Classmap,
+use CoenJacobs\Mozart\Composer\Autoload\Psr0,
+use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use stdClass;
 
 class Package
@@ -42,26 +45,24 @@ class Package
      */
     public function findAutoloaders()
     {
-        $namespace_autoloaders = array(
-            'psr-0'    => 'CoenJacobs\Mozart\Composer\Autoload\Psr0',
-            'psr-4'    => 'CoenJacobs\Mozart\Composer\Autoload\Psr4',
-            'classmap' => 'CoenJacobs\Mozart\Composer\Autoload\Classmap',
+        $namespaceAutoloaders = array(
+            'psr-0'    => Psr0::class,
+            'psr-4'    => Psr4::class,
+            'classmap' => Classmap:class,
         );
 
         if (! isset($this->config->autoload)) {
             return;
         }
 
-        foreach ($namespace_autoloaders as $key => $value) {
-            if (! isset($this->config->autoload->$key)) {
+        foreach ($namespaceAutoloaders as $autoloaderType => $className) {
+            if (! isset($this->config->autoload->$autoloadType)) {
                 continue;
             }
 
-            $autoloadConfig = (array)$this->config->autoload->$key;
-
             /** @var $autoloader Autoloader */
-            $autoloader = new $value();
-            $autoloader->processConfig($autoloadConfig);
+            $autoloader = new $className();
+            $autoloader->processConfig((array)$this->config->autoload->$autoloaderType);
 
             array_push($this->autoloaders, $autoloader);
         }
