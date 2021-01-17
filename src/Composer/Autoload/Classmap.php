@@ -26,6 +26,8 @@ class Classmap implements Autoloader
 
     /**
      * @throws \Exception
+     *
+     * @return void
      */
     public function getSearchNamespace()
     {
