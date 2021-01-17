@@ -6,6 +6,25 @@ This package requires PHP 7.2 or higher in order to run the tool. You can use th
 **Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
 
 ## Installation
+
+### Docker
+Pull the Docker image from the registry:
+
+```
+docker pull coenjacobs/mozart
+```
+
+Then you can start the container and run the `mozart compose` command in the container. In a single command:
+
+```
+docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart compose
+```
+
+Above command automatically adds the current working directory as a volume into the designated directory for the project: `/project/`. In the Docker container, Mozart is installed in the `/mozart/` directory. Using the above command will run Mozart on the current working directory.
+
+Please note that the Docker image for Mozart is only available starting from the `latest` build of version 0.7.0. The `latest` tag is always the latest build of the `master` branch and not a stable version. You can see [all available tags on Docker Hub](https://hub.docker.com/r/coenjacobs/mozart/tags).
+
+### Composer
 Install through Composer, only required in development environments:
 
 `composer require coenjacobs/mozart --dev`
