@@ -7,7 +7,7 @@ RUN apk update && apk add git
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 COPY ./composer.json /mozart/
 WORKDIR /mozart/
-RUN --mount=type=cache,target=$(COMPOSER_HOME)/cache/ composer install --no-dev -o
+RUN composer install --no-dev -o
 
 FROM base AS application
 RUN mkdir project
