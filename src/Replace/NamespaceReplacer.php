@@ -29,6 +29,7 @@ class NamespaceReplacer extends BaseReplacer
                 (                            # Start the namespace matcher
                   (?<!$dependencyNamespace)  # Does NOT start with the prefix
                   (?<![a-zA-Z0-9_]\\\\)      # Not a class-allowed character followed by a slash
+                  (?<!class\s)				 # Not a class declaration.
                   $searchNamespace           # The namespace we're looking for
                   [\\\|;\s]                  # Backslash, pipe, semicolon, or space
                 )                            # End the namespace matcher
