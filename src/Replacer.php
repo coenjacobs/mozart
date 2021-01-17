@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart;
 
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
@@ -50,7 +51,7 @@ class Replacer
      *
      * @return void
      */
-    public function replaceInFile($targetFile, Classmap $autoloader): void
+    public function replaceInFile($targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
         $contents = $this->filesystem->read($targetFile);

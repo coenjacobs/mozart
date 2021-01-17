@@ -23,4 +23,12 @@ class Classmap implements Autoloader
             }
         }
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function getSearchNamespace()
+    {
+        throw new \Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
+    }
 }
