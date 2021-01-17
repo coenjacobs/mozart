@@ -37,7 +37,7 @@ class Replacer
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
 
-    public function replacePackage(Package $package)
+    public function replacePackage(Package $package): void
     {
         foreach ($package->autoloaders as $autoloader) {
             $this->replacePackageByAutoloader($package, $autoloader);
@@ -47,8 +47,10 @@ class Replacer
     /**
      * @param $targetFile
      * @param $autoloader
+     *
+     * @return void
      */
-    public function replaceInFile($targetFile, $autoloader)
+    public function replaceInFile($targetFile, Classmap $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
         $contents = $this->filesystem->read($targetFile);
@@ -74,8 +76,10 @@ class Replacer
     /**
      * @param Package $package
      * @param $autoloader
+     *
+     * @return void
      */
-    public function replacePackageByAutoloader(Package $package, $autoloader)
+    public function replacePackageByAutoloader(Package $package, Composer\Autoload\Autoloader $autoloader): void
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $source_path = $this->workingDir . $this->targetDir
@@ -101,8 +105,10 @@ class Replacer
     /**
      * @param $autoloader
      * @param $directory
+     *
+     * @return void
      */
-    public function replaceParentClassesInDirectory($directory)
+    public function replaceParentClassesInDirectory(string $directory)
     {
         if (count($this->replacedClasses)===0) {
             return;
@@ -141,8 +147,10 @@ class Replacer
     /**
      * @param $autoloader
      * @param $directory
+     *
+     * @return void
      */
-    public function replaceInDirectory($autoloader, $directory)
+    public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
         $finder = new Finder();
         $finder->files()->in($directory);
@@ -163,8 +171,10 @@ class Replacer
      *
      * @param Package $package
      * @param Package $parent
+     *
+     * @return void
      */
-    public function replaceParentPackage(Package $package, Package $parent)
+    public function replaceParentPackage(Package $package, Package $parent): void
     {
         foreach ($parent->autoloaders as $parentAutoloader) {
             foreach ($package->autoloaders as $autoloader) {

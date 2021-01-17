@@ -10,6 +10,9 @@ class Classmap implements Autoloader
     /** @var array */
     public $paths = [];
 
+    /**
+     * @return void
+     */
     public function processConfig($autoloadConfig)
     {
         foreach ($autoloadConfig as $value) {
