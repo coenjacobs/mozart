@@ -3,8 +3,8 @@
 namespace CoenJacobs\Mozart\Composer;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use CoenJacobs\Mozart\Composer\Autoload\Classmap,
-use CoenJacobs\Mozart\Composer\Autoload\Psr0,
+use CoenJacobs\Mozart\Composer\Autoload\Classmap;
+use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use stdClass;
 
