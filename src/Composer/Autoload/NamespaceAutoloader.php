@@ -20,6 +20,7 @@ abstract class NamespaceAutoloader implements Autoloader
      * A package's composer.json config autoload key's value, where $key is `psr-1`|`psr-4`|`classmap`.
      *
      * @param array<string, string|array> $autoloadConfig
+     * @return void
      */
     public function processConfig($autoloadConfig)
     {
@@ -29,11 +30,17 @@ abstract class NamespaceAutoloader implements Autoloader
         }
     }
 
+    /**
+     * @return string
+     */
     public function getSearchNamespace()
     {
         return $this->namespace;
     }
 
+    /**
+     * @return string
+     */
     public function getNamespacePath()
     {
         return '';

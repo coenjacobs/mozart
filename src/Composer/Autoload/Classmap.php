@@ -10,6 +10,9 @@ class Classmap implements Autoloader
     /** @var array */
     public $paths = [];
 
+    /**
+     * @return void
+     */
     public function processConfig($autoloadConfig)
     {
         foreach ($autoloadConfig as $value) {
@@ -19,5 +22,13 @@ class Classmap implements Autoloader
                 array_push($this->paths, $value);
             }
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getSearchNamespace()
+    {
+        throw new \Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
     }
 }

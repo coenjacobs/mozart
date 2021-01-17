@@ -25,6 +25,9 @@ class Compose extends Command
     /** @var object */
     private $config;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('compose');
@@ -92,8 +95,10 @@ class Compose extends Command
 
     /**
      * @param array $packages
+     *
+     * @return void
      */
-    protected function movePackages($packages)
+    protected function movePackages($packages): void
     {
         foreach ($packages as $package) {
             $this->movePackage($package);
@@ -104,8 +109,10 @@ class Compose extends Command
 
     /**
      * @param array $packages
+     *
+     * @return void
      */
-    protected function replacePackages($packages)
+    protected function replacePackages($packages): void
     {
         foreach ($packages as $package) {
             $this->replacePackage($package);
@@ -114,8 +121,10 @@ class Compose extends Command
 
     /**
      * Move all the packages over, one by one, starting on the deepest level of dependencies.
+     *
+     * @return void
      */
-    public function movePackage($package)
+    public function movePackage($package): void
     {
         if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
@@ -128,8 +137,10 @@ class Compose extends Command
 
     /**
      * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
+     *
+     * @return void
      */
-    public function replacePackage($package)
+    public function replacePackage($package): void
     {
         if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
@@ -143,8 +154,14 @@ class Compose extends Command
     /**
      * Loops through all dependencies and their dependencies and so on...
      * will eventually return a list of all packages required by the full tree.
+     *
+     * @param ((int|string)|mixed)[] $slugs
+     *
+     * @return Package[]
+     *
+     * @psalm-return array<array-key, Package>
      */
-    private function findPackages($slugs)
+    private function findPackages(array $slugs): array
     {
         $packages = [];
 

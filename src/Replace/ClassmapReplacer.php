@@ -15,6 +15,11 @@ class ClassmapReplacer extends BaseReplacer
     /** @var string */
     public $classmap_prefix;
 
+    /**
+     * @param false|string $contents
+     *
+     * @return null|string
+     */
     public function replace($contents)
     {
 
@@ -49,7 +54,7 @@ class ClassmapReplacer extends BaseReplacer
         );
     }
 
-    public function saveReplacedClass($classname, $replacedName)
+    public function saveReplacedClass($classname, string $replacedName): void
     {
         $this->replacedClasses[ $classname ] = $replacedName;
     }
