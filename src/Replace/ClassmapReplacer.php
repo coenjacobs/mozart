@@ -18,10 +18,13 @@ class ClassmapReplacer extends BaseReplacer
     /**
      * @param false|string $contents
      *
-     * @return null|string
+     * @return string
      */
-    public function replace($contents)
+    public function replace($contents): string
     {
+        if (empty($contents) || false === $contents) {
+            return '';
+        }
 
         return preg_replace_callback(
             "
