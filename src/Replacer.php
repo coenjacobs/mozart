@@ -159,7 +159,7 @@ class Replacer
     }
 
     /**
-     * @param Autoloader $autoloader
+     * @param NamespaceAutoloader $autoloader
      * @param string $directory
      * @return void
      */
