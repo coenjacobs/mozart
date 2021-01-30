@@ -1,11 +1,30 @@
-# Mozart [![Build Status](https://api.travis-ci.org/coenjacobs/mozart.png)](https://travis-ci.org/coenjacobs/mozart) [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart)
+# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
 Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
 
-This package requires PHP 7.2 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
+This package requires PHP 7.3 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
 
 **Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
 
 ## Installation
+
+### Docker
+Pull the Docker image from the registry:
+
+```
+docker pull coenjacobs/mozart
+```
+
+Then you can start the container and run the `mozart compose` command in the container. In a single command:
+
+```
+docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart compose
+```
+
+Above command automatically adds the current working directory as a volume into the designated directory for the project: `/project/`. In the Docker container, Mozart is installed in the `/mozart/` directory. Using the above command will run Mozart on the current working directory.
+
+Please note that the Docker image for Mozart is only available starting from the `latest` build of version 0.7.0. The `latest` tag is always the latest build of the `master` branch and not a stable version. You can see [all available tags on Docker Hub](https://hub.docker.com/r/coenjacobs/mozart/tags).
+
+### Composer
 Install through Composer, only required in development environments:
 
 `composer require coenjacobs/mozart --dev`
