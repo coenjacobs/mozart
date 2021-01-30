@@ -9,6 +9,7 @@ use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
+use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -54,7 +55,15 @@ class Replacer
     public function replaceInFile($targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
-        $contents = $this->filesystem->read($targetFile);
+        try {
+            $contents = $this->filesystem->read($targetFile);
+        } catch (FileNotFoundException $e) {
+            return;
+        }
+
+        if (empty($contents) || false === $contents) {
+            return;
+        }
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer();
@@ -96,7 +105,7 @@ class Replacer
             foreach ($finder as $foundFile) {
                 $targetFile = $foundFile->getRealPath();
 
-                if ('.php' == substr($targetFile, '-4', 4)) {
+                if ('.php' == substr($targetFile, -4, 4)) {
                     $this->replaceInFile($targetFile, $autoloader);
                 }
             }
@@ -109,7 +118,7 @@ class Replacer
      *
      * @return void
      */
-    public function replaceParentClassesInDirectory(string $directory)
+    public function replaceParentClassesInDirectory(string $directory): void
     {
         if (count($this->replacedClasses)===0) {
             return;
@@ -124,8 +133,16 @@ class Replacer
         foreach ($finder as $file) {
             $targetFile = $file->getPathName();
 
-            if ('.php' == substr($targetFile, '-4', 4)) {
-                $contents = $this->filesystem->read($targetFile);
+            if ('.php' == substr($targetFile, -4, 4)) {
+                try {
+                    $contents = $this->filesystem->read($targetFile);
+                } catch (FileNotFoundException $e) {
+                    continue;
+                }
+
+                if (empty($contents) || false === $contents) {
+                    continue;
+                }
 
                 foreach ($replacedClasses as $original => $replacement) {
                     $contents = preg_replace_callback(
@@ -159,7 +176,7 @@ class Replacer
         foreach ($finder as $file) {
             $targetFile = $file->getPathName();
 
-            if ('.php' == substr($targetFile, '-4', 4)) {
+            if ('.php' == substr($targetFile, -4, 4)) {
                 $this->replaceInFile($targetFile, $autoloader);
             }
         }

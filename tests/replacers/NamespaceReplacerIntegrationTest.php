@@ -78,7 +78,7 @@ class NamespaceReplacerIntegrationTest extends TestCase
 
         $composer = $this->composer;
 
-        $composer->require["mpdf/mpdf"] = "8.0.8";
+        $composer->require["mpdf/mpdf"] = "8.0.10";
 
         file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
 
