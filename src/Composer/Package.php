@@ -60,7 +60,7 @@ class Package
                 continue;
             }
 
-            /** @var $autoloader Autoloader */
+            /** @var Autoloader $autoloader */
             $autoloader = new $className();
             $autoloader->processConfig((array)$this->config->autoload->$autoloaderType);
 
