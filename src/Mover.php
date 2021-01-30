@@ -198,14 +198,13 @@ class Mover
             $namespacePath = $this->clean($autoloader->getNamespacePath());
 
             // TODO: Should $path come from the NameSpaceAutoloader object?
-	        $sourceVendorPath = $this->clean('vendor' . DIRECTORY_SEPARATOR . $packageName
+            $sourceVendorPath = $this->clean('vendor' . DIRECTORY_SEPARATOR . $packageName
                                  . DIRECTORY_SEPARATOR . $path);
 
-	        $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
+            $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
             $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-
             $sourceVendorPath = 'vendor' . DIRECTORY_SEPARATOR . $packageName;
 
             $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
