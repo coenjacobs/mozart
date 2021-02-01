@@ -33,11 +33,16 @@ This gives you a bin file named `mozart` inside your `vendor/bin` directory, aft
 
 After configuring Mozart properly, the `mozart compose` command does all the magic.
 
-### Standalone Phar
-`mozart.phar` can be [downloaded from the releases page](https://github.com/coenjacobs/mozart/releases):
+### PHAR (via Phive)
+Mozart can be installed via [Phive](https://github.com/phar-io/phive):
 
 ```
-composer install --no-dev
+phive install coenjacobs/mozart --force-accept-unsigned
+```
+
+Alternatively, the `mozart.phar` file can be [downloaded from the releases page](https://github.com/coenjacobs/mozart/releases) and then be run from your project directory:
+
+```
 php mozart.phar compose
 ```
 
