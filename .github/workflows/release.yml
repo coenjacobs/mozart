@@ -19,8 +19,8 @@ jobs:
 
       - name: Create .phar
         run: |
-          wget -O phar-composer.phar https://github.com/clue/phar-composer/releases/download/v1.2.0/phar-composer-1.2.0.phar
-          php phar-composer.phar build .
+          wget -O /tmp/phar-composer.phar https://github.com/clue/phar-composer/releases/download/v1.2.0/phar-composer-1.2.0.phar
+          php /tmp/phar-composer.phar build .
 
       - name: Test run mozart
         run: php mozart.phar --version
