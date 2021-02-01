@@ -15,7 +15,7 @@ jobs:
           php-version: 7.3
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-suggest --no-progress
+        run: composer install --no-dev --prefer-dist --no-suggest --no-progress
 
       - name: Create .phar
         run: |
