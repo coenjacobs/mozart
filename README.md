@@ -1,14 +1,30 @@
-# Mozart [![Build Status](https://api.travis-ci.org/coenjacobs/mozart.png)](https://travis-ci.org/coenjacobs/mozart) [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart)
+# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
 Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
 
-This package requires PHP 7.2 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
+This package requires PHP 7.3 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
 
 **Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
 
 ## Installation
 
-### Composer
+### Docker
+Pull the Docker image from the registry:
 
+```
+docker pull coenjacobs/mozart
+```
+
+Then you can start the container and run the `mozart compose` command in the container. In a single command:
+
+```
+docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart compose
+```
+
+Above command automatically adds the current working directory as a volume into the designated directory for the project: `/project/`. In the Docker container, Mozart is installed in the `/mozart/` directory. Using the above command will run Mozart on the current working directory.
+
+Please note that the Docker image for Mozart is only available starting from the `latest` build of version 0.7.0. The `latest` tag is always the latest build of the `master` branch and not a stable version. You can see [all available tags on Docker Hub](https://hub.docker.com/r/coenjacobs/mozart/tags).
+
+### Composer
 Install through Composer, only required in development environments:
 
 `composer require coenjacobs/mozart --dev`
@@ -18,8 +34,7 @@ This gives you a bin file named `mozart` inside your `vendor/bin` directory, aft
 After configuring Mozart properly, the `mozart compose` command does all the magic.
 
 ### Standalone Phar
-
-`mozart.phar` can be [downloaded from the releases](https://github.com/coenjacobs/mozart/releases):
+`mozart.phar` can be [downloaded from the releases page](https://github.com/coenjacobs/mozart/releases):
 
 ```
 composer install --no-dev
@@ -38,6 +53,9 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "classmap_prefix": "CJTP_",
         "packages": [
             "pimple/pimple"
+        ],
+        "exclude_packages": [
+            "psr/container"
         ],
         "override_autoload": {
             "google/apiclient": {
@@ -64,6 +82,7 @@ The following configuration is optional:
 
 - `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
 - `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
+- `exclude_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
 
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
@@ -83,3 +102,17 @@ Mozart is designed to install and be forgotten about. Using Composer scripts, th
     ]
 }
 ```
+
+When using Mozart through its Docker container, you can replace the `"\"vendor/bin/mozart\" compose",` lines with the actual commands you use to [run the Docker container](#docker) for your specific project. Running Mozart from inside the Docker container is really fast and shouldn't take more than a couple seconds.
+
+## Background and philosophy
+Mozart is designed to bridge the gap between the WordPress ecosytem and the vast packages ecosystem of PHP as a whole. Since WordPress is such an end-user friendly focussed CMS (for good reasons), there is no place within the ecosystem where an end-user would be burdened with using a developers tool like Composer. Also, since WordPress has to run on basically any hosting infrastructure, running Composer to install packages from the administration panel (trust me, I've tried - it can be done) is a mission impossible to make it happen and compatible with every server out there.
+
+But why make a new tool for this? There are other tools that enable you to do this, right? Yes, there are now. [PHP-Scoper](https://github.com/humbug/php-scoper), for example. PHP-Scoper is a fantastic tool, that does the job right. But, PHP-Scoper wasn't available back when I started the Mozart project. Also, PHP-Scoper has a few limitations (no support for classmap autoloaders, for example) that were and are still quite common within the WordPress ecosystem. Finally, PHP-Scoper can be quite the tool to add to your development flow, while Mozart was designed to be _simple to implement_, specifically tailored for WordPress projects.
+
+The key values of what's important to Mozart:
+- Must be able to be easily installable by a developer, preferably in a specific version.
+- Distribution must be done through an existing package manager or easily maintained separately.
+- Shouldn't add a whole layer of complexity to the development process, i.e. learning a whole new tool/language.
+
+Mozart always has been and always will be geared towards solving the conflicting dependencies problem in the WordPress ecosystem, as efficiently and opinionated as possible. By being opinionated in certain ways and specifically focussed on WordPress projects, Mozart has quickly become easy to understand and implement.

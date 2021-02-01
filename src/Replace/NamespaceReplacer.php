@@ -4,10 +4,20 @@ namespace CoenJacobs\Mozart\Replace;
 
 class NamespaceReplacer extends BaseReplacer
 {
-    /** @var string */
+    /**
+     * The prefix to add to existing namespaces.
+     *
+     * @var string "My\Mozart\Prefix".
+     */
     public $dep_namespace = '';
 
-    public function replace($contents)
+    /**
+     * @param string $contents The text to make replacements in.
+     * @param null $file Only used in ClassmapReplacer (for recording which files were changed).
+     *
+     * @return string The updated text.
+     */
+    public function replace($contents, $file = null)
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->dep_namespace, '/');
@@ -19,8 +29,9 @@ class NamespaceReplacer extends BaseReplacer
                 (                            # Start the namespace matcher
                   (?<!$dependencyNamespace)  # Does NOT start with the prefix
                   (?<![a-zA-Z0-9_]\\\\)      # Not a class-allowed character followed by a slash
+                  (?<!class\s)				 # Not a class declaration.
                   $searchNamespace           # The namespace we're looking for
-                  [\\\|;]                    # Backslash, semicolon, or pipe
+                  [\\\|;\s]                  # Backslash, pipe, semicolon, or space
                 )                            # End the namespace matcher
             /Ux",
             function ($matches) {

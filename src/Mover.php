@@ -43,8 +43,10 @@ class Mover
      * Create the required `dep_directory` and `classmap_directory` and delete targetDirs of packages about to be moved.
      *
      * @param Package[] $packages The packages that, in the next step, will be moved.
+     *
+     * @return void
      */
-    public function deleteTargetDirs($packages)
+    public function deleteTargetDirs($packages): void
     {
         $this->filesystem->createDir($this->config->dep_directory);
 
@@ -61,8 +63,10 @@ class Mover
      * @visibility private to allow recursion through packages and subpackages.
      *
      * @param Package $package
+     *
+     * @return void
      */
-    private function deleteDepTargetDirs($package)
+    private function deleteDepTargetDirs($package): void
     {
         foreach ($package->autoloaders as $packageAutoloader) {
             $autoloaderType = get_class($packageAutoloader);
@@ -87,7 +91,7 @@ class Mover
         }
     }
 
-    public function deleteEmptyDirs()
+    public function deleteEmptyDirs(): void
     {
         if (count($this->filesystem->listContents($this->config->dep_directory, true)) === 0) {
             $this->filesystem->deleteDir($this->config->dep_directory);
@@ -98,6 +102,9 @@ class Mover
         }
     }
     
+    /**
+     * @return void
+     */
     public function movePackage(Package $package)
     {
         if (in_array($package->config->name, $this->movedPackages)) {
@@ -123,13 +130,16 @@ class Mover
             } elseif ($autoloader instanceof Classmap) {
                 $finder = new Finder();
 
+                $files_to_move = array();
+
                 foreach ($autoloader->files as $file) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
                                    . DIRECTORY_SEPARATOR . $package->config->name;
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
-                        $this->moveFile($package, $autoloader, $foundFile);
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
                 }
 
@@ -141,13 +151,20 @@ class Mover
 
                     $finder->files()->in($source_path);
 
-                    foreach ($finder as $file) {
-                        $this->moveFile($package, $autoloader, $file);
+                    foreach ($finder as $foundFile) {
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
+                }
+
+                foreach ($files_to_move as $foundFile) {
+                    $this->moveFile($package, $autoloader, $foundFile);
                 }
             }
 
-            $this->movedPackages[] = $package->config->name;
+            if (!in_array($package->config->name, $this->movedPackages)) {
+                $this->movedPackages[] = $package->config->name;
+            }
         }
 
         if (!isset($this->config->delete_vendor_directories) || $this->config->delete_vendor_directories === true) {
@@ -196,15 +213,31 @@ class Mover
      * Deletes all the packages that are moved from the /vendor/ directory to
      * prevent packages that are prefixed/namespaced from being used or
      * influencing the output of the code. They just need to be gone.
+     *
+     * @return void
      */
-    protected function deletePackageVendorDirectories()
+    protected function deletePackageVendorDirectories(): void
     {
         foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
-            if (is_link($packageDir)) {
+            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
+            if (!is_dir($packageDir) || is_link($packageDir)) {
                 continue;
             }
+
             $this->filesystem->deleteDir($packageDir);
+
+            //Delete parent directory too if it became empty
+            //(because that package was the only one from that vendor)
+            $parentDir = dirname($packageDir);
+            if ($this->dirIsEmpty($parentDir)) {
+                $this->filesystem->deleteDir($parentDir);
+            }
         }
+    }
+
+    private function dirIsEmpty(string $dir): bool
+    {
+        $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        return iterator_count($di) === 0;
     }
 }
