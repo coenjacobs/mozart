@@ -40,7 +40,9 @@ php mozart.phar compose
 ### Composer
 Install through Composer, only required in development environments:
 
-`composer require coenjacobs/mozart --dev`
+```
+composer require coenjacobs/mozart --dev
+```
 
 This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
 
