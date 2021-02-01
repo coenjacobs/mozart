@@ -39,7 +39,23 @@ php mozart.phar compose
 ```
 
 ### Composer
-Install through Composer, only required in development environments:
+To install Mozart and its dependencies, without conflicting with the dependencies of your project, it is recommended that you install Mozart as a global package, if you choose to install Mozart via Composer.
+
+#### Global package
+Using the `global` command when installing Mozart, it will be installed as a system wide package: 
+
+```
+composer global require coenjacobs/mozart
+```
+
+You can then find the bin file named `mozart` inside your `~/.composer/vendor/bin/` directory and run it from your project directory, referencing the full path to the bin file:
+
+```
+~/.composer/vendor/bin/mozart compose
+```
+
+#### Development dependency of your project
+You can install through Composer in the project itself, only required in development environments:
 
 ```
 composer require coenjacobs/mozart --dev
@@ -47,7 +63,11 @@ composer require coenjacobs/mozart --dev
 
 This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
 
-After configuring Mozart properly, the `mozart compose` command does all the magic.
+After configuring Mozart properly, the `mozart compose` command does all the magic:
+
+```
+vendor/bin/mozart compose
+```
 
 ## Configuration
 Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
