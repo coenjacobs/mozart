@@ -24,15 +24,6 @@ Above command automatically adds the current working directory as a volume into 
 
 Please note that the Docker image for Mozart is only available starting from the `latest` build of version 0.7.0. The `latest` tag is always the latest build of the `master` branch and not a stable version. You can see [all available tags on Docker Hub](https://hub.docker.com/r/coenjacobs/mozart/tags).
 
-### Composer
-Install through Composer, only required in development environments:
-
-`composer require coenjacobs/mozart --dev`
-
-This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
-
-After configuring Mozart properly, the `mozart compose` command does all the magic.
-
 ### PHAR (via Phive)
 Mozart can be installed via [Phive](https://github.com/phar-io/phive):
 
@@ -45,6 +36,15 @@ Alternatively, the `mozart.phar` file can be [downloaded from the releases page]
 ```
 php mozart.phar compose
 ```
+
+### Composer
+Install through Composer, only required in development environments:
+
+`composer require coenjacobs/mozart --dev`
+
+This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
+
+After configuring Mozart properly, the `mozart compose` command does all the magic.
 
 ## Configuration
 Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
