@@ -33,6 +33,14 @@ This gives you a bin file named `mozart` inside your `vendor/bin` directory, aft
 
 After configuring Mozart properly, the `mozart compose` command does all the magic.
 
+### Standalone Phar
+`mozart.phar` can be [downloaded from the releases page](https://github.com/coenjacobs/mozart/releases):
+
+```
+composer install --no-dev
+php mozart.phar compose
+```
+
 ## Configuration
 Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
 
