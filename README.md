@@ -95,6 +95,8 @@ Mozart is designed to install and be forgotten about. Using Composer scripts, th
 }
 ```
 
+When using Mozart through its Docker container, you can replace the `"\"vendor/bin/mozart\" compose",` lines with the actual commands you use to [run the Docker container](#docker) for your specific project. Running Mozart from inside the Docker container is really fast and shouldn't take more than a couple seconds.
+
 ## Background and philosophy
 Mozart is designed to bridge the gap between the WordPress ecosytem and the vast packages ecosystem of PHP as a whole. Since WordPress is such an end-user friendly focussed CMS (for good reasons), there is no place within the ecosystem where an end-user would be burdened with using a developers tool like Composer. Also, since WordPress has to run on basically any hosting infrastructure, running Composer to install packages from the administration panel (trust me, I've tried - it can be done) is a mission impossible to make it happen and compatible with every server out there.
 
