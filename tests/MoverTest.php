@@ -36,7 +36,7 @@ class MoverTest extends TestCase
         if (!file_exists($this->testsWorkingDir)) {
             mkdir($this->testsWorkingDir);
         }
-        
+
         $config = new class() {
         };
         $config->dep_directory = "/dep_directory/";
@@ -93,7 +93,7 @@ class MoverTest extends TestCase
 
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->dep_directory);
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->classmap_directory);
-  
+
         $packages = array();
 
         ob_start();
@@ -118,7 +118,6 @@ class MoverTest extends TestCase
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory);
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory);
 
-        // TODO: Create the subdirs that should be deleted.
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory . 'Pimple');
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory . 'ezyang');
 
@@ -209,7 +208,7 @@ class MoverTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        
+
         $dir = $this->testsWorkingDir;
 
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
