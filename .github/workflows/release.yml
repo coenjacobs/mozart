@@ -19,8 +19,16 @@ jobs:
 
       - name: Create .phar
         run: |
-          vendor/bin/phar-composer build .
-          php mozart.phar --version
+          wget -O phar-composer.phar https://github.com/clue/phar-composer/releases/download/v1.2.0/phar-composer-1.2.0.phar
+          mkdir build
+          mv vendor build/vendor
+          mv src build/src
+          mv bin build/bin
+          mv composer.json build
+          php -d phar.readonly=off phar-composer.phar build ./build/
+
+      - name: Test run mozart
+        run: php mozart.phar --version
 
       - uses: meeDamian/github-release@2.0
         with:
