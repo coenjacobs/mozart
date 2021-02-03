@@ -1,6 +1,8 @@
 name: Build, tag and attach releases
 
-on: release
+on:
+  release:
+    types: [published]
 
 jobs:
   create-phar:
