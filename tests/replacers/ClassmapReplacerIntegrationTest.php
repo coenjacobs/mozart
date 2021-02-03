@@ -90,7 +90,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
 
         chdir($this->testsWorkingDir);
 
-        exec('composer install');
+        exec('composer update');
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
