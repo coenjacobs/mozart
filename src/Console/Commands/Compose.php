@@ -2,8 +2,6 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
-use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
