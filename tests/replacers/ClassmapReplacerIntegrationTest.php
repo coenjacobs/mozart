@@ -97,7 +97,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
 
         $mozartCompose = new Compose();
 
-        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+        $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
         $php_string = file_get_contents($this->testsWorkingDir .'/dep_directory/BrianHenryIE/WP_Logger/class-logger.php');
 
