@@ -2,8 +2,10 @@
 
 namespace CoenJacobs\Mozart\Replace;
 
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
+
 interface Replacer
 {
-    public function setAutoloader($autoloader);
-    public function replace($contents, $file);
+    public function setAutoloader(Autoloader $autoloader);
+    public function replace($contents);
 }
