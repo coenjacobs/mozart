@@ -193,20 +193,20 @@ class Mover
         $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
 
         if ($autoloader instanceof NamespaceAutoloader) {
-	        $namespacePath = $this->clean($autoloader->getNamespacePath());
+            $namespacePath = $this->clean($autoloader->getNamespacePath());
 
-	        // TODO: Should $path come from the NameSpaceAutoloader object?
-	        $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
+            // TODO: Should $path come from the NameSpaceAutoloader object?
+            $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
 
-	        $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
+            $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
-	        $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
+            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-	        $packageName = $this->clean($package->config->name);
+            $packageName = $this->clean($package->config->name);
 
-	        $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
+            $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-	        $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
+            $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
         }
 
         $this->filesystem->copy($sourceFilePath, $targetFilePath);
