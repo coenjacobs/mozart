@@ -84,14 +84,14 @@ class NamespaceReplacerIntegrationTest extends TestCase
 
         chdir($this->testsWorkingDir);
 
-        exec('composer install');
+        exec('composer update');
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $mozartCompose = new Compose();
 
-        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+        $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
         $mpdf_php = file_get_contents($this->testsWorkingDir .'/dep_directory/Mpdf/Mpdf.php');
 

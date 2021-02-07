@@ -44,7 +44,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
              ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -74,7 +74,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -104,7 +104,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -135,7 +135,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -165,7 +165,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -197,7 +197,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
