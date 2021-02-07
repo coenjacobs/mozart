@@ -5,7 +5,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
-use CoenJacobs\Mozart\Composer\Config;
+use CoenJacobs\Mozart\Composer\MozartConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +21,7 @@ class Compose extends Command
     /** @var string */
     private $workingDir;
 
-    /** @var Config */
+    /** @var MozartConfig */
     private $config;
 
     protected function configure()
@@ -36,19 +36,12 @@ class Compose extends Command
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
 
-        $config = json_decode(file_get_contents($workingDir . '/composer.json'));
-        $config = $config->extra->mozart;
+        $this->config = MozartConfig::loadFromFile($workingDir . '/composer.json');
 
-        $this->config = new Config($config);
-        $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", "$config->get('dep_namespace')\\"));
+        $this->mover = new Mover($workingDir, $this->config);
+        $this->replacer = new Replacer($workingDir, $this->config);
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
-
-        $require = $config->get('packages');
-        if ($require !== false) {
-            $require = array_keys(get_object_vars($this->config->get('require')));
-        }
+        $require = $this->config->getPackages();
 
         $packages = $this->findPackages($require);
 
@@ -132,24 +125,19 @@ class Compose extends Command
             }
 
             $autoloaders = null;
-            $override_autoload = $this->config->get('override_autoload');
-            if ($override_autoload !== false && isset($override_autoload->$package_slug)) {
+            $override_autoload = $this->config->getOverrideAutoload();
+            if (! empty($override_autoload) && isset($override_autoload->$package_slug)) {
                 $autoloaders = $override_autoload->$package_slug;
             }
 
-            $config = Config::loadFromFile($packageDir . 'composer.json');
+            $config = MozartConfig::loadFromFile($packageDir . 'composer.json');
 
             $package = new Package($packageDir, $config, $autoloaders);
             $package->findAutoloaders();
 
-            $dependencies = [];
-            $require = $config->get('require');
+            $require = $config->getPackages();
 
-            if ($require !== false) {
-                $dependencies = array_keys((array)$require);
-            }
-
-            $package->dependencies = $this->findPackages($dependencies);
+            $package->dependencies = $this->findPackages($require);
             $packages[] = $package;
         }
 

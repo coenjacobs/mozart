@@ -9,7 +9,7 @@ use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use CoenJacobs\Mozart\Composer\Config;
+use CoenJacobs\Mozart\Composer\MozartConfig;
 use Symfony\Component\Finder\Finder;
 
 class Replacer
@@ -20,7 +20,7 @@ class Replacer
     /** @var string */
     protected $targetDir;
 
-    /** @var Config */
+    /** @var MozartConfig */
     protected $config;
 
     /** @var array */
@@ -29,7 +29,7 @@ class Replacer
     /** @var Filesystem */
     protected $filesystem;
 
-    public function __construct($workingDir, Config $config)
+    public function __construct($workingDir, MozartConfig $config)
     {
         $this->config = $config;
         $this->workingDir = $workingDir;

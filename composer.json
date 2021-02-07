@@ -13,6 +13,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.2",
+        "json-mapper/json-mapper": "^2.2",
         "symfony/console": "^4|^5",
         "symfony/finder": "^4|^5",
         "league/flysystem": "^1.0"

@@ -9,7 +9,7 @@ class Package
     /** @var string */
     public $path = '';
 
-    /** @var Config */
+    /** @var MozartConfig */
     public $config;
 
     /** @var array */
@@ -18,18 +18,16 @@ class Package
     /** @var array */
     public $dependencies = [];
 
-    public function __construct($path, Config $config = null, $overrideAutoload = null)
+    public function __construct($path, MozartConfig $config = null, $overrideAutoload = null)
     {
         $this->path   = $path;
 
-        if (isset($config)) {
-            $config = Config::loadFromFile($this->path . '/composer.json');
+        if (!isset($config)) {
+            $config = MozartConfig::loadFromFile($this->path . '/composer.json');
         }
         $this->config = $config;
 
-        if (isset($overrideAutoload)) {
-            $this->config->set('autoload', $overrideAutoload);
-        }
+        $this->config->setOverrideAutoload($overrideAutoload);
     }
 
     public function findAutoloaders()
@@ -40,11 +38,11 @@ class Package
             'classmap' => 'CoenJacobs\Mozart\Composer\Autoload\Classmap',
         );
 
-        $autoload = $this->config->get('autoload');
-
-        if ($autoload === false) {
+        if (! isset($this->config->autoload) || empty($this->config->autoload)) {
             return;
         }
+
+        $autoload = $this->config->autoload;
 
         foreach ($namespace_autoloaders as $key => $value) {
             if (! isset($autoload->$key)) {
@@ -61,7 +59,7 @@ class Package
         }
     }
 
-    public function setConfig(Config $config)
+    public function setConfig(MozartConfig $config)
     {
         $this->config = $config;
     }

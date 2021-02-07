@@ -8,7 +8,7 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use CoenJacobs\Mozart\Composer\Config;
+use CoenJacobs\Mozart\Composer\MozartConfig;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -20,7 +20,7 @@ class Mover
     /** @var string */
     protected $targetDir;
 
-    /** @var Config */
+    /** @var MozartConfig */
     protected $config;
 
     /** @var Filesystem */
@@ -29,21 +29,21 @@ class Mover
     /** @var array */
     protected $movedPackages = [];
 
-    public function __construct($workingDir, Config $config)
+    public function __construct($workingDir, MozartConfig $config)
     {
         $this->config = $config;
         $this->workingDir = $workingDir;
-        $this->targetDir = $this->config->get('dep_directory');
+        $this->targetDir = $this->config->getDepDirectory();
 
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
 
     public function deleteTargetDirs()
     {
-        $this->filesystem->deleteDir($this->config->get('dep_directory'));
-        $this->filesystem->createDir($this->config->get('dep_directory'));
-        $this->filesystem->deleteDir($this->config->get('classmap_directory'));
-        $this->filesystem->createDir($this->config->get('classmap_directory'));
+        $this->filesystem->deleteDir($this->config->getDepDirectory());
+        $this->filesystem->createDir($this->config->getDepDirectory());
+        $this->filesystem->deleteDir($this->config->getClassmapDirectory());
+        $this->filesystem->createDir($this->config->getClassmapDirectory());
     }
 
     public function movePackage(Package $package)
