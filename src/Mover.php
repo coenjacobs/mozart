@@ -18,11 +18,18 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class Mover
 {
-    /** @var string */
+    /**
+     * The only path variable with a leading slash.
+     *
+     * @var string
+     */
     protected $workingDir;
 
     /** @var string */
-    protected $targetDir;
+    protected $dep_directory;
+
+    /** @var string */
+    protected $classmap_directory;
 
     /** @var MozartConfig */
     protected $config;
@@ -38,6 +45,11 @@ class Mover
         $this->config = $config;
         $this->workingDir = $workingDir;
         $this->targetDir = $this->config->getDepDirectory();
+
+        $this->workingDir = $workingDir;
+
+        $this->dep_directory = $this->clean($config->getDepDirectory());
+        $this->classmap_directory = $this->clean($config->getClassmapDirectory());
 
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
@@ -77,13 +89,12 @@ class Mover
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
-                    $outputDir = $this->config->getDepDirectory() . $packageAutoloader->namespace;
-                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
+                    $outputDir = $this->dep_directory . DIRECTORY_SEPARATOR .
+                                 $this->clean($packageAutoloader->namespace);
                     $this->filesystem->deleteDir($outputDir);
                     break;
                 case Classmap::class:
-                    $outputDir = $this->config->getClassmapDirectory() . $package->config->name;
-                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
+                    $outputDir = $this->classmap_directory . DIRECTORY_SEPARATOR . $this->clean($package->config->name);
                     $this->filesystem->deleteDir($outputDir);
                     break;
             }
@@ -96,12 +107,12 @@ class Mover
 
     public function deleteEmptyDirs(): void
     {
-        if (count($this->filesystem->listContents($this->config->getDepDirectory(), true)) === 0) {
-            $this->filesystem->deleteDir($this->config->getDepDirectory());
+        if (count($this->filesystem->listContents($this->dep_directory, true)) === 0) {
+            $this->filesystem->deleteDir($this->dep_directory);
         }
 
-        if (count($this->filesystem->listContents($this->config->getClassmapDirectory(), true)) === 0) {
-            $this->filesystem->deleteDir($this->config->getClassmapDirectory());
+        if (count($this->filesystem->listContents($this->classmap_directory, true)) === 0) {
+            $this->filesystem->deleteDir($this->classmap_directory);
         }
     }
     
@@ -121,10 +132,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
-                                   . $package->config->name . DIRECTORY_SEPARATOR . $path;
-
-                    $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -142,8 +150,7 @@ class Mover
 
 
                 foreach ($autoloader->files as $file) {
-                    $source_path = $this->workingDir . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->config->name;
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path);
 
                     $finder->files()->name($file)->in($source_path);
 
@@ -156,8 +163,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->config->name . DIRECTORY_SEPARATOR . $path;
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -193,47 +199,31 @@ class Mover
      */
     public function moveFile(ComposerPackageConfig $package, $autoloader, $file, $path = '')
     {
-        $sourceFileAbsolutePath = $file->getPathname();
+        // The relative path to the file from the project root.
+        $sourceFilePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
+
+        $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
+
         if ($autoloader instanceof NamespaceAutoloader) {
-            $namespacePath = strtolower($autoloader->getNamespacePath());
-            $replaceWith = $this->config->getDepDirectory() . $namespacePath;
+            $namespacePath = $this->clean($autoloader->getNamespacePath());
 
-            $findString = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR . $namespacePath . $path;
+            // TODO: Should $path come from the NameSpaceAutoloader object?
+            $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
 
-            $targetFileRelativePath = str_replace($findString, $replaceWith, $sourceFileAbsolutePath);
+            $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
-
-            $packageVendorPath = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR . $package->config->name
-                                 . DIRECTORY_SEPARATOR . $path;
-            $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-            $targetFileRelativePath = str_replace($packageVendorPath, '', $targetFileRelativePath);
+            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-            $namespacePath = $package->config->name;
-            $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
-            $targetFileRelativePath = str_replace($this->workingDir, $replaceWith, $file->getPathname());
+            $packageName = $this->clean($package->config->name);
 
-            $packageVendorPath =  'vendor' . DIRECTORY_SEPARATOR . $package->config->name
-                                 . DIRECTORY_SEPARATOR;
+            $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-            $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
+            $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
         }
 
-        $sourceFileRelativePath = str_replace($this->workingDir, '', $sourceFileAbsolutePath);
-        $targetFileRelativePath = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFileRelativePath);
+        $this->filesystem->copy($sourceFilePath, $targetFilePath);
 
-        try {
-            $this->filesystem->copy($sourceFileRelativePath, $targetFileRelativePath);
-        } catch (FileNotFoundException $e) {
-            throw $e;
-        } catch (FileExistsException $e) {
-            if (md5_file($sourceFileAbsolutePath) === md5_file($this->workingDir . $targetFileRelativePath)) {
-                return $targetFileRelativePath;
-            } else {
-                throw $e;
-            }
-        }
-
-        return $targetFileRelativePath;
+        return $targetFilePath;
     }
 
     /**
@@ -246,7 +236,7 @@ class Mover
     protected function deletePackageVendorDirectories(): void
     {
         foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
+            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $this->clean($movedPackage);
             if (!is_dir($packageDir) || is_link($packageDir)) {
                 continue;
             }
@@ -266,5 +256,21 @@ class Mover
     {
         $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
         return iterator_count($di) === 0;
+    }
+
+    /**
+     * For Windows & Unix file paths' compatibility.
+     *
+     *  * Removes duplicate `\` and `/`.
+     *  * Trims them from each end.
+     *  * Replaces them with the OS agnostic DIRECTORY_SEPARATOR.
+     *
+     * @param string $path A full or partial filepath.
+     *
+     * @return string
+     */
+    protected function clean($path)
+    {
+        return trim(preg_replace('/[\/\\\\]+/', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
     }
 }
