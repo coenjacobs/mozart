@@ -93,6 +93,7 @@ Mozart requires little configuration. All you need to do is tell it where the bu
             }
         },
         "delete_vendor_directories": true
+    }
 },
 ```
 
