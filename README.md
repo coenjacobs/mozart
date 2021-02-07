@@ -79,10 +79,6 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "dep_directory": "/src/Dependencies/",
         "classmap_directory": "/classes/dependencies/",
         "classmap_prefix": "CJTP_",
-        "classmap_output": {
-            "filename": "src/autoload_classmap.php",
-            "relative_path": "/src"
-        },
         "packages": [
             "pimple/pimple"
         ],
@@ -114,8 +110,7 @@ The following configuration is optional:
 - `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
 - `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
 - `exclude_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
-- `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
-- `classmap_output` defines the `filename` to write the classmap autoloader to (relative to the directory where `mozart compose` is invoked from) and the `relative_path` to remove from the beginning of each file path. 
+- `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property. 
 
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
 
@@ -136,6 +131,8 @@ Mozart is designed to install and be forgotten about. Using Composer scripts, th
 ```
 
 When using Mozart through its Docker container, you can replace the `"\"vendor/bin/mozart\" compose",` lines with the actual commands you use to [run the Docker container](#docker) for your specific project. Running Mozart from inside the Docker container is really fast and shouldn't take more than a couple seconds.
+
+If your plugin does not use Composer's autoloader, classmaps can be generated in the `dep_directory` and `classmap_directory` by running `vendor/bin/mozart dump-autoload`
 
 ## Background and philosophy
 Mozart is designed to bridge the gap between the WordPress ecosytem and the vast packages ecosystem of PHP as a whole. Since WordPress is such an end-user friendly focussed CMS (for good reasons), there is no place within the ecosystem where an end-user would be burdened with using a developers tool like Composer. Also, since WordPress has to run on basically any hosting infrastructure, running Composer to install packages from the administration panel (trust me, I've tried - it can be done) is a mission impossible to make it happen and compatible with every server out there.
