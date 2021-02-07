@@ -4,10 +4,10 @@
   },
   "extra": {
     "mozart": {
-      "dep_namespace": "MyLibMerge\\Vendor",
-      "dep_directory": "/lib/packages/",
-      "classmap_directory": "/lib/classes/",
-      "classmap_prefix": "MyLibMerge_",
+      "dep_namespace": "My_Mozart_Plugin\\Dep_Namespace",
+      "dep_directory": "/dep_directory/",
+      "classmap_directory": "/classmap_directory/",
+      "classmap_prefix": "My_Mozart_Plugin_",
       "excluded_packages": [
       ],
       "override_autoload": {

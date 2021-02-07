@@ -5,8 +5,11 @@
       "dep_directory": "/dep_directory/",
       "classmap_prefix": "My_Mozart_Plugin_",
       "classmap_directory": "/classmap_directory/",
+      "packages": [
+        "pimple/pimple"
+      ],
       "override_autoload": {
-        "google/apiclient-services": {
+        "pimple/pimple": {
           "classmap": [
             "src/"
           ]

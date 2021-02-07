@@ -2,6 +2,5 @@
   "require": {
     "pimple/pimple": "*"
   },
-  "extra": {
-  }
+]
 }

@@ -35,7 +35,7 @@ class NamespaceReplacerIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->testsWorkingDir = __DIR__ . '/temptestdir';
+        $this->testsWorkingDir = __DIR__ . '/temptestdir/';
         if (!file_exists($this->testsWorkingDir)) {
             mkdir($this->testsWorkingDir);
         }
@@ -80,7 +80,7 @@ class NamespaceReplacerIntegrationTest extends TestCase
 
         $composer->require["mpdf/mpdf"] = "8.0.10";
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
+        file_put_contents($this->testsWorkingDir . 'composer.json', json_encode($composer));
 
         chdir($this->testsWorkingDir);
 
@@ -93,7 +93,7 @@ class NamespaceReplacerIntegrationTest extends TestCase
 
         $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $mpdf_php = file_get_contents($this->testsWorkingDir .'/dep_directory/Mpdf/Mpdf.php');
+        $mpdf_php = file_get_contents($this->testsWorkingDir .'dep_directory/Mpdf/Mpdf.php');
 
         // Confirm problem is gone.
         $this->assertStringNotContainsString('class Mozart\Mpdf implements', $mpdf_php);

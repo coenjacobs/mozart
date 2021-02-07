@@ -35,7 +35,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->testsWorkingDir = __DIR__ . '/temptestdir';
+        $this->testsWorkingDir = __DIR__ . '/temptestdir/';
         if (!file_exists($this->testsWorkingDir)) {
             mkdir($this->testsWorkingDir);
         }
@@ -55,9 +55,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
             public $extra;
         };
 
-        $composer->extra = new class() {
-            public $mozart;
-        };
+        $composer->extra = new stdClass();
 
         $composer->extra->mozart = $mozart_config;
 
@@ -86,7 +84,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
         $composer_json_string = json_encode($composer);
         $composer_json_string = str_replace('minimum_stability', 'minimum-stability', $composer_json_string);
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composer_json_string);
 
         chdir($this->testsWorkingDir);
 
@@ -99,7 +97,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
 
         $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $php_string = file_get_contents($this->testsWorkingDir .'/dep_directory/BrianHenryIE/WP_Logger/class-logger.php');
+	    $php_string = file_get_contents($this->testsWorkingDir .'dep_directory/BrianHenryIE/WP_Logger/class-logger.php');
 
         // Confirm problem is gone.
         $this->assertStringNotContainsString('class Mozart_Logger extends', $php_string);

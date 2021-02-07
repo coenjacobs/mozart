@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart\Composer;
 
 use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Rename\Rename;
+use stdClass;
 
 class MozartConfig
 {
@@ -35,12 +36,12 @@ class MozartConfig
     /**
      * @var array|null
      */
-    protected $excludePackages;
+    protected $excludedPackages;
 
     /**
      * @var array|null
      */
-    protected $override_autoload;
+    protected $overrideAutoload;
 
     /**
      * @var bool
@@ -48,11 +49,43 @@ class MozartConfig
     protected $delete_vendor_directories;
 
     /**
-     * @param array $data
+     *
      */
-    public function __construct(?array $data = null)
+    public function __construct(stdClass $composer = null)
     {
-        $this->data = $data;
+
+        if (!is_null($composer)) {
+            if (!isset($composer->extra)) {
+                throw new \Exception('`extra` key not set in `composer.json`.');
+            }
+
+            if (!isset($composer->extra->mozart)) {
+                throw new \Exception('`extra->mozart` key not set in `composer.json`.');
+            }
+
+            if (!is_object($composer->extra->mozart)) {
+                throw new \Exception('`extra->mozart` key in `composer.json` is not an object.');
+            }
+
+            // @see JsonMapper\Middleware\CaseConversion wasn't working.
+            $rename = new Rename();
+            $rename->addMapping(MozartConfig::class, 'dep_namespace', 'depNamespace');
+            $rename->addMapping(MozartConfig::class, 'classmap_directory', 'classmapDirectory');
+            $rename->addMapping(MozartConfig::class, 'dep_directory', 'depDirectory');
+            $rename->addMapping(MozartConfig::class, 'classmap_prefix', 'classmapPrefix');
+            $rename->addMapping(MozartConfig::class, 'override_autoload', 'overrideAutoload');
+            $rename->addMapping(MozartConfig::class, 'delete_vendor_directories', 'deleteVendorDirectories');
+            $rename->addMapping(MozartConfig::class, 'exclude_packages', 'excludedPackages');
+
+            $mapper = ( new JsonMapperFactory() )->bestFit();
+            $mapper->unshift($rename);
+
+            $mapper->mapObject($composer->extra->mozart, $this);
+
+            if (empty($this->getPackages())) {
+                $this->setPackages(array_keys((array) $composer->require));
+            }
+        }
     }
 
     /**
@@ -66,27 +99,17 @@ class MozartConfig
     public static function loadFromFile($filePath)
     {
 
-        // @see JsonMapper\Middleware\CaseConversion wasn't working.
-        $rename = new Rename();
-        $rename->addMapping(MozartConfig::class, 'dep_namespace', 'depNamespace');
-        $rename->addMapping(MozartConfig::class, 'classmap_directory', 'classmapDirectory');
-        $rename->addMapping(MozartConfig::class, 'dep_directory', 'depDirectory');
-        $rename->addMapping(MozartConfig::class, 'classmap_prefix', 'classmapPrefix');
-        $rename->addMapping(MozartConfig::class, 'override_autoload', 'overrideAutoload');
-        $rename->addMapping(MozartConfig::class, 'delete_vendor_directories', 'deleteVendorDirectories');
-
-        $mapper = (new JsonMapperFactory())->bestFit();
-        $mapper->unshift($rename);
-
-        $object = new MozartConfig();
+        if (!is_file($filePath)) {
+            throw new \Exception("Expected `composer.json` not found at {$filePath}");
+        }
 
         $composer = json_decode(file_get_contents($filePath));
 
-        $extraMozart = $composer->extra->mozart;
+        if (!is_object($composer)) {
+            throw new \Exception("Expected `composer.json` at {$filePath} was not valid JSON.");
+        }
 
-        $mapper->mapObject($extraMozart, $object);
-
-        return $object;
+        return new MozartConfig($composer);
     }
 
     /**
@@ -110,7 +133,7 @@ class MozartConfig
      */
     public function getDepDirectory(): string
     {
-        return $this->depDirectory;
+        return trim($this->depDirectory, '/\\'.DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -126,7 +149,7 @@ class MozartConfig
      */
     public function getClassmapDirectory(): string
     {
-        return $this->classmapDirectory;
+        return trim($this->classmapDirectory, '/\\'.DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -172,17 +195,17 @@ class MozartConfig
     /**
      * @return array
      */
-    public function getExcludePackages(): array
+    public function getExcludedPackages(): array
     {
-        return $this->excludePackages ?? array();
+        return $this->excludedPackages ?? array();
     }
 
     /**
-     * @param array|null $excludePackages
+     * @param array|null $excludedPackages
      */
-    public function setExcludePackages(?array $excludePackages): void
+    public function setExcludedPackages(?array $excludedPackages): void
     {
-        $this->excludePackages = $excludePackages ?? array();
+        $this->excludedPackages = $excludedPackages ?? array();
     }
 
     /**
@@ -190,15 +213,15 @@ class MozartConfig
      */
     public function getOverrideAutoload(): ?array
     {
-        return $this->override_autoload ?? array();
+        return $this->overrideAutoload ?? array();
     }
 
     /**
-     * @param array $override_autoload
+     * @param array $overrideAutoload
      */
-    public function setOverrideAutoload(?array $override_autoload): void
+    public function setOverrideAutoload(?array $overrideAutoload): void
     {
-        $this->override_autoload = $override_autoload ?? array();
+        $this->overrideAutoload = $overrideAutoload ?? array();
     }
 
     /**

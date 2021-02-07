@@ -1,13 +1,5 @@
 {
-  "requirer": {
+  "require": {
     "pimple/pimple": "*"
-  },
-  "extra": {
-    "mozart": {
-      "dep_namespace": "My_Mozart_Plugin\\",
-      "dep_directory": "/dep_directory/",
-      "classmap_prefix": "My_Mozart_Plugin_",
-      "classmap_directory": "/classmap_directory/"
-    }
   }
 }
