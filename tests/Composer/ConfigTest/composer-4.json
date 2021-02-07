@@ -1,0 +1,5 @@
+{
+  "require": {
+    "pimple/pimple": "*"
+  }
+}

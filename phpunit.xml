@@ -9,7 +9,7 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="replacers">
+        <testsuite name="all">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
