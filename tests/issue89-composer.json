@@ -1,0 +1,18 @@
+{
+  "require": {
+    "iio/libmergepdf": "^4.0"
+  },
+  "extra": {
+    "mozart": {
+      "dep_namespace": "MyLibMerge\\Vendor",
+      "dep_directory": "/lib/packages/",
+      "classmap_directory": "/lib/classes/",
+      "classmap_prefix": "MyLibMerge_",
+      "excluded_packages": [
+      ],
+      "override_autoload": {
+      },
+      "delete_vendor_directories": true
+    }
+  }
+}

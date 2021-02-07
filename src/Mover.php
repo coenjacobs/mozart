@@ -41,8 +41,8 @@ class Mover
     public function __construct($workingDir, $config)
     {
         $this->config = $config;
-        
-        $this->workingDir = DIRECTORY_SEPARATOR . $this->clean($workingDir);
+
+        $this->workingDir = $workingDir;
 
         $this->dep_directory = $this->clean($config->dep_directory);
         $this->classmap_directory = $this->clean($config->classmap_directory);
@@ -54,8 +54,10 @@ class Mover
      * Create the required `dep_directory` and `classmap_directory` and delete targetDirs of packages about to be moved.
      *
      * @param Package[] $packages The packages that, in the next step, will be moved.
+     *
+     * @return void
      */
-    public function deleteTargetDirs($packages)
+    public function deleteTargetDirs($packages): void
     {
         $this->filesystem->createDir($this->dep_directory);
 
@@ -72,8 +74,10 @@ class Mover
      * @visibility private to allow recursion through packages and subpackages.
      *
      * @param Package $package
+     *
+     * @return void
      */
-    private function deleteDepTargetDirs($package)
+    private function deleteDepTargetDirs($package): void
     {
         foreach ($package->autoloaders as $packageAutoloader) {
             $autoloaderType = get_class($packageAutoloader);
@@ -97,7 +101,7 @@ class Mover
         }
     }
 
-    public function deleteEmptyDirs()
+    public function deleteEmptyDirs(): void
     {
         if (count($this->filesystem->listContents($this->dep_directory, true)) === 0) {
             $this->filesystem->deleteDir($this->dep_directory);
@@ -108,6 +112,9 @@ class Mover
         }
     }
     
+    /**
+     * @return void
+     */
     public function movePackage(Package $package)
     {
         if (in_array($package->config->name, $this->movedPackages)) {
@@ -130,13 +137,16 @@ class Mover
             } elseif ($autoloader instanceof Classmap) {
                 $finder = new Finder();
 
+                $files_to_move = array();
+
                 foreach ($autoloader->files as $file) {
                     $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path);
 
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
-                        $this->moveFile($package, $autoloader, $foundFile);
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
                 }
 
@@ -147,9 +157,14 @@ class Mover
 
                     $finder->files()->in($source_path);
 
-                    foreach ($finder as $file) {
-                        $this->moveFile($package, $autoloader, $file);
+                    foreach ($finder as $foundFile) {
+                        $filePath = $foundFile->getRealPath();
+                        $files_to_move[ $filePath ] = $foundFile;
                     }
+                }
+
+                foreach ($files_to_move as $foundFile) {
+                    $this->moveFile($package, $autoloader, $foundFile);
                 }
             }
 
@@ -178,20 +193,20 @@ class Mover
         $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
 
         if ($autoloader instanceof NamespaceAutoloader) {
-            $namespacePath = $this->clean($autoloader->getNamespacePath());
+	        $namespacePath = $this->clean($autoloader->getNamespacePath());
 
-            // TODO: Should $path come from the NameSpaceAutoloader object?
-            $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
+	        // TODO: Should $path come from the NameSpaceAutoloader object?
+	        $sourceVendorPath = $this->clean($packagePath . DIRECTORY_SEPARATOR . $path);
 
-            $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
+	        $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
-            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
+	        $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
         } else {
-            $packageName = $this->clean($package->config->name);
+	        $packageName = $this->clean($package->config->name);
 
-            $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
+	        $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-            $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
+	        $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
         }
 
         $this->filesystem->copy($sourceFilePath, $targetFilePath);
@@ -203,8 +218,10 @@ class Mover
      * Deletes all the packages that are moved from the /vendor/ directory to
      * prevent packages that are prefixed/namespaced from being used or
      * influencing the output of the code. They just need to be gone.
+     *
+     * @return void
      */
-    protected function deletePackageVendorDirectories()
+    protected function deletePackageVendorDirectories(): void
     {
         foreach ($this->movedPackages as $movedPackage) {
             $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $this->clean($movedPackage);
@@ -223,7 +240,7 @@ class Mover
         }
     }
 
-    private function dirIsEmpty($dir)
+    private function dirIsEmpty(string $dir): bool
     {
         $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
         return iterator_count($di) === 0;

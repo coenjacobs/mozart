@@ -1,0 +1,94 @@
+name: Build, tag and attach releases
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-phar:
+    runs-on: ubuntu-latest
+    name: Create Mozart phar
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@1.3.7
+        with:
+          php-version: 7.3
+
+      - name: Install dependencies
+        run: composer install --no-dev --prefer-dist --no-suggest --no-progress
+
+      - name: Create .phar
+        run: |
+          wget -O phar-composer.phar https://github.com/clue/phar-composer/releases/download/v1.2.0/phar-composer-1.2.0.phar
+          mkdir build
+          mv vendor build/vendor
+          mv src build/src
+          mv bin build/bin
+          mv composer.json build
+          php -d phar.readonly=off phar-composer.phar build ./build/
+
+      - name: Test run mozart
+        run: php mozart.phar --version
+
+      - uses: meeDamian/github-release@2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: mozart.phar
+          gzip: false
+          allow_override: true
+  docker:
+    runs-on: ubuntu-latest
+    name: Create Docker tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          DOCKER_IMAGE=coenjacobs/mozart
+          VERSION=${{ github.event.release.tag_name }}
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          echo ::set-output name=tags::${TAGS}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          target: application
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}

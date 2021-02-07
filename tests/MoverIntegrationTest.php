@@ -121,7 +121,7 @@ class MoverIntegrationTest extends TestCase
 
         $composer = $this->composer;
 
-        $composer->require["iio/libmergepdf"] = "4.0.3";
+        $composer->require["iio/libmergepdf"] = "4.0.4";
 
         file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
 

@@ -7,6 +7,7 @@ namespace CoenJacobs\Mozart\Composer\Autoload;
 
 class Psr4 extends NamespaceAutoloader
 {
+
     public function getSearchNamespace(): string
     {
         return trim($this->namespace, '\\');
