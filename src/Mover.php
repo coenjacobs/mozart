@@ -200,7 +200,7 @@ class Mover
     public function moveFile(ComposerPackageConfig $package, $autoloader, $file, $path = '')
     {
         // The relative path to the file from the project root.
-        $sourceFilePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
+        $sourceFileRelativePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
 
         $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
 
@@ -212,18 +212,18 @@ class Mover
 
             $destinationMozartPath = $this->dep_directory . DIRECTORY_SEPARATOR . $namespacePath;
 
-            $targetFilePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFilePath);
+            $targetFileRelativePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFileRelativePath);
         } else {
             $packageName = $this->clean($package->config->name);
 
             $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
-            $targetFilePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFilePath);
+            $targetFileRelativePath = str_ireplace($packagePath, $destinationMozartPath, $sourceFileRelativePath);
         }
 
-        $this->filesystem->copy($sourceFilePath, $targetFilePath);
+        $this->filesystem->copy($sourceFileRelativePath, $targetFileRelativePath);
 
-        return $targetFilePath;
+        return $targetFileRelativePath;
     }
 
     /**
