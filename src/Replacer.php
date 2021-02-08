@@ -12,6 +12,7 @@ use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 
 class Replacer
@@ -94,7 +95,7 @@ class Replacer
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $source_path = str_replace(
-                '\\/'.DIRECTORY_SEPARATOR,
+                '\\',
                 DIRECTORY_SEPARATOR,
                 $this->workingDir . $this->targetDir . $autoloader->namespace
             );
@@ -174,7 +175,11 @@ class Replacer
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
         $finder = new Finder();
-        $finder->files()->in($directory);
+        try {
+            $finder->files()->in($directory);
+        } catch (DirectoryNotFoundException $e) {
+            return;
+        }
 
         foreach ($finder as $file) {
             $targetFile = $file->getPathName();
