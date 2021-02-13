@@ -46,7 +46,7 @@ class MoverTest extends TestCase
                 "ezyang/htmlpurifier"
             );
 
-        $pimpleAutoload = json_decode("{ \"psr-0\" : { \"Pimple\" : [ \"src/\" ]  } }");
+	    $pimpleAutoload = json_decode("{ \"psr-0\" : { \"Pimple\" : \"src/\"  } }");
         $htmlpurifierAutoload = json_decode("{ \"classmap\" : { \"Pimple\" => [ \"library/\" ]  } }");
 
         $config->override_autoload = array();
