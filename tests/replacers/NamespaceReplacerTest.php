@@ -5,6 +5,10 @@ use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class NamespaceReplacerTest
+ * @covers \CoenJacobs\Mozart\Replace\NamespaceReplacer
+ */
 class NamespaceReplacerTest extends TestCase
 {
     const PREFIX = 'My\\Mozart\\Prefix\\';
@@ -27,10 +31,12 @@ class NamespaceReplacerTest extends TestCase
      */
     protected static function createReplacer(string $namespace, string $prefix = self::PREFIX) : NamespaceReplacer
     {
-        $autoloader = new Psr0;
-        $autoloader->namespace = $namespace;
+
+    	$psr0Key = json_decode( '{"Google_": "src/"}' );
+        $autoloader = Psr0::processConfig($psr0Key);
+        $autoloader[0]->namespace = $namespace;
         $replacer = new NamespaceReplacer();
-        $replacer->setAutoloader($autoloader);
+        $replacer->setAutoloader($autoloader[0]);
         $replacer->dep_namespace = $prefix;
 
         return $replacer;

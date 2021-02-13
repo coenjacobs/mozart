@@ -16,17 +16,22 @@ abstract class NamespaceAutoloader implements Autoloader
      */
     public $paths = [];
 
-
+    /**
+     * NamespaceAutoloader constructor.
+     *
+     * @param string $namespace
+     * @param string $paths
+     */
     public function __construct($namespace, $paths)
     {
         $this->namespace = $namespace;
-        array_push($this->paths, $paths);
+        $this->paths[] = $paths;
     }
 
     /**
      * @return string
      */
-    public function getSearchNamespace()
+    public function getSearchNamespace(): string
     {
         return $this->namespace;
     }

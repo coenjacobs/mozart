@@ -10,7 +10,7 @@ class Package
     /** @var string */
     public $path = '';
 
-    /** @var */
+    /** @var stdClass */
     public $config;
 
     /** @var Autoloader[] */

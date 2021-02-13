@@ -7,7 +7,7 @@ class Psr4 extends NamespaceAutoloader
     /**
      * @return string
      */
-    public function getSearchNamespace()
+    public function getSearchNamespace(): string
     {
         return trim($this->namespace, '\\');
     }
@@ -20,7 +20,7 @@ class Psr4 extends NamespaceAutoloader
         return str_replace('\\', DIRECTORY_SEPARATOR, $this->namespace);
     }
 
-    public static function processConfig($autoloadConfig)
+    public static function processConfig($autoloadConfig): array
     {
         $autoloaders = array();
 

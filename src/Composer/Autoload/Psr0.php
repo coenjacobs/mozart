@@ -4,7 +4,7 @@ namespace CoenJacobs\Mozart\Composer\Autoload;
 
 class Psr0 extends NamespaceAutoloader
 {
-    public static function processConfig($autoloadConfig)
+    public static function processConfig($autoloadConfig): array
     {
         $psr0s = array();
 
