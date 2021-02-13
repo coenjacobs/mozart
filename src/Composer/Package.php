@@ -37,6 +37,9 @@ class Package
         }
     }
 
+    /**
+     * @return void
+     */
     public function findAutoloaders()
     {
         $namespace_autoloaders = array(

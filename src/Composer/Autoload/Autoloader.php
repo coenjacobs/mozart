@@ -12,4 +12,7 @@ interface Autoloader
      * @return Autoloader[]
      */
     public static function processConfig($autoloadConfig);
+
+    public function getSearchNamespace();
+
 }
