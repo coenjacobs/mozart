@@ -117,7 +117,7 @@ class DumpAutoload extends Command
             }
             echo ");";
 
-            file_put_contents($dir . $output_filename, ob_get_contents());
+            file_put_contents($dir . $output_filename, ob_get_clean());
         }
 
         return 0;
