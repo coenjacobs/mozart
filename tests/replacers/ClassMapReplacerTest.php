@@ -274,4 +274,24 @@ class ClassMapReplacerTest extends TestCase
         $replacer->replace($input);
         $this->assertArrayHasKey('Pear', $replacer->replacedClasses);
     }
+
+    /**
+     * @test
+     */
+    public function it_parses_classes_followed_by_comment()
+    {
+
+        $input = <<<'EOD'
+	class WP_Dependency_Installer {
+		/**
+		 *
+		 */
+EOD;
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+
+        $this->assertArrayHasKey('WP_Dependency_Installer', $replacer->replacedClasses);
+    }
 }
