@@ -36,7 +36,9 @@ class ClassmapReplacer extends BaseReplacer
 														# the remainder of the string.
 				^\s*\/\/.*$ |							# Skip line comments
 				^\s*\*[^$\n]*? |						# Skip multiline comment bodies
-				^[^$\n]*?(?:\*\/) |						# Skip multiline comment endings			
+				^[^$\n]*?(?:\*\/) |						# Skip multiline comment endings
+				[\s\S]*?(?='.$this->classmap_prefix.')	# Match an already prefixed classname
+				[a-zA-Z0-9_\x7f-\xff]+ |				# before continuing on the remainder of the string	
 				\s*										# Whitespace is allowed before 
 				(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
 				([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first non-classname-valid character
@@ -50,7 +52,6 @@ class ClassmapReplacer extends BaseReplacer
                 if (1 === count($matches)) {
                     return $matches[0];
                 }
-
 
                 // The prepended class name.
                 $replace = $this->classmap_prefix . $matches[1];

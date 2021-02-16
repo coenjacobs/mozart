@@ -163,8 +163,6 @@ class ClassmapReplacerIntegrationTest extends TestCase
 		$this->assertStringContainsString('foreach (self::$_observers as $func) {', $php_string);
 	}
 
-
-
 	/**
 	 * Like issue #86, when prefixing WP_Dependency_Installer, words in comments were
 	 *
@@ -199,6 +197,45 @@ class ClassmapReplacerIntegrationTest extends TestCase
 
 		// Confirm solution is correct.
 		$this->assertStringContainsString('Mozart_WP_Dependency_Installer', $php_string, 'Class name not properly prefixed.');
+	}
+
+
+
+	/**
+	 * Issue #106, multiple classmap prefixing.
+	 *
+	 * @see https://github.com/coenjacobs/mozart/issues/106
+	 */
+	public function test_only_prefix_classmap_classes_once()
+	{
+
+		$composer = $this->composer;
+
+		$composer->require["symfony/polyfill-intl-idn"] = "1.22.0";
+		$composer->require["symfony/polyfill-intl-normalizer"] = "1.22.0";
+
+		$composer_json_string = json_encode($composer);
+
+		file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+
+		chdir($this->testsWorkingDir);
+
+		exec('composer install');
+
+		$inputInterfaceMock = $this->createMock(InputInterface::class);
+		$outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+		$mozartCompose = new Compose();
+
+		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+		$php_string = file_get_contents($this->testsWorkingDir .'/classmap_directory/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php');
+
+		// Confirm problem is gone.
+		$this->assertStringNotContainsString('class Mozart_Mozart_Normalizer extends', $php_string, 'Double prefixing problem still present.');
+
+		// Confirm solution is correct.
+		$this->assertStringContainsString('class Mozart_Normalizer extends', $php_string, 'Class name not properly prefixed.');
 	}
 
 	/**
