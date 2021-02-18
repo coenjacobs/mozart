@@ -31,7 +31,7 @@ class NamespaceReplacer extends BaseReplacer
                   (?<![a-zA-Z0-9_]\\\\)      # Not a class-allowed character followed by a slash
                   (?<!class\s)				 # Not a class declaration
                   $searchNamespace			 # The namespace were looking for
-                  (?=;|\\\|\\|\sas)			 # Followed by one of
+                  (?=;|\\\|\||\sas)			 # Followed by one of
                   							 # semicolon when it is the class namespace itself
                   				             # backslash when it is part of a longer namespace or namespaced class
                   							 # pipe
