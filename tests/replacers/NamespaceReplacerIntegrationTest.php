@@ -103,6 +103,47 @@ class NamespaceReplacerIntegrationTest extends TestCase
     }
 
 
+
+    /**
+     * Another Mpdf problem, presumably down to the classname matching the namespace.
+     *
+     * Typed function properties whose class type (name) match the namespace being replaced are
+     * unintentionally prefixed, causing PHP to crash.
+     *
+     * Occurring at dev-master#3b1243ca8505fa6436569800dc34269178930f39
+     *
+     * @see https://github.com/coenjacobs/mozart/issues/124
+     */
+    public function test_it_does_not_prefix_function_argument_types_whose_classname_matches_the_namespace()
+    {
+
+        $composer = $this->composer;
+
+        $composer->require["mpdf/mpdf"] = "8.0.10";
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
+
+        chdir($this->testsWorkingDir);
+
+        exec('composer update');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $mpdf_php = file_get_contents($this->testsWorkingDir .'/dep_directory/Mpdf/Conversion/DecToOther.php');
+
+        // Confirm problem is gone.
+        $this->assertStringNotContainsString('public function __construct(Mozart\Mpdf $mpdf)', $mpdf_php);
+
+        // Confirm solution is correct.
+        $this->assertStringContainsString('public function __construct(Mpdf $mpdf)', $mpdf_php);
+    }
+
+
     /**
      * Delete $this->testsWorkingDir after each test.
      *
