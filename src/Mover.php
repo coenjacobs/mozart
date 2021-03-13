@@ -116,26 +116,26 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $autoloaderPath) {
-                	$paths = array();
+                    $paths = array();
 
-                	if (is_string($autoloaderPath)) {
-                		$paths[] = $autoloaderPath;
-	                } elseif (is_array($autoloaderPath)) {
-                		$paths = $autoloaderPath;
-	                }
+                    if (is_string($autoloaderPath)) {
+                        $paths[] = $autoloaderPath;
+                    } elseif (is_array($autoloaderPath)) {
+                        $paths = $autoloaderPath;
+                    }
 
-                	foreach ($paths as $path) {
-		                $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-		                               . $package->config->name . DIRECTORY_SEPARATOR . $path;
+                    foreach ($paths as $path) {
+                        $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
+                                       . $package->config->name . DIRECTORY_SEPARATOR . $path;
 
-		                $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
+                        $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
 
-		                $finder->files()->in($source_path);
+                        $finder->files()->in($source_path);
 
-		                foreach ($finder as $file) {
-			                $this->moveFile($package, $autoloader, $file, $path);
-		                }
-	                }
+                        foreach ($finder as $file) {
+                            $this->moveFile($package, $autoloader, $file, $path);
+                        }
+                    }
                 }
             } elseif ($autoloader instanceof Classmap) {
                 $finder = new Finder();
