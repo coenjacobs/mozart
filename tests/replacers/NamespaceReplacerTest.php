@@ -27,11 +27,11 @@ class NamespaceReplacerTest extends TestCase
      */
     protected static function createReplacer(string $namespace, string $prefix = self::PREFIX) : NamespaceReplacer
     {
-        $autoloader = new Psr0;
-        $autoloader->namespace = $namespace;
+        $autoloader = new Psr0();
+        $autoloader->setNamespace( $namespace );
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
-        $replacer->dep_namespace = $prefix;
+        $replacer->setDepNamespace( $prefix );
 
         return $replacer;
     }

@@ -4,11 +4,35 @@ namespace CoenJacobs\Mozart\Composer\Autoload;
 
 class Classmap implements Autoloader
 {
-    /** @var array */
-    public $files = [];
+    /**
+     * The files specified in the classmap.
+     *
+     * @var string[]
+     */
+    protected array $files = [];
 
-    /** @var array */
-    public $paths = [];
+    /**
+     * The directories specified in the classmap.
+     *
+     * @var array
+     */
+    protected $paths = [];
+
+    /**
+     * @return string[]
+     */
+    public function getFiles(): array
+    {
+        return $this->files;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPaths(): array
+    {
+        return $this->paths;
+    }
 
     /**
      * @return void

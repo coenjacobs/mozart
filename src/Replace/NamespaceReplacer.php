@@ -9,7 +9,25 @@ class NamespaceReplacer extends BaseReplacer
      *
      * @var string "My\Mozart\Prefix".
      */
-    public $dep_namespace = '';
+    protected string $dep_namespace = '';
+
+    /**
+     * @return string
+     */
+    public function getDepNamespace(): string
+    {
+        return $this->dep_namespace;
+    }
+
+    /**
+     * @param string $dep_namespace
+     */
+    public function setDepNamespace(string $dep_namespace): void
+    {
+        $this->dep_namespace = $dep_namespace;
+    }
+
+
 
     /**
      * @param string $contents The text to make replacements in.

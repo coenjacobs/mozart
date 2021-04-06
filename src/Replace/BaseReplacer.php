@@ -6,9 +6,17 @@ use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 
 abstract class BaseReplacer implements Replacer
 {
-    /** @var Autoloader */
-    public $autoloader;
 
+    /** @var Autoloader */
+    protected Autoloader $autoloader;
+
+    /**
+     * @return Autoloader
+     */
+    public function getAutoloader(): Autoloader
+    {
+        return $this->autoloader;
+    }
     /**
      * @param Autoloader $autoloader
      * @return void

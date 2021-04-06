@@ -187,7 +187,7 @@ class ComposeTest extends TestCase
     public function it_handles_malformed_mozart_config__with_grace(): void
     {
 
-        $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "mozart": [] } }';
+        $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "mozart": []  }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
 

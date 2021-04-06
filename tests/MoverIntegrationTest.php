@@ -46,6 +46,7 @@ class MoverIntegrationTest extends TestCase
         };
 
         $composer = new class() {
+            public $name = "mozart/test";
             public $require = array();
             public $extra;
         };
@@ -139,7 +140,7 @@ class MoverIntegrationTest extends TestCase
         $this->assertEquals(0, $result);
 
         // This test would only fail on Windows?
-        $this->assertDirectoryNotExists($this->testsWorkingDir .'classmap_directory/iio/libmergepdf/vendor/iio/libmergepdf/tcpdi');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir .'classmap_directory/iio/libmergepdf/vendor/iio/libmergepdf/tcpdi');
 
         $this->assertFileExists($this->testsWorkingDir .'/classmap_directory/iio/libmergepdf/tcpdi/tcpdi.php');
     }

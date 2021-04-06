@@ -13,16 +13,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Compose extends Command
 {
     /** @var Mover */
-    private $mover;
+    protected Mover $mover;
 
     /** @var Replacer */
-    private $replacer;
+    protected Replacer $replacer;
 
     /** @var string */
-    private $workingDir;
+    protected string $workingDir;
 
     /** @var MozartConfig */
-    private $config;
+    protected MozartConfig $config;
 
     /**
      * @return void
@@ -58,7 +58,7 @@ class Compose extends Command
         $packages = array_values($packagesToMoveByName);
 
         foreach ($packages as $package) {
-            $package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
+            $package->setDependencies(array_diff_key($package->getDependencies(), array_flip($excludedPackagesNames)));
         }
 
         $this->mover->deleteTargetDirs($packages);
@@ -142,7 +142,7 @@ class Compose extends Command
      *
      * @psalm-return array<array-key, ComposerPackageConfig>
      */
-    private function findPackages(array $slugs): array
+    protected function findPackages(array $slugs): array
     {
         $packages = [];
 
@@ -170,7 +170,7 @@ class Compose extends Command
                 $dependencies = array_keys((array)$config->require);
             }
 
-            $package->dependencies = $this->findPackages($dependencies);
+            $package->setDependencies($this->findPackages($dependencies));
             $packages[$package_slug] = $package;
         }
 
@@ -185,18 +185,18 @@ class Compose extends Command
      *
      * @return array
      */
-    private function getAllDependenciesOfPackage(ComposerPackageConfig $package, $dependencies = []): array
+    protected function getAllDependenciesOfPackage(ComposerPackageConfig $package, $dependencies = []): array
     {
-        if (empty($package->dependencies)) {
+        if (empty($package->getDependencies())) {
             return $dependencies;
         }
 
         /** @var ComposerPackageConfig $dependency */
-        foreach ($package->dependencies as $dependency) {
+        foreach ($package->getDependencies() as $dependency) {
             $dependencies[] = $dependency;
         }
 
-        foreach ($package->dependencies as $dependency) {
+        foreach ($package->getDependencies() as $dependency) {
             $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
         }
 
@@ -206,7 +206,7 @@ class Compose extends Command
     /**
      * @param array $packages
      */
-    private function replaceParentInTree(array $packages): void
+    protected function replaceParentInTree(array $packages): void
     {
         /** @var ComposerPackageConfig $package */
         foreach ($packages as $package) {
@@ -217,7 +217,7 @@ class Compose extends Command
                 $this->replacer->replaceParentPackage($dependency, $package);
             }
 
-            $this->replaceParentInTree($package->dependencies);
+            $this->replaceParentInTree($package->getDependencies());
         }
     }
 }

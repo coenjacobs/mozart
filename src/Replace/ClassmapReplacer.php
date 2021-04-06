@@ -10,10 +10,42 @@ class ClassmapReplacer extends BaseReplacer
 {
 
     /** @var string[] */
-    public $replacedClasses = [];
+    protected array $replacedClasses = [];
 
     /** @var string */
-    public $classmap_prefix;
+    protected string $classmap_prefix;
+
+    /**
+     * @return string[]
+     */
+    public function getReplacedClasses(): array
+    {
+        return $this->replacedClasses;
+    }
+
+    /**
+     * @param string[] $replacedClasses
+     */
+    public function setReplacedClasses(array $replacedClasses): void
+    {
+        $this->replacedClasses = $replacedClasses;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClassmapPrefix(): string
+    {
+        return $this->classmap_prefix;
+    }
+
+    /**
+     * @param string $classmap_prefix
+     */
+    public function setClassmapPrefix(string $classmap_prefix): void
+    {
+        $this->classmap_prefix = $classmap_prefix;
+    }
 
     /**
      * @param false|string $contents

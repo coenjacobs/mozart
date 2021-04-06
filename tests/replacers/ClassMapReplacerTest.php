@@ -11,7 +11,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World {', $contents);
     }
@@ -21,7 +21,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'abstract class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals('abstract class Mozart_Hello_World {', $contents);
     }
@@ -31,7 +31,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'interface Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals('interface Mozart_Hello_World {', $contents);
     }
@@ -41,7 +41,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World extends Bye_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World extends Bye_World {', $contents);
     }
@@ -51,7 +51,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World implements Bye_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World implements Bye_World {', $contents);
     }
@@ -61,9 +61,9 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $replacer->replace($contents);
-        $this->assertArrayHasKey('Hello_World', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Hello_World', $replacer->getReplacedClasses());
     }
 
     /** @test */
@@ -71,7 +71,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = "class Hello_World\n{";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals("class Mozart_Hello_World\n{", $contents);
     }
@@ -85,7 +85,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = "class Hello_World";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $contents = $replacer->replace($contents);
         $this->assertEquals("class Mozart_Hello_World", $contents);
     }
@@ -104,7 +104,7 @@ class ClassMapReplacerTest extends TestCase
         class Hello_World
         ";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $result = $replacer->replace($input);
 
         $this->assertEquals($input, $result);
@@ -120,7 +120,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $input = "namespace Mozart; class Hello_World";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $result = $replacer->replace($input);
 
         $this->assertEquals($input, $result);
@@ -146,7 +146,7 @@ class ClassMapReplacerTest extends TestCase
 		";
 
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->setClassmapPrefix('Mozart_' );
         $result = $replacer->replace($input);
 
         $this->assertStringNotContainsString('Mozart_A_Class', $result);

@@ -9,8 +9,6 @@ use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use CoenJacobs\Mozart\Composer\ComposerPackageConfig;
 use League\Flysystem\Adapter\Local;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 use CoenJacobs\Mozart\Composer\MozartConfig;
 use Symfony\Component\Finder\Finder;
@@ -75,32 +73,32 @@ class Mover
     /**
      * Delete the directories about to be used for packages earmarked for Mozart namespacing.
      *
-     * @visibility private to allow recursion through packages and subpackages.
+     * @visibility protected to allow recursion through packages and subpackages.
      *
      * @param ComposerPackageConfig $package
      *
      * @return void
      */
-    private function deleteDepTargetDirs($package): void
+    protected function deleteDepTargetDirs($package): void
     {
-        foreach ($package->autoloaders as $packageAutoloader) {
+        foreach ($package->getAutoloaders() as $packageAutoloader) {
             $autoloaderType = get_class($packageAutoloader);
 
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
                     $outputDir = $this->dep_directory . DIRECTORY_SEPARATOR .
-                                 $this->clean($packageAutoloader->namespace);
+                                 $this->clean($packageAutoloader->getSearchNamespace());
                     $this->filesystem->deleteDir($outputDir);
                     break;
                 case Classmap::class:
-                    $outputDir = $this->classmap_directory . DIRECTORY_SEPARATOR . $this->clean($package->config->name);
+                    $outputDir = $this->classmap_directory . DIRECTORY_SEPARATOR . $this->clean($package->getName());
                     $this->filesystem->deleteDir($outputDir);
                     break;
             }
         }
 
-        foreach ($package->dependencies as $subPackage) {
+        foreach ($package->getDependencies() as $subPackage) {
             $this->deleteDepTargetDirs($subPackage);
         }
     }
@@ -121,18 +119,18 @@ class Mover
      */
     public function movePackage(ComposerPackageConfig $package)
     {
-        if (in_array($package->config->name, $this->movedPackages)) {
+        if (in_array($package->getName(), $this->movedPackages)) {
             return;
         }
 
-        foreach ($package->autoloaders as $autoloader) {
+        foreach ($package->getAutoloaders() as $autoloader) {
             $files_to_move = array();
 
             if ($autoloader instanceof NamespaceAutoloader) {
                 $finder = new Finder();
 
-                foreach ($autoloader->paths as $path) {
-                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
+                foreach ($autoloader->getPaths() as $path) {
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->getPath() . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -149,8 +147,8 @@ class Mover
                 $finder = new Finder();
 
 
-                foreach ($autoloader->files as $file) {
-                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path);
+                foreach ($autoloader->getFiles() as $file) {
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->getPath());
 
                     $finder->files()->name($file)->in($source_path);
 
@@ -162,8 +160,8 @@ class Mover
 
                 $finder = new Finder();
 
-                foreach ($autoloader->paths as $path) {
-                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->path . DIRECTORY_SEPARATOR . $path);
+                foreach ($autoloader->getPaths() as $path) {
+                    $source_path = DIRECTORY_SEPARATOR . $this->clean($package->getPath() . DIRECTORY_SEPARATOR . $path);
 
                     $finder->files()->in($source_path);
 
@@ -179,8 +177,8 @@ class Mover
             }
 
 
-            if (!in_array($package->config->name, $this->movedPackages)) {
-                $this->movedPackages[] = $package->config->name;
+            if (!in_array($package->getName(), $this->movedPackages)) {
+                $this->movedPackages[] = $package->getName();
             }
         }
 
@@ -202,7 +200,7 @@ class Mover
         // The relative path to the file from the project root.
         $sourceFileRelativePath = $this->clean(str_replace($this->workingDir, '', $file->getPathname()));
 
-        $packagePath = $this->clean(str_replace($this->workingDir, '', $package->path));
+        $packagePath = $this->clean(str_replace($this->workingDir, '', $package->getPath()));
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $this->clean($autoloader->getNamespacePath());
@@ -214,7 +212,7 @@ class Mover
 
             $targetFileRelativePath = str_ireplace($sourceVendorPath, $destinationMozartPath, $sourceFileRelativePath);
         } else {
-            $packageName = $this->clean($package->config->name);
+            $packageName = $this->clean($package->getName());
 
             $destinationMozartPath = $this->classmap_directory . DIRECTORY_SEPARATOR . $packageName;
 
@@ -252,7 +250,7 @@ class Mover
         }
     }
 
-    private function dirIsEmpty(string $dir): bool
+    protected function dirIsEmpty(string $dir): bool
     {
         $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
         return iterator_count($di) === 0;

@@ -43,7 +43,7 @@ class Replacer
 
     public function replacePackage(ComposerPackageConfig $package): void
     {
-        foreach ($package->autoloaders as $autoloader) {
+        foreach ($package->getAutoloaders() as $autoloader) {
             $this->replacePackageByAutoloader($package, $autoloader);
         }
     }
@@ -69,17 +69,17 @@ class Replacer
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->getDepNamespace();
+            $replacer->setDepNamespace($this->config->getDepNamespace());
         } else {
             $replacer = new ClassmapReplacer();
-            $replacer->classmap_prefix = $this->config->getClassmapPrefix();
+            $replacer->setClassmapPrefix($this->config->getClassmapPrefix());
         }
 
         $replacer->setAutoloader($autoloader);
         $contents = $replacer->replace($contents);
 
         if ($replacer instanceof ClassmapReplacer) {
-            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
+            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
         }
 
         $this->filesystem->put($targetFile, $contents);
@@ -97,13 +97,13 @@ class Replacer
             $source_path = str_replace(
                 '\\',
                 DIRECTORY_SEPARATOR,
-                $this->workingDir . $this->targetDir . $autoloader->namespace
+                $this->workingDir . $this->targetDir . $autoloader->getNamespace()
             );
             $this->replaceInDirectory($autoloader, $source_path);
         } elseif ($autoloader instanceof Classmap) {
             $finder = new Finder();
             $source_path = $this->workingDir . $this->config->getClassmapDirectory() . DIRECTORY_SEPARATOR
-                           . $package->config->name;
+                           . $package->getName();
             $finder->files()->in($source_path);
 
             foreach ($finder as $foundFile) {
@@ -202,10 +202,10 @@ class Replacer
      */
     public function replaceParentPackage(ComposerPackageConfig $package, ComposerPackageConfig $parent): void
     {
-        foreach ($parent->autoloaders as $parentAutoloader) {
-            foreach ($package->autoloaders as $autoloader) {
+        foreach ($parent->getAutoloaders() as $parentAutoloader) {
+            foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
-                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
+                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->getNamespace());
                     $directory = $this->workingDir . $this->config->getDepDirectory() . $namespace
                                  . DIRECTORY_SEPARATOR;
 
@@ -216,7 +216,7 @@ class Replacer
                         $this->replaceParentClassesInDirectory($directory);
                     }
                 } else {
-                    $directory = $this->workingDir . $this->config->getClassmapDirectory() . $parent->config->name;
+                    $directory = $this->workingDir . $this->config->getClassmapDirectory() . $parent->getName();
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replaceInDirectory($autoloader, $directory);

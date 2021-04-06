@@ -2,12 +2,16 @@
 
 namespace CoenJacobs\Mozart\Composer\Autoload;
 
-use stdClass;
-
 abstract class NamespaceAutoloader implements Autoloader
 {
-    /** @var string */
-    public $namespace = '';
+    /**
+     * The namespace, e.g. BrianHenryIE\My_Project
+     *
+     * '' (empty string) is a valid PSR-4 namespace.
+     *
+     * @var string
+     */
+    protected string $namespace;
 
     /**
      * The subdir of the vendor/domain/package directory that contains the files for this autoloader type.
@@ -16,7 +20,31 @@ abstract class NamespaceAutoloader implements Autoloader
      *
      * @var string[]
      */
-    public $paths = [];
+    protected array $paths = [];
+
+    /**
+     * @return string
+     */
+    public function getNamespace(): string
+    {
+        return $this->namespace;
+    }
+
+    /**
+     * @param string $namespace
+     */
+    public function setNamespace(string $namespace): void
+    {
+        $this->namespace = $namespace;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPaths(): array
+    {
+        return $this->paths;
+    }
 
     /**
      * A package's composer.json config autoload key's value, where $key is `psr-0`|`psr-4`|`classmap`.

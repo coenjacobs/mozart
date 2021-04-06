@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Composer;
 
+use Composer\Factory;
+use Composer\IO\NullIO;
 use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Rename\Rename;
 use stdClass;
@@ -9,11 +11,20 @@ use stdClass;
 class MozartConfig
 {
     /**
+     * `dep_namespace` is the prefix to be given to PSR-4 namespaced classes.
+     * Presumably this will take the form `My_Project_Namespace\dep_directory`.
+     *
+     * @link https://www.php-fig.org/psr/psr-4/
+     *
      * @var string
      */
     protected $depNamespace;
 
     /**
+     * `dep_directory` is the directory Mozart will create and copy PSR-4 autoloading classes into.
+     * It is defined relative to your project's composer.json, i.e. relative to where Mozart will be run, with no
+     * leading slash.
+     *
      * @var string
      */
     protected $depDirectory;
@@ -44,29 +55,21 @@ class MozartConfig
     protected $overrideAutoload;
 
     /**
+     * After completing `mozart compose` should the source files be deleted?
+     * This does not affect symlinked directories.
+     *
      * @var bool
      */
-    protected $delete_vendor_directories;
+    protected $delete_vendor_directories = true;
 
     /**
      *
+     * @throws \Exception
      */
-    public function __construct(stdClass $composer = null)
+    public function __construct(stdClass $mozartExtra = null)
     {
 
-        if (!is_null($composer)) {
-            if (!isset($composer->extra)) {
-                throw new \Exception('`extra` key not set in `composer.json`.');
-            }
-
-            if (!isset($composer->extra->mozart)) {
-                throw new \Exception('`extra->mozart` key not set in `composer.json`.');
-            }
-
-            if (!is_object($composer->extra->mozart)) {
-                throw new \Exception('`extra->mozart` key in `composer.json` is not an object.');
-            }
-
+        if (!is_null($mozartExtra)) {
             // @see JsonMapper\Middleware\CaseConversion wasn't working.
             $rename = new Rename();
             $rename->addMapping(MozartConfig::class, 'dep_namespace', 'depNamespace');
@@ -80,11 +83,7 @@ class MozartConfig
             $mapper = ( new JsonMapperFactory() )->bestFit();
             $mapper->unshift($rename);
 
-            $mapper->mapObject($composer->extra->mozart, $this);
-
-            if (empty($this->getPackages())) {
-                $this->setPackages(array_keys((array) $composer->require));
-            }
+            $mapper->mapObject($mozartExtra, $this);
         }
     }
 
@@ -103,13 +102,26 @@ class MozartConfig
             throw new \Exception("Expected `composer.json` not found at {$filePath}");
         }
 
-        $composer = json_decode(file_get_contents($filePath));
+        $io = new NullIO();
+        $composer = Factory::create($io, $filePath);
 
-        if (!is_object($composer)) {
-            throw new \Exception("Expected `composer.json` at {$filePath} was not valid JSON.");
+        if (!isset($composer->getPackage()->getExtra()['mozart'])) {
+            throw new \Exception('`extra->mozart` key not set in `composer.json`.');
         }
 
-        return new MozartConfig($composer);
+        $mozartExtra = (object) $composer->getPackage()->getExtra()['mozart'];
+
+        $mozartConfig = new MozartConfig($mozartExtra);
+
+
+
+        if (empty($mozartConfig->getPackages())) {
+            $composerRequire = $composer->getPackage()->getRequires();
+
+            $mozartConfig->setPackages(array_keys($composerRequire));
+        }
+
+        return $mozartConfig;
     }
 
     /**
@@ -129,11 +141,13 @@ class MozartConfig
     }
 
     /**
+     * `dep_directory` will always be returned without a leading slash and with a trailing slash.
+     *
      * @return string
      */
     public function getDepDirectory(): string
     {
-        return trim($this->depDirectory, '/\\'.DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return trim(preg_replace('/[\/\\\\]+/', DIRECTORY_SEPARATOR, $this->depDirectory), DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR ;
     }
 
     /**
@@ -229,7 +243,7 @@ class MozartConfig
      */
     public function isDeleteVendorDirectories(): bool
     {
-        return $this->delete_vendor_directories ?? true;
+        return $this->delete_vendor_directories;
     }
 
     /**
