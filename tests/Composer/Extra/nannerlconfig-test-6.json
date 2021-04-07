@@ -1,0 +1,7 @@
+{
+  "name": "brianhenryie/nannerl-config-test",
+  "require": {
+    "league/container": "*"
+  }
+
+}

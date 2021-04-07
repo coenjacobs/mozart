@@ -1,21 +1,23 @@
 {
   "extra": {
     "mozart": {
-      "dep_namespace": "My_Mozart_Plugin\\",
+      "dep_namespace": "My_Mozart_Config\\",
       "dep_directory": "/dep_directory/",
-      "classmap_prefix": "My_Mozart_Plugin_",
+      "classmap_prefix": "My_Mozart_Config_",
       "classmap_directory": "/classmap_directory/",
       "packages": [
         "pimple/pimple"
       ],
+      "exclude_packages": [
+        "psr/container"
+      ],
       "override_autoload": {
-        "pimple/pimple": {
+        "clancats/container": {
           "classmap": [
             "src/"
           ]
         }
-      },
-      "delete_vendor_directories": false
+      }
     }
   }
 }

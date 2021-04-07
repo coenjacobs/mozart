@@ -1,0 +1,12 @@
+{
+  "name": "brianhenryie/nannerl-config-test",
+  "require": {
+    "league/container": "*"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "BrianHenryIE\\Nannerl\\": "src"
+    }
+  }
+}

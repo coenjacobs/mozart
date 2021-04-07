@@ -1,0 +1,24 @@
+{
+  "name": "brianhenryie/nannerl-config-test",
+  "require": {
+    "league/container": "*"
+  },
+  "extra": {
+    "nannerl": {
+      "namespace_prefix": "BrianHenryIE\\Nannerl\\",
+      "classmap_prefix": "BrianHenryIE_Nannerl_",
+      "exclude_prefix_packages": [
+        "psr/container"
+      ],
+      "override_autoload": {
+        "clancats/container": {
+          "classmap": [
+            "src/"
+          ]
+        }
+      },
+      "delete_vendor_directories": false,
+      "unexpected_key": "here"
+    }
+  }
+}
