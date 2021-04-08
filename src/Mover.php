@@ -124,6 +124,12 @@ class Mover
                     $finder->files()->in($source_path);
 
                     foreach ($finder as $file) {
+                        foreach ($this->config->exclude_files_from_copy as $file_exclusion_pattern) {
+                            if (1 === preg_match($file_exclusion_pattern, $file->getRealPath())) {
+                                continue 2;
+                            }
+                        }
+
                         $this->moveFile($package, $autoloader, $file, $path);
                     }
                 }
