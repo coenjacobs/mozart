@@ -17,8 +17,5 @@ class Application extends BaseApplication
 
         $composeCommand = new Compose();
         $this->add($composeCommand);
-
-        $dumpAutoloadCommand = new DumpAutoload();
-        $this->add($dumpAutoloadCommand);
     }
 }

@@ -172,7 +172,7 @@ class NannerlConfigTest extends TestCase
 
         $sut = new NannerlConfig($composer);
 
-        $this->assertEquals("Brianhenryie_Nannerl_Config_Test_", $sut->getClassmapPrefix());
+        $this->assertEquals("Brianhenryie_Nannerl_Config_Test", $sut->getClassmapPrefix());
     }
 
     /**

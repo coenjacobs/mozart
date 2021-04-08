@@ -6,8 +6,6 @@ use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
-use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
-use Symfony\Component\Finder\Finder;
 
 class Replacer
 {
@@ -30,13 +28,13 @@ class Replacer
 
 
     /**
-     * @param array $classes
      * @param array $namespaces
+     * @param array $classes
      * @param string $absoluteTargerDir
      * @param array $phpFileList
      * @throws FileNotFoundException
      */
-    public function replaceInFiles(array $classes, array $namespaces, array $phpFileList)
+    public function replaceInFiles(array $namespaces, array $classes, array $phpFileList)
     {
 
         foreach ($phpFileList as $relativeFilePath) {
@@ -84,7 +82,7 @@ class Replacer
             return $matches[1] . $namespacePrefix . $matches[2];
         };
 
-        return preg_replace_callback( $pattern, $replacingFunction, $contents );
+        return preg_replace_callback($pattern, $replacingFunction, $contents);
     }
 
     public function replaceClassname($contents, $originalClassname, $classnamePrefix)
@@ -106,8 +104,7 @@ class Replacer
 
                 // If we're inside a namespace other than the global namespace:
                 if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
-
-                    $updated = $this->replaceGlobalClassInsideNamedNamespace( $matches[0], $originalClassname, $classnamePrefix );
+                    $updated = $this->replaceGlobalClassInsideNamedNamespace($matches[0], $originalClassname, $classnamePrefix);
 
                     return $updated;
                 }
@@ -126,7 +123,8 @@ class Replacer
      * @param $classnamePrefix
      * @return string
      */
-    protected function replaceGlobalClassInsideNamedNamespace( $contents, $originalClassname, $classnamePrefix ): string {
+    protected function replaceGlobalClassInsideNamedNamespace($contents, $originalClassname, $classnamePrefix): string
+    {
 
         return preg_replace_callback(
             '/([^a-zA-Z0-9_\x7f-\xff]      # Not a class character

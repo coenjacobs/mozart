@@ -19,7 +19,7 @@ class CopierIntegrationTest extends IntegrationTestCase
 
     public function testsPrepareTarget()
     {
-        copy(__DIR__ . '/copier-integration-test-1.json', $this->testsWorkingDir . 'composer.json');
+        copy(__DIR__ . '/copier-integration-test-2.json', $this->testsWorkingDir . 'composer.json');
 
         chdir($this->testsWorkingDir);
         exec('composer install');

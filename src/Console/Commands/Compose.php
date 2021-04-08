@@ -2,6 +2,9 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
+use CoenJacobs\Mozart\ChangeEnumerator;
+use CoenJacobs\Mozart\Classmap;
+use CoenJacobs\Mozart\Cleanup;
 use CoenJacobs\Mozart\Composer\ComposerPackage;
 use CoenJacobs\Mozart\Composer\ProjectComposerPackage;
 use CoenJacobs\Mozart\Copier;
@@ -27,6 +30,10 @@ class Compose extends Command
 
     /** @var Replacer */
     protected Replacer $replacer;
+    /**
+     * @var ChangeEnumerator
+     */
+    protected ChangeEnumerator $changeEnumerator;
 
 
     /**
@@ -49,9 +56,15 @@ class Compose extends Command
 
             $this->buildDependencyList();
 
+            $this->enumerateFiles();
+
             $this->copyFiles();
 
+            $this->determineChanges();
+
             $this->updateNamespaces();
+
+            $this->generateClassmap();
 
             $this->cleanUp();
         } catch (\Exception $e) {
@@ -98,7 +111,16 @@ class Compose extends Command
     protected function buildDependencyList()
     {
 
-        foreach ($this->config->getPackages() as $requiredPackageName) {
+        $requiredPackageNames = $this->config->getPackages();
+
+        // Unset PHP, ext-*.
+        $removePhpExt = function ($element) {
+            return !( 0 === strpos($element, 'ext') || 'php' === $element );
+        };
+
+        $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
+
+        foreach ($requiredPackageNames as $requiredPackageName) {
             $packageDir = $this->workingDir . 'vendor' .DIRECTORY_SEPARATOR
                 . $requiredPackageName . DIRECTORY_SEPARATOR;
 
@@ -107,6 +129,7 @@ class Compose extends Command
                 : null;
 
             $requiredComposerPackage = new ComposerPackage($packageDir, $overrideAutoload);
+            $this->flatDependencyTree[$requiredComposerPackage->getName()] = $requiredComposerPackage;
             $this->getAllDependencies($requiredComposerPackage);
         }
     }
@@ -120,7 +143,12 @@ class Compose extends Command
     {
         $excludedPackagesNames = $this->config->getExcludePrefixPackages();
 
-        $required = $requiredDependency->getRequiresNames();
+        // Unset PHP, ext-*.
+        $removePhpExt = function ($element) {
+            return !( 0 === strpos($element, 'ext') || 'php' === $element );
+        };
+
+        $required = array_filter($requiredDependency->getRequiresNames(), $removePhpExt);
 
         foreach ($required as $dependencyName) {
             if (in_array($dependencyName, $excludedPackagesNames)) {
@@ -142,6 +170,8 @@ class Compose extends Command
         }
     }
 
+    protected FileEnumerator $fileEnumerator;
+
     protected function enumerateFiles()
     {
 
@@ -153,8 +183,6 @@ class Compose extends Command
 
         $this->fileEnumerator->compileFileList();
     }
-
-    protected FileEnumerator $fileEnumerator;
 
     // 3. Copy autoloaded files for each
     protected function copyFiles()
@@ -171,123 +199,58 @@ class Compose extends Command
         $this->copier->copy();
     }
 
+    // 4. Determine namespace and classname changes
+    protected function determineChanges()
+    {
 
-    // 4. Update individual namespaces and class names.
+        $this->changeEnumerator = new ChangeEnumerator();
+
+        $relativeTargetDir = $this->config->getTargetDirectory();
+        $phpFiles = $this->fileEnumerator->getPhpFileList();
+        $this->changeEnumerator->findInFiles($relativeTargetDir, $phpFiles);
+    }
+
+    // 5. Update namespaces and class names.
     // Replace references to updated namespaces and classnames throughout the dependencies.
     protected function updateNamespaces()
     {
-        $this->replacer = new Replacer($this->workingDir, $this->config);
+        $this->replacer = new Replacer($this->config, $this->workingDir);
 
-        $this->replacePackages($packages);
-        $this->replaceParentInTree($packages);
-        $this->replacer->replaceParentClassesInDirectory($this->config->getClassmapDirectory());
+        $namespaces = $this->changeEnumerator->getDiscoveredNamespaces();
+        $classes = $this->changeEnumerator->getDiscoveredClasses();
+        
+        $phpFiles = $this->fileEnumerator->getPhpFileList();
+
+        $this->replacer->replaceInFiles($namespaces, $classes, $phpFiles);
     }
 
-
     /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
-     *
-     * @return void
+     * 6. Generate classmap.
      */
-    protected function replacePackages($packages): void
+    protected function generateClassmap()
     {
-        foreach ($packages as $package) {
-            $this->replacePackage($package);
-        }
+
+        $classmap = new Classmap($this->config, $this->workingDir);
+
+        $classmap->generate();
     }
 
 
     /**
-     * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
-     *
-     * @return void
-     */
-    public function replacePackage($package): void
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->replacePackage($dependency);
-            }
-        }
-
-        $this->replacer->replacePackage($package);
-    }
-
-
-    /**
-     * @param array $packages
-     */
-    protected function replaceParentInTree(array $packages): void
-    {
-        /** @var ComposerPackage $package */
-        foreach ($packages as $package) {
-            $dependencies = $this->getAllDependenciesOfPackage($package);
-
-            /** @var ComposerPackage $dependency */
-            foreach ($dependencies as $dependency) {
-                $this->replacer->replaceParentPackage($dependency, $package);
-            }
-
-            $this->replaceParentInTree($package->getDependencies());
-        }
-    }
-
-    /**
+     * 7.
      * Delete source files if desired.
      * Delete empty directories in destination.
      */
     protected function cleanUp()
     {
-    }
 
+        $cleanup = new Cleanup($this->config, $this->workingDir);
 
-    /**
-     * Deletes all the packages that are moved from the /vendor/ directory to
-     * prevent packages that are prefixed/namespaced from being used or
-     * influencing the output of the code. They just need to be gone.
-     *
-     * @return void
-     */
-    protected function deletePackageVendorDirectories(): void
-    {
-        foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $this->clean($movedPackage);
-            if (!is_dir($packageDir) || is_link($packageDir)) {
-                continue;
-            }
+        $sourceFiles = array_map(function ($element) {
+            return 'vendor' . DIRECTORY_SEPARATOR . $element;
+        }, $this->fileEnumerator->getFileList());
 
-            $this->filesystem->deleteDir($packageDir);
-
-            //Delete parent directory too if it became empty
-            //(because that package was the only one from that vendor)
-            $parentDir = dirname($packageDir);
-            if ($this->dirIsEmpty($parentDir)) {
-                $this->filesystem->deleteDir($parentDir);
-            }
-        }
-    }
-
-    protected function dirIsEmpty(string $dir): bool
-    {
-        $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
-        return iterator_count($di) === 0;
-    }
-
-    /**
-     * For Windows & Unix file paths' compatibility.
-     *
-     *  * Removes duplicate `\` and `/`.
-     *  * Trims them from each end.
-     *  * Replaces them with the OS agnostic DIRECTORY_SEPARATOR.
-     *
-     * @param string $path A full or partial filepath.
-     *
-     * @return string
-     */
-    protected function clean($path)
-    {
-        return trim(preg_replace('/[\/\\\\]+/', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+        // This will check the config to check should it delete or not.
+        $cleanup->cleanup($sourceFiles);
     }
 }

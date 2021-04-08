@@ -44,12 +44,11 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 
         $replacer = new Replacer($config, $workingDir);
 
-        $replacer->replaceInFiles( $classes, $namespaces, $phpFileList );
+        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
-        $updatedFile = file_get_contents( $absoluteTargetDir . 'google/apiclient/src/CLient.php' );
+        $updatedFile = file_get_contents($absoluteTargetDir . 'google/apiclient/src/CLient.php');
 
-        $this->assertStringContainsString( 'use BrianHenryIE\Nannerl\Google\AccessToken\Revoke;' , $updatedFile );
-
+        $this->assertStringContainsString('use BrianHenryIE\Nannerl\Google\AccessToken\Revoke;', $updatedFile);
     }
 
 
@@ -88,11 +87,10 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 
         $replacer = new Replacer($config, $workingDir);
 
-        $replacer->replaceInFiles( $classes, $namespaces, $phpFileList );
+        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
-        $updatedFile = file_get_contents( $absoluteTargetDir . 'setasign/fpdf/fpdf.php' );
+        $updatedFile = file_get_contents($absoluteTargetDir . 'setasign/fpdf/fpdf.php');
 
-        $this->assertStringContainsString( 'class BrianHenryIE_Nannerl_FPDF' , $updatedFile );
-
+        $this->assertStringContainsString('class BrianHenryIE_Nannerl_FPDF', $updatedFile);
     }
 }
