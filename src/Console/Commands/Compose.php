@@ -2,27 +2,32 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
-use CoenJacobs\Mozart\Composer\ComposerPackageConfig;
-use CoenJacobs\Mozart\Mover;
+use CoenJacobs\Mozart\Composer\ComposerPackage;
+use CoenJacobs\Mozart\Composer\ProjectComposerPackage;
+use CoenJacobs\Mozart\Copier;
+use CoenJacobs\Mozart\FileEnumerator;
 use CoenJacobs\Mozart\Replacer;
-use CoenJacobs\Mozart\Composer\MozartConfig;
+use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Compose extends Command
 {
-    /** @var Mover */
-    protected Mover $mover;
+    /** @var string */
+    protected string $workingDir;
+
+    /** @var NannerlConfig */
+    protected NannerlConfig $config;
+
+    protected $projectComposerPackage;
+
+    /** @var Copier */
+    protected Copier $copier;
 
     /** @var Replacer */
     protected Replacer $replacer;
 
-    /** @var string */
-    protected string $workingDir;
-
-    /** @var MozartConfig */
-    protected MozartConfig $config;
 
     /**
      * @return void
@@ -30,7 +35,7 @@ class Compose extends Command
     protected function configure()
     {
         $this->setName('compose');
-        $this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
+        $this->setDescription("Copy composer's `require` and prefix their namespace and classnames.");
         $this->setHelp('');
     }
 
@@ -40,51 +45,137 @@ class Compose extends Command
         $this->workingDir = $workingDir;
 
         try {
-            $this->config = MozartConfig::loadFromFile($workingDir . 'composer.json');
+            $this->loadProjectComposerPackage();
+
+            $this->buildDependencyList();
+
+            $this->copyFiles();
+
+            $this->updateNamespaces();
+
+            $this->cleanUp();
         } catch (\Exception $e) {
             $output->write($e->getMessage());
             return 1;
         }
 
-        $this->mover = new Mover($workingDir, $this->config);
-        $this->replacer = new Replacer($workingDir, $this->config);
-
-
-        $require = $this->config->getPackages();
-
-        $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = $this->config->getExcludedPackages();
-        $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
-        $packages = array_values($packagesToMoveByName);
-
-        foreach ($packages as $package) {
-            $package->setDependencies(array_diff_key($package->getDependencies(), array_flip($excludedPackagesNames)));
-        }
-
-        $this->mover->deleteTargetDirs($packages);
-        $this->movePackages($packages);
-        $this->replacePackages($packages);
-        $this->replaceParentInTree($packages);
-        $this->replacer->replaceParentClassesInDirectory($this->config->getClassmapDirectory());
-
-        return 0;
+        // What should this be?!
+        return 1;
     }
 
     /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
+     * 1. Load the composer.json.
      *
-     * @return void
+     * @throws \Exception
      */
-    protected function movePackages($packages): void
+    protected function loadProjectComposerPackage()
     {
-        foreach ($packages as $package) {
-            $this->movePackage($package);
-        }
 
-        $this->mover->deleteEmptyDirs();
+        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
+
+        $config = $this->projectComposerPackage->getNannerlConfig();
+        $this->config = $config;
     }
+
+
+    /** @var ComposerPackage[] */
+    protected array $flatDependencyTree = [];
+
+    /**
+     * 2. Built flat list of packages and dependencies.
+     *
+     * 2.1 Initiate getting dependencies for the project composer.json.
+     *
+     * @see Compose::flatDependencyTree
+     */
+    protected function buildDependencyList()
+    {
+
+        foreach ($this->config->getPackages() as $requiredPackageName) {
+            $packageDir = $this->workingDir . 'vendor' .DIRECTORY_SEPARATOR
+                . $requiredPackageName . DIRECTORY_SEPARATOR;
+
+            $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
+                ? $this->config->getOverrideAutoload()[$requiredPackageName]
+                : null;
+
+            $requiredComposerPackage = new ComposerPackage($packageDir, $overrideAutoload);
+            $this->getAllDependencies($requiredComposerPackage);
+        }
+    }
+
+    /**
+     * 2.2 Recursive function to get dependencies.
+     *
+     * @param ComposerPackage $requiredDependency
+     */
+    protected function getAllDependencies(ComposerPackage $requiredDependency): void
+    {
+        $excludedPackagesNames = $this->config->getExcludePrefixPackages();
+
+        $required = $requiredDependency->getRequiresNames();
+
+        foreach ($required as $dependencyName) {
+            if (in_array($dependencyName, $excludedPackagesNames)) {
+                continue;
+            }
+
+            $overrideAutoload = isset($this->config->getOverrideAutoload()[$dependencyName])
+                ? $this->config->getOverrideAutoload()[$dependencyName]
+                : null;
+
+            $dependencyComposerPackage = new ComposerPackage(
+                $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
+                . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json',
+                $overrideAutoload
+            );
+
+            $this->flatDependencyTree[$dependencyName] = $dependencyComposerPackage;
+            $this->getAllDependencies($dependencyComposerPackage);
+        }
+    }
+
+    protected function enumerateFiles()
+    {
+
+        $this->fileEnumerator = new FileEnumerator(
+            $this->flatDependencyTree,
+            $this->workingDir,
+            $this->config->getTargetDirectory()
+        );
+
+        $this->fileEnumerator->compileFileList();
+    }
+
+    protected FileEnumerator $fileEnumerator;
+
+    // 3. Copy autoloaded files for each
+    protected function copyFiles()
+    {
+
+        $this->copier = new Copier(
+            $this->fileEnumerator->getFileList(),
+            $this->workingDir,
+            $this->config->getTargetDirectory()
+        );
+
+        $this->copier->prepareTarget();
+
+        $this->copier->copy();
+    }
+
+
+    // 4. Update individual namespaces and class names.
+    // Replace references to updated namespaces and classnames throughout the dependencies.
+    protected function updateNamespaces()
+    {
+        $this->replacer = new Replacer($this->workingDir, $this->config);
+
+        $this->replacePackages($packages);
+        $this->replaceParentInTree($packages);
+        $this->replacer->replaceParentClassesInDirectory($this->config->getClassmapDirectory());
+    }
+
 
     /**
      * @param $workingDir
@@ -100,21 +191,6 @@ class Compose extends Command
         }
     }
 
-    /**
-     * Move all the packages over, one by one, starting on the deepest level of dependencies.
-     *
-     * @return void
-     */
-    public function movePackage($package): void
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->movePackage($dependency);
-            }
-        }
-
-        $this->mover->movePackage($package);
-    }
 
     /**
      * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
@@ -132,92 +208,79 @@ class Compose extends Command
         $this->replacer->replacePackage($package);
     }
 
-    /**
-     * Loops through all dependencies and their dependencies and so on...
-     * will eventually return a list of all packages required by the full tree.
-     *
-     * @param ((int|string)|mixed)[] $slugs
-     *
-     * @return ComposerPackageConfig[]
-     *
-     * @psalm-return array<array-key, ComposerPackageConfig>
-     */
-    protected function findPackages(array $slugs): array
-    {
-        $packages = [];
-
-        foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . 'vendor'
-                          . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
-
-            if (! is_dir($packageDir)) {
-                continue;
-            }
-
-            $autoloaders = null;
-            $override_autoload = $this->config->getOverrideAutoload();
-            if (! empty($override_autoload) && isset($override_autoload->$package_slug)) {
-                $autoloaders = $override_autoload->$package_slug;
-            }
-
-            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
-
-            $package = new ComposerPackageConfig($packageDir, $autoloaders);
-            $package->findAutoloaders();
-
-            $dependencies = [];
-            if (isset($config->require)) {
-                $dependencies = array_keys((array)$config->require);
-            }
-
-            $package->setDependencies($this->findPackages($dependencies));
-            $packages[$package_slug] = $package;
-        }
-
-        return $packages;
-    }
-
-    /**
-     * Get an array containing all the dependencies and dependencies
-     *
-     * @param ComposerPackageConfig $package
-     * @param array   $dependencies
-     *
-     * @return array
-     */
-    protected function getAllDependenciesOfPackage(ComposerPackageConfig $package, $dependencies = []): array
-    {
-        if (empty($package->getDependencies())) {
-            return $dependencies;
-        }
-
-        /** @var ComposerPackageConfig $dependency */
-        foreach ($package->getDependencies() as $dependency) {
-            $dependencies[] = $dependency;
-        }
-
-        foreach ($package->getDependencies() as $dependency) {
-            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
-        }
-
-        return $dependencies;
-    }
 
     /**
      * @param array $packages
      */
     protected function replaceParentInTree(array $packages): void
     {
-        /** @var ComposerPackageConfig $package */
+        /** @var ComposerPackage $package */
         foreach ($packages as $package) {
             $dependencies = $this->getAllDependenciesOfPackage($package);
 
-            /** @var ComposerPackageConfig $dependency */
+            /** @var ComposerPackage $dependency */
             foreach ($dependencies as $dependency) {
                 $this->replacer->replaceParentPackage($dependency, $package);
             }
 
             $this->replaceParentInTree($package->getDependencies());
         }
+    }
+
+    /**
+     * Delete source files if desired.
+     * Delete empty directories in destination.
+     */
+    protected function cleanUp()
+    {
+    }
+
+
+    /**
+     * Deletes all the packages that are moved from the /vendor/ directory to
+     * prevent packages that are prefixed/namespaced from being used or
+     * influencing the output of the code. They just need to be gone.
+     *
+     * @return void
+     */
+    protected function deletePackageVendorDirectories(): void
+    {
+        foreach ($this->movedPackages as $movedPackage) {
+            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $this->clean($movedPackage);
+            if (!is_dir($packageDir) || is_link($packageDir)) {
+                continue;
+            }
+
+            $this->filesystem->deleteDir($packageDir);
+
+            //Delete parent directory too if it became empty
+            //(because that package was the only one from that vendor)
+            $parentDir = dirname($packageDir);
+            if ($this->dirIsEmpty($parentDir)) {
+                $this->filesystem->deleteDir($parentDir);
+            }
+        }
+    }
+
+    protected function dirIsEmpty(string $dir): bool
+    {
+        $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        return iterator_count($di) === 0;
+    }
+
+    /**
+     * For Windows & Unix file paths' compatibility.
+     *
+     *  * Removes duplicate `\` and `/`.
+     *  * Trims them from each end.
+     *  * Replaces them with the OS agnostic DIRECTORY_SEPARATOR.
+     *
+     * @param string $path A full or partial filepath.
+     *
+     * @return string
+     */
+    protected function clean($path)
+    {
+        return trim(preg_replace('/[\/\\\\]+/', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
     }
 }
