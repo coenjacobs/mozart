@@ -68,6 +68,7 @@ class FileEnumerator
 
         $finder = new Finder();
 
+        // TODO: read 'vendor' from composer.json.
         $removePrefix = $this->workingDir .'vendor'. DIRECTORY_SEPARATOR;
 
         foreach ($this->dependencies as $dependency) {
@@ -77,8 +78,9 @@ class FileEnumerator
              *
              * [ "psr-4" => [ "BrianHenryIE\Nannerl" => "src" ] ]
              */
+            $autoloaders = $dependency->getAutoload();
 
-            foreach ($dependency->getAutoload() as $type => $value) {
+            foreach ($autoloaders as $type => $value) {
                 // Might have to switch/case here.
 
                 foreach ($value as $namespace => $path) {
@@ -114,5 +116,12 @@ class FileEnumerator
     public function getFileList(): array
     {
         return array_keys($this->filesWithDependencies);
+    }
+
+    public function getPhpFileList(): array
+    {
+        return array_filter($this->getFileList(), function ($element) {
+            return false !== strpos($element, '.php');
+        });
     }
 }
