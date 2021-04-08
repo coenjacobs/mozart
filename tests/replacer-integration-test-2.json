@@ -1,0 +1,13 @@
+{
+  "name": "brianhenryie/nannerl",
+  "require": {
+    "setasign/fpdf": "*"
+  },
+  "extra": {
+    "nannerl": {
+      "namespace_prefix": "BrianHenryIE\\Nannerl\\",
+      "classmap_prefix": "BrianHenryIE_Nannerl_",
+      "delete_vendor_directories": false
+    }
+  }
+}

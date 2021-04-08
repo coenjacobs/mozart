@@ -2,13 +2,7 @@
 
 namespace CoenJacobs\Mozart;
 
-use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
-use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
-use CoenJacobs\Mozart\Composer\MozartConfig;
-use CoenJacobs\Mozart\Composer\ComposerPackageConfig;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
-use CoenJacobs\Mozart\Replace\NamespaceReplacer;
+use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
@@ -17,215 +11,137 @@ use Symfony\Component\Finder\Finder;
 
 class Replacer
 {
-    /** @var string */
-    protected $workingDir;
-
-    /** @var string */
-    protected $targetDir;
-
-    /** @var MozartConfig */
+    /** @var NannerlConfig */
     protected $config;
-
-    /** @var array */
-    protected $replacedClasses = [];
 
     /** @var Filesystem */
     protected $filesystem;
 
-    public function __construct($workingDir, MozartConfig $config)
+    public function __construct($config, $workingDir)
     {
-        $this->workingDir = $workingDir;
-        $this->targetDir = $config->getDepDirectory();
+
         $this->config = $config;
 
-        $this->filesystem = new Filesystem(new Local($this->workingDir));
+        $this->filesystem = new Filesystem(new Local($workingDir));
     }
 
-    public function replacePackage(ComposerPackageConfig $package): void
-    {
-        foreach ($package->getAutoloaders() as $autoloader) {
-            $this->replacePackageByAutoloader($package, $autoloader);
-        }
-    }
+    // Don't replace a classname if there's an import for a class with the same name.
+    // but do replace \Classname always
+
 
     /**
-     * @param $targetFile
-     * @param $autoloader
-     *
-     * @return void
+     * @param array $classes
+     * @param array $namespaces
+     * @param string $absoluteTargerDir
+     * @param array $phpFileList
+     * @throws FileNotFoundException
      */
-    public function replaceInFile($targetFile, Autoloader $autoloader): void
+    public function replaceInFiles(array $classes, array $namespaces, array $phpFileList)
     {
-        $targetFile = str_replace($this->workingDir, '', $targetFile);
-        try {
-            $contents = $this->filesystem->read($targetFile);
-        } catch (FileNotFoundException $e) {
-            return;
-        }
 
-        if (empty($contents) || false === $contents) {
-            return;
-        }
+        foreach ($phpFileList as $relativeFilePath) {
+            $filepath = $this->config->getTargetDirectory() . $relativeFilePath;
 
-        if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new NamespaceReplacer();
-            $replacer->setDepNamespace($this->config->getDepNamespace());
-        } else {
-            $replacer = new ClassmapReplacer();
-            $replacer->setClassmapPrefix($this->config->getClassmapPrefix());
-        }
+            // Throws an exception, but unlikely to happen.
+            $contents = $this->filesystem->read($filepath);
 
-        $replacer->setAutoloader($autoloader);
-        $contents = $replacer->replace($contents);
+            foreach ($namespaces as $originalNamespace) {
+                $namespacePrefix = $this->config->getNamespacePrefix();
 
-        if ($replacer instanceof ClassmapReplacer) {
-            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
-        }
-
-        $this->filesystem->put($targetFile, $contents);
-    }
-
-    /**
-     * @param ComposerPackageConfig $package
-     * @param $autoloader
-     *
-     * @return void
-     */
-    public function replacePackageByAutoloader(ComposerPackageConfig $package, Composer\Autoload\Autoloader $autoloader): void
-    {
-        if ($autoloader instanceof NamespaceAutoloader) {
-            $source_path = str_replace(
-                '\\',
-                DIRECTORY_SEPARATOR,
-                $this->workingDir . $this->targetDir . $autoloader->getNamespace()
-            );
-            $this->replaceInDirectory($autoloader, $source_path);
-        } elseif ($autoloader instanceof Classmap) {
-            $finder = new Finder();
-            $source_path = $this->workingDir . $this->config->getClassmapDirectory() . DIRECTORY_SEPARATOR
-                           . $package->getName();
-            $finder->files()->in($source_path);
-
-            foreach ($finder as $foundFile) {
-                $targetFile = $foundFile->getRealPath();
-
-                if ('.php' == substr($targetFile, -4, 4)) {
-                    $this->replaceInFile($targetFile, $autoloader);
-                }
+                $contents = $this->replaceNamespace($contents, $originalNamespace, $namespacePrefix);
             }
+            foreach ($classes as $originalClassname) {
+                $classmapPrefix = $this->config->getClassmapPrefix();
+
+                $contents = $this->replaceClassname($contents, $originalClassname, $classmapPrefix);
+            }
+
+            $this->filesystem->put($filepath, $contents);
         }
     }
 
+
     /**
-     * @param $autoloader
-     * @param $directory
+     * @param string $contents The text to make replacements in.
      *
-     * @return void
+     * @return string The updated text.
      */
-    public function replaceParentClassesInDirectory(string $directory): void
+    public function replaceNamespace($contents, $original, $namespacePrefix)
     {
-        if (count($this->replacedClasses)===0) {
-            return;
-        }
+        $searchNamespace = preg_quote($original, '/');
+//        $namespacePrefix = preg_quote($namespacePrefix, '/');
 
-        $directory = trim($directory, '\\/'.DIRECTORY_SEPARATOR);
-        $finder = new Finder();
-        $finder->files()->in($directory);
+        $pattern = "
+            /                                # Start the pattern
+            (namespace\s
+            |use\s
+            |[^a-zA-Z0-9_\x7f-\xff]\\\)
+            ($searchNamespace)
+            /Ux";
 
-        $replacedClasses = $this->replacedClasses;
+        $replacingFunction = function ($matches) use ($namespacePrefix) {
 
-        foreach ($finder as $file) {
-            $targetFile = $file->getPathName();
+            return $matches[1] . $namespacePrefix . $matches[2];
+        };
 
-            if ('.php' == substr($targetFile, -4, 4)) {
-                try {
-                    $contents = $this->filesystem->read($targetFile);
-                } catch (FileNotFoundException $e) {
-                    continue;
+        return preg_replace_callback( $pattern, $replacingFunction, $contents );
+    }
+
+    public function replaceClassname($contents, $originalClassname, $classnamePrefix)
+    {
+
+
+        return preg_replace_callback(
+            '
+			/											# Start the pattern
+				namespace\s+([a-zA-Z0-9_\x7f-\xff\\\\]+)[;{\s\n]{1}[\s\S]*?(?=namespace|$) 
+														# Look for a preceeding namespace declaration, up until a 
+														# potential second namespace declaration.
+				|										# if found, match that much before continuing the search on
+														# the remainder of the string.
+				([^a-zA-Z0-9_\x7f-\xff])('. $originalClassname . ')([^a-zA-Z0-9_\x7f-\xff])
+				
+			/x', //                                     # x: ignore whitespace in regex.
+            function ($matches) use ($contents, $originalClassname, $classnamePrefix) {
+
+                // If we're inside a namespace other than the global namespace:
+                if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
+
+                    $updated = $this->replaceGlobalClassInsideNamedNamespace( $matches[0], $originalClassname, $classnamePrefix );
+
+                    return $updated;
                 }
 
-                if (empty($contents) || false === $contents) {
-                    continue;
-                }
-
-                foreach ($replacedClasses as $original => $replacement) {
-                    $contents = preg_replace_callback(
-                        '/(.*)([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
-                        function ($matches) use ($replacement) {
-                            if (preg_match('/(include|require)/', $matches[0], $output_array)) {
-                                return $matches[0];
-                            }
-                            return $matches[1] . $matches[2] . $replacement . $matches[3];
-                        },
-                        $contents
-                    );
-                }
-
-                $this->filesystem->put($targetFile, $contents);
-            }
-        }
+                return $matches[2] . $classnamePrefix . $originalClassname . $matches[4];
+            },
+            $contents
+        );
     }
 
     /**
-     * @param $autoloader
-     * @param $directory
+     * Pass in a string and look for \Classname instances.
      *
-     * @return void
+     * @param $content
+     * @param $originalClassname
+     * @param $classnamePrefix
+     * @return string
      */
-    public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
-    {
-        $finder = new Finder();
-        try {
-            $finder->files()->in($directory);
-        } catch (DirectoryNotFoundException $e) {
-            return;
-        }
+    protected function replaceGlobalClassInsideNamedNamespace( $contents, $originalClassname, $classnamePrefix ): string {
 
-        foreach ($finder as $file) {
-            $targetFile = $file->getPathName();
+        return preg_replace_callback(
+            '/([^a-zA-Z0-9_\x7f-\xff]      # Not a class character
+                                    \\\)                       # Followed by a backslash to indicate global namespace
+                                    ('.$originalClassname.')   # Followed by the classname
+                                    ([^\\\;]+)         # Not a backslash or semicolon which might indicate a namespace
+                                                        
+                                    
+			        /x', //                                     # x: ignore whitespace in regex.
+            function ($matches) use ($contents, $originalClassname, $classnamePrefix) {
 
-            if ('.php' == substr($targetFile, -4, 4)) {
-                $this->replaceInFile($targetFile, $autoloader);
-            }
-        }
-    }
 
-    /**
-     * Replace everything in parent package, based on the dependency package.
-     * This is done to ensure that package A (which requires package B), is also
-     * updated with the replacements being made in package B.
-     *
-     * @param ComposerPackageConfig $package
-     * @param ComposerPackageConfig $parent
-     *
-     * @return void
-     */
-    public function replaceParentPackage(ComposerPackageConfig $package, ComposerPackageConfig $parent): void
-    {
-        foreach ($parent->getAutoloaders() as $parentAutoloader) {
-            foreach ($package->getAutoloaders() as $autoloader) {
-                if ($parentAutoloader instanceof NamespaceAutoloader) {
-                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->getNamespace());
-                    $directory = $this->workingDir . $this->config->getDepDirectory() . $namespace
-                                 . DIRECTORY_SEPARATOR;
-
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $this->replaceInDirectory($autoloader, $directory);
-                    } else {
-                        $directory = str_replace($this->workingDir, '', $directory);
-                        $this->replaceParentClassesInDirectory($directory);
-                    }
-                } else {
-                    $directory = $this->workingDir . $this->config->getClassmapDirectory() . $parent->getName();
-
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $this->replaceInDirectory($autoloader, $directory);
-                    } else {
-                        $directory = str_replace($this->workingDir, '', $directory);
-                        $this->replaceParentClassesInDirectory($directory);
-                    }
-                }
-            }
-        }
+                return $matches[1] . $classnamePrefix . $originalClassname . $matches[3];
+            },
+            $contents
+        );
     }
 }
