@@ -29,11 +29,15 @@ class NamespaceReplacer extends BaseReplacer
                 (                            # Start the namespace matcher
                   (?<!$dependencyNamespace)  # Does NOT start with the prefix
                   (?<![a-zA-Z0-9_]\\\\)      # Not a class-allowed character followed by a slash
-                  (?<!class\s)				 # Not a class declaration.
-                  $searchNamespace           # The namespace we're looking for
-                  [\\\|;\s]                  # Backslash, pipe, semicolon, or space
+                  (?<!class\s)				 # Not a class declaration
+                  $searchNamespace			 # The namespace were looking for
+                  (?=;|\\\|\||\sas)			 # Followed by one of
+                  							 # semicolon when it is the class namespace itself
+                  				             # backslash when it is part of a longer namespace or namespaced class
+                  							 # pipe
+                  							 # space followed by the as keyword
                 )                            # End the namespace matcher
-            /Ux",
+            /Ux", # U non-greedy matching by default, x ignore whitespace in regex.
             function ($matches) {
                 return $matches[1] . $this->dep_namespace . $matches[2];
             },

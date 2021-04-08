@@ -4,4 +4,9 @@ vendor/
 .DS_Store
 composer.lock
 .phpunit.result.cache
+
 mozart.phar
+
+tests/reports
+
+temptestdir
