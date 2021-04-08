@@ -67,7 +67,6 @@ class Replacer
     public function replaceNamespace($contents, $original, $namespacePrefix)
     {
         $searchNamespace = preg_quote($original, '/');
-//        $namespacePrefix = preg_quote($namespacePrefix, '/');
 
         $pattern = "
             /                                # Start the pattern

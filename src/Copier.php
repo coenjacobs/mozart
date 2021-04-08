@@ -2,11 +2,8 @@
 
 namespace CoenJacobs\Mozart;
 
-use CoenJacobs\Mozart\Composer\ComposerPackage;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
-use Symfony\Component\Finder\Finder;
 
 class Copier
 {
