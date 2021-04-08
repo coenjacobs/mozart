@@ -45,7 +45,7 @@ class ClassmapReplacerIntegrationTest extends TestCase
             public $classmap_prefix = "Mozart_";
             public $dep_directory = "/dep_directory/";
             public $classmap_directory = "/classmap_directory/";
-
+            public $override_autoload;
         };
 
         $composer = new class() {
@@ -109,7 +109,136 @@ class ClassmapReplacerIntegrationTest extends TestCase
     }
 
 
-    /**
+
+	/**
+	 * Issue #86 – "class as" appeared in a comment and later the keyword as was prefixed!
+	 *
+	 * Solved by https://github.com/ziodave
+	 */
+	public function test_do_not_parse_comments_to_classnames()
+	{
+
+		$composer = $this->composer;
+
+		$composer->require["pear/pear-core-minimal"] = "v1.10.10";
+
+		$composer->extra->mozart->override_autoload = new class() {
+			public $pear_pear_code_minimal;
+			public $pear_console_getopt;
+			public function __construct()
+			{
+				$this->pear_pear_code_minimal = new class() {
+					public $classmap = array(
+						"src/"
+					);
+				};
+				$this->pear_console_getopt = new stdClass();
+			}
+		};
+
+
+		$composer_json_string = json_encode($composer);
+		$composer_json_string = str_replace("pear_pear_core_minimal", "pear/pear-core-minimal", $composer_json_string);
+		$composer_json_string = str_replace("pear_console_getopt", "pear/console_getopt", $composer_json_string);
+
+		file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+
+		chdir($this->testsWorkingDir);
+
+		exec('composer install');
+
+		$inputInterfaceMock = $this->createMock(InputInterface::class);
+		$outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+		$mozartCompose = new Compose();
+
+		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+		$php_string = file_get_contents($this->testsWorkingDir .'/classmap_directory/pear/pear_exception/PEAR/Exception.php');
+
+		// Confirm problem is gone.
+		$this->assertStringNotContainsString('foreach (self::$_observers Mozart_as $func) {', $php_string);
+
+		// Confirm solution is correct.
+		$this->assertStringContainsString('foreach (self::$_observers as $func) {', $php_string);
+	}
+
+	/**
+	 * Like issue #86, when prefixing WP_Dependency_Installer, words in comments were
+	 *
+	 * @see https://github.com/afragen/wp-dependency-installer/
+	 */
+	public function test_do_not_parse_comments_to_classnames_wp_dependency_installer()
+	{
+
+		$composer = $this->composer;
+
+		$composer->require["afragen/wp-dependency-installer"] = "3.1";
+
+		$composer_json_string = json_encode($composer);
+
+		file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+
+		chdir($this->testsWorkingDir);
+
+		exec('composer install');
+
+		$inputInterfaceMock = $this->createMock(InputInterface::class);
+		$outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+		$mozartCompose = new Compose();
+
+		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+		$php_string = file_get_contents($this->testsWorkingDir .'/classmap_directory/afragen/wp-dependency-installer/wp-dependency-installer.php');
+
+		// Confirm problem is gone.
+		$this->assertStringNotContainsString('Path Mozart_to plugin or theme', $php_string, 'Text in comment still prefixed.');
+
+		// Confirm solution is correct.
+		$this->assertStringContainsString('Mozart_WP_Dependency_Installer', $php_string, 'Class name not properly prefixed.');
+	}
+
+
+
+	/**
+	 * Issue #106, multiple classmap prefixing.
+	 *
+	 * @see https://github.com/coenjacobs/mozart/issues/106
+	 */
+	public function test_only_prefix_classmap_classes_once()
+	{
+
+		$composer = $this->composer;
+
+		$composer->require["symfony/polyfill-intl-idn"] = "1.22.0";
+		$composer->require["symfony/polyfill-intl-normalizer"] = "1.22.0";
+
+		$composer_json_string = json_encode($composer);
+
+		file_put_contents($this->testsWorkingDir . '/composer.json', $composer_json_string);
+
+		chdir($this->testsWorkingDir);
+
+		exec('composer install');
+
+		$inputInterfaceMock = $this->createMock(InputInterface::class);
+		$outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+		$mozartCompose = new Compose();
+
+		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+		$php_string = file_get_contents($this->testsWorkingDir .'/classmap_directory/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php');
+
+		// Confirm problem is gone.
+		$this->assertStringNotContainsString('class Mozart_Mozart_Normalizer extends', $php_string, 'Double prefixing problem still present.');
+
+		// Confirm solution is correct.
+		$this->assertStringContainsString('class Mozart_Normalizer extends', $php_string, 'Class name not properly prefixed.');
+	}
+
+	/**
      * Delete $this->testsWorkingDir after each test.
      *
      * @see https://stackoverflow.com/questions/3349753/delete-directory-with-files-in-it
