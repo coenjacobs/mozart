@@ -1,7 +1,7 @@
 {
   "name": "brianhenryie/nannerl",
   "require": {
-    "league/container": "*"
+    "google/apiclient": "*"
   },
   "extra": {
     "nannerl": {
