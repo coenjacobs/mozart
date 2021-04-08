@@ -24,6 +24,11 @@
             "CoenJacobs\\Mozart\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "CoenJacobs\\Mozart\\": "tests/"
+        }
+    },
     "require-dev": {
         "phpunit/phpunit": "^9",
         "clue/phar-composer": "^1.2",

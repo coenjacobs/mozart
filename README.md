@@ -117,6 +117,10 @@ The following configuration is optional:
 - `exclude_files_from_copy` is an optional array of regex patterns to check filenames against (including the path) where Mozart will skip that file if there is a match.
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
 
+ The following configuration is optional:
+ 
+ - `classmap_output` defines the `filename` to write the classmap autoloader to (relative to the directory where `mozart compose` is invoked from) and the `relative_path` to remove from the beginning of each file path. 
+ 
 After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
 
 ## Scripts
@@ -136,6 +140,8 @@ Mozart is designed to install and be forgotten about. Using Composer scripts, th
 ```
 
 When using Mozart through its Docker container, you can replace the `"\"vendor/bin/mozart\" compose",` lines with the actual commands you use to [run the Docker container](#docker) for your specific project. Running Mozart from inside the Docker container is really fast and shouldn't take more than a couple seconds.
+
+If your plugin does not use Composer's autoloader, classmaps can be generated in the `dep_directory` and `classmap_directory` by running `vendor/bin/mozart dump-autoload`
 
 If your plugin does not use Composer's autoloader, classmaps can be generated in the `dep_directory` and `classmap_directory` by running `vendor/bin/mozart dump-autoload`
 
