@@ -74,6 +74,8 @@ class ClassmapReplacerIntegrationTest extends TestCase
     public function test_it_does_not_make_classname_replacement_inside_namespaced_file()
     {
 
+        $this->markTestSkipped('composer not respecting pinned commit');
+
         $composer = $this->composer;
 
         $composer->repositories[] = new class() {
