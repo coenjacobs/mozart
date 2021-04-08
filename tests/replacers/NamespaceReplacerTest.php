@@ -123,4 +123,20 @@ class NamespaceReplacerTest extends TestCase
 
         $this->assertEquals($expected, $replacer->replace($contents));
     }
+
+/**
+ * @test
+ */
+public function it_doesnt_prefix_function_types_that_happen_to_match_the_namespace() {
+
+    $namespace = 'Mpdf';
+    $prefix = "Mozart\\";
+
+    $replacer = self::createReplacer($namespace, $prefix);
+
+    $contents = 'public function getServices( Mpdf $mpdf, LoggerInterface $logger, $config, )';
+    $expected = 'public function getServices( Mpdf $mpdf, LoggerInterface $logger, $config, )';
+
+    $this->assertEquals($expected, $replacer->replace($contents));
+}
 }

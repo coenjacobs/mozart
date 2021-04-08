@@ -152,4 +152,146 @@ class ClassMapReplacerTest extends TestCase
         $this->assertStringNotContainsString('Mozart_A_Class', $result);
         $this->assertStringContainsString('Mozart_B_Class', $result);
     }
+
+
+    /**
+     *
+     * @test
+     */
+    public function it_does_not_treat_comments_as_classes()
+    {
+        $input = "
+    	// A class as good as any.
+    	class Whatever {
+    	
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever', $replacer->replacedClasses);
+    }
+
+    /**
+     *
+     * @test
+     */
+    public function it_does_not_treat_multiline_comments_as_classes()
+    {
+        $input = "
+    	 /**
+    	  * A class as good as any; class as.
+    	  */
+    	class Whatever {
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever', $replacer->replacedClasses);
+    }
+
+    /**
+     * This worked without adding the expected regex:
+     *
+     * // \s*\\/?\\*{2,}[^\n]* |                        # Skip multiline comment bodies
+     *
+     * @test
+     */
+    public function it_does_not_treat_multiline_comments_opening_line_as_classes()
+    {
+        $input = "
+    	 /** A class as good as any; class as.
+    	  *
+    	  */
+    	class Whatever {
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever', $replacer->replacedClasses);
+    }
+
+
+    /**
+     *
+     * @test
+     */
+    public function it_does_not_treat_multiline_comments_on_one_line_as_classes()
+    {
+        $input = "
+    	 /** A class as good as any; class as. */ class Whatever_Trevor {
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever_Trevor', $replacer->replacedClasses);
+    }
+
+    /**
+     * If someone were to put a semicolon in the comment it would mess with the previous fix.
+     *
+     * @test
+     */
+    public function it_does_not_treat_comments_with_semicolons_as_classes()
+    {
+        $input = "
+    	// A class as good as any; class as versatile as any.
+    	class Whatever_Ever {
+    	
+    	}
+    	";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayNotHasKey('as', $replacer->replacedClasses);
+        $this->assertArrayHasKey('Whatever_Ever', $replacer->replacedClasses);
+    }
+
+    /**
+     * @test
+     */
+    public function it_parses_classes_after_semicolon()
+    {
+
+        $input = "
+	    myvar = 123; class Pear { };
+	    ";
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+        $this->assertArrayHasKey('Pear', $replacer->replacedClasses);
+    }
+
+    /**
+     * @test
+     */
+    public function it_parses_classes_followed_by_comment()
+    {
+
+        $input = <<<'EOD'
+	class WP_Dependency_Installer {
+		/**
+		 *
+		 */
+EOD;
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->replace($input);
+
+        $this->assertArrayHasKey('WP_Dependency_Installer', $replacer->replacedClasses);
+    }
 }

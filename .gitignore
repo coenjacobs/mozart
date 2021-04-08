@@ -5,4 +5,8 @@ vendor/
 composer.lock
 .phpunit.result.cache
 
+mozart.phar
+
+tests/reports
+
 temptestdir

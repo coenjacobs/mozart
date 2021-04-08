@@ -63,6 +63,7 @@ class Compose extends Command
         return 1;
     }
 
+
     /**
      * 1. Load the composer.json.
      *
@@ -74,6 +75,12 @@ class Compose extends Command
         $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
 
         $config = $this->projectComposerPackage->getNannerlConfig();
+
+        if (!isset($config->exclude_files_from_copy)) {
+            $config->exclude_files_from_copy = [];
+        }
+
+
         $this->config = $config;
     }
 

@@ -197,7 +197,7 @@ class MoverTest extends TestCase
      */
     public function it_moves_each_file_once_per_namespace()
     {
-
+        $this->markTestSkipped( 'iio/libmergepdf causing PHP Unit to hang');
         // The composer.json with the Mozart requirement and `mozart compose` removed.
         copy(__DIR__ . '/issue89-composer.json', $this->testsWorkingDir . 'composer.json');
 

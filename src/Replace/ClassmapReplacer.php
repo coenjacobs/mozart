@@ -59,25 +59,30 @@ class ClassmapReplacer extends BaseReplacer
         }
 
         return preg_replace_callback(
-            "
-			/													# Start the pattern
-						namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*?(?=namespace|$) 
-																# Look for a preceeding namespace declaration, up until 
-																# a potential second namespace declaration
-						|										# if found, match that much before repeating the search 
-																# on the remainder of the string
-						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
-						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first 
-																# non-classname-valid character
-						\s?										# Allow a space after
-						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends, 
-																# implements, or a new line
-			/sx", //                                            # dot matches newline, ignore whitespace in regex.
+            '
+			/											# Start the pattern
+				namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}[\s\S]*?(?=namespace|$) 
+														# Look for a preceeding namespace declaration, up until a 
+														# potential second namespace declaration.
+				|										# if found, match that much before continuing the search on
+														# the remainder of the string.
+				^\s*\/\/.*$ |							# Skip line comments
+				^\s*\*[^$\n]*? |						# Skip multiline comment bodies
+				^[^$\n]*?(?:\*\/) |						# Skip multiline comment endings
+				[\s\S]*?(?='.$this->classmap_prefix.')	# Match an already prefixed classname
+				[a-zA-Z0-9_\x7f-\xff]+ |				# before continuing on the remainder of the string	
+				\s*										# Whitespace is allowed before 
+				(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
+				([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first non-classname-valid character
+				\s?										# Allow a space after
+				(?:{|extends|implements|\n|$)			# Class declaration can be followed by {, extends, implements 
+														# or a new line
+			/x', //                                     # x: ignore whitespace in regex.
             function ($matches) use ($contents) {
 
-                // If we're inside a namespace other than the global namesspace, just return.
-                if (preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
-                    return $matches[0] ;
+                // If we didn't capture a proper class/interface, return.
+                if (1 === count($matches)) {
+                    return $matches[0];
                 }
 
                 // The prepended class name.
