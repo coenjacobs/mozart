@@ -64,8 +64,8 @@ class MoverTest extends TestCase
         $composer->extra->mozart = $mozartConfig;
 
         $composerFilepath = $this->testsWorkingDir . '/composer.json';
-        $composerJson = json_encode( $composer ) ;
-        file_put_contents( $composerFilepath, $composerJson );
+        $composerJson = json_encode($composer) ;
+        file_put_contents($composerFilepath, $composerJson);
 
         $this->config = MozartConfig::loadFromFile($composerFilepath);
     }
@@ -80,8 +80,8 @@ class MoverTest extends TestCase
         $mover = new Mover($this->testsWorkingDir, $this->config);
 
         // Make sure the directories don't exist.
-        assert( ! file_exists($this->testsWorkingDir . $this->config->getDepDirectory() ), "{$this->testsWorkingDir}{$this->config->getDepDirectory()} already exists" );
-        assert( ! file_exists($this->testsWorkingDir . $this->config->getClassmapDirectory()));
+        assert(! file_exists($this->testsWorkingDir . $this->config->getDepDirectory()), "{$this->testsWorkingDir}{$this->config->getDepDirectory()} already exists");
+        assert(! file_exists($this->testsWorkingDir . $this->config->getClassmapDirectory()));
 
         $packages = array();
 
@@ -197,7 +197,7 @@ class MoverTest extends TestCase
      */
     public function it_moves_each_file_once_per_namespace()
     {
-        $this->markTestSkipped( 'iio/libmergepdf causing PHP Unit to hang');
+        $this->markTestSkipped('iio/libmergepdf causing PHP Unit to hang');
         // The composer.json with the Mozart requirement and `mozart compose` removed.
         copy(__DIR__ . '/issue89-composer.json', $this->testsWorkingDir . 'composer.json');
 

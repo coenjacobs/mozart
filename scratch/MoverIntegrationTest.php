@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Console\Commands\Compose;
+use CoenJacobs\Mozart\Util\IntegrationTestCase;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -9,15 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @codeCoverageIgnore
  */
-class MoverIntegrationTest extends TestCase
+class MoverIntegrationTest extends IntegrationTestCase
 {
-
-    /**
-     * A temporary directory for creating and deleting files for these tests.
-     *
-     * @var string
-     */
-    protected $testsWorkingDir;
 
     /**
      * @var stdClass
@@ -30,12 +24,6 @@ class MoverIntegrationTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->testsWorkingDir = __DIR__ . '/temptestdir';
-        if (file_exists($this->testsWorkingDir)) {
-            $this->delete_dir($this->testsWorkingDir);
-        }
-        mkdir($this->testsWorkingDir);
 
         $mozart_config = new class() {
             public $dep_namespace = "Mozart";
@@ -119,7 +107,7 @@ class MoverIntegrationTest extends TestCase
      */
     public function testLibpdfmergeSucceeds()
     {
-        $this->markTestSkipped( 'iio/libmergepdf causing PHP Unit to hang');
+        $this->markTestSkipped('iio/libmergepdf causing PHP Unit to hang');
 
         $composer = $this->composer;
 
@@ -148,69 +136,32 @@ class MoverIntegrationTest extends TestCase
 
 
 
-	/**
-	 * Issue 97. Package named "crewlabs/unsplash" is downloaded to `vendor/crewlabs/unsplash` but their composer.json
-	 * has the package name as "unsplash/unsplash".
-	 *
-	 * "The "/Users/BrianHenryIE/Sites/mozart-97/vendor/unsplash/unsplash/src" directory does not exist."
-	 */
-	public function testCrewlabsUnsplashSucceeds()
-	{
-
-		$composer = $this->composer;
-
-		$composer->require["crewlabs/unsplash"] = "3.1.0";
-
-		file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
-
-		chdir($this->testsWorkingDir);
-
-		exec('composer install');
-
-		$inputInterfaceMock = $this->createMock(InputInterface::class);
-		$outputInterfaceMock = $this->createMock(OutputInterface::class);
-
-		$mozartCompose = new Compose();
-
-		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
-
-		$this->assertEquals(0, $result);
-
-	}
-
-
-	/**
-     * Delete $this->testsWorkingDir after each test.
+    /**
+     * Issue 97. Package named "crewlabs/unsplash" is downloaded to `vendor/crewlabs/unsplash` but their composer.json
+     * has the package name as "unsplash/unsplash".
      *
-     * @see https://stackoverflow.com/questions/3349753/delete-directory-with-files-in-it
+     * "The "/Users/BrianHenryIE/Sites/mozart-97/vendor/unsplash/unsplash/src" directory does not exist."
      */
-    public function tearDown(): void
+    public function testCrewlabsUnsplashSucceeds()
     {
-        parent::tearDown();
 
-        $dir = $this->testsWorkingDir;
+        $composer = $this->composer;
 
-        $this->delete_dir($dir);
-    }
+        $composer->require["crewlabs/unsplash"] = "3.1.0";
 
-    protected function delete_dir($dir)
-    {
-        if (!file_exists($dir)) {
-            return;
-        }
+        file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
 
-        $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
-        $files = new RecursiveIteratorIterator(
-            $it,
-            RecursiveIteratorIterator::CHILD_FIRST
-        );
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getRealPath());
-            } else {
-                unlink($file->getRealPath());
-            }
-        }
-        rmdir($dir);
+        chdir($this->testsWorkingDir);
+
+        exec('composer install');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $this->assertEquals(0, $result);
     }
 }
