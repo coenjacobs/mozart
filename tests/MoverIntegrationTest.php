@@ -145,7 +145,39 @@ class MoverIntegrationTest extends TestCase
     }
 
 
-    /**
+
+	/**
+	 * Issue 97. Package named "crewlabs/unsplash" is downloaded to `vendor/crewlabs/unsplash` but their composer.json
+	 * has the package name as "unsplash/unsplash".
+	 *
+	 * "The "/Users/BrianHenryIE/Sites/mozart-97/vendor/unsplash/unsplash/src" directory does not exist."
+	 */
+	public function testCrewlabsUnsplashSucceeds()
+	{
+
+		$composer = $this->composer;
+
+		$composer->require["crewlabs/unsplash"] = "3.1.0";
+
+		file_put_contents($this->testsWorkingDir . '/composer.json', json_encode($composer));
+
+		chdir($this->testsWorkingDir);
+
+		exec('composer install');
+
+		$inputInterfaceMock = $this->createMock(InputInterface::class);
+		$outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+		$mozartCompose = new Compose();
+
+		$result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+		$this->assertEquals(0, $result);
+
+	}
+
+
+	/**
      * Delete $this->testsWorkingDir after each test.
      *
      * @see https://stackoverflow.com/questions/3349753/delete-directory-with-files-in-it
