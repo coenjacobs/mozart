@@ -73,7 +73,7 @@ class Compose extends Command
         }
 
         // What should this be?!
-        return 1;
+        return 0;
     }
 
 

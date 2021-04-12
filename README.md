@@ -1,4 +1,11 @@
-# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Total Downloads](https://poser.pugx.org/coenjacobs/mozart/downloads)](//packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
+# Mozart
+
+Given a Composer `vendor` folder, this tool will prefix the namespaces and global classnames. 
+
+The primary use case is WordPress, where different plugins could each include different versions of the same library. The class will be loaded by whichever plugin needs it first, then the subsequent instantiations of the class will all use that version, with potentially unpredictable behaviour and missing functionality.    
+
+e.g. 
+
 Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
 
 This package requires PHP 7.3 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.

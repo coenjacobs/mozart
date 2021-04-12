@@ -58,6 +58,17 @@ class ChangeEnumerator
     public function find(string $contents): string
     {
 
+
+        // If the entire file is under one namespace, all we want is the namespace.
+        $singleNamespacePattern = '/
+            namespace\s+([0-9A-Za-z_\x7f-\xff\\\\]+)[\s\S]*;    # A single namespace in the file.... should return
+        /x';
+        if (1=== preg_match($singleNamespacePattern, $contents, $matches)) {
+            $this->discoveredNamespaces[$matches[1]] = $matches[1];
+            return $contents;
+        }
+
+
         return preg_replace_callback(
             '
 			/											# Start the pattern

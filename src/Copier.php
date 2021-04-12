@@ -50,11 +50,11 @@ class Copier
         if (! $this->filesystem->has($this->targetDir)) {
             $this->filesystem->createDir($this->targetDir);
         } else {
-            foreach ($this->filepaths as $relativeFilepath) {
-                $absoluteFilepath = $this->targetDir . $relativeFilepath;
+            foreach ($this->filepaths as $vendorRelativeFilepath) {
+                $projectRelativeFilepath = $this->targetDir . $vendorRelativeFilepath;
 
-                if ($this->filesystem->has($absoluteFilepath)) {
-                    $this->filesystem->delete($absoluteFilepath);
+                if ($this->filesystem->has($projectRelativeFilepath)) {
+                    $this->filesystem->delete($projectRelativeFilepath);
                 }
             }
         }

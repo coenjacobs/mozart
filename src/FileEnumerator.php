@@ -69,7 +69,7 @@ class FileEnumerator
         $finder = new Finder();
 
         // TODO: read 'vendor' from composer.json.
-        $removePrefix = $this->workingDir .'vendor'. DIRECTORY_SEPARATOR;
+        $prefixToRemove = $this->workingDir .'vendor'. DIRECTORY_SEPARATOR;
 
         foreach ($this->dependencies as $dependency) {
 
@@ -90,7 +90,7 @@ class FileEnumerator
                     if (is_file($packagePath . $path)) {
                         //  $finder->files()->name($file)->in($source_path);
 
-                        $relativeFilepath = str_replace($removePrefix, '', $packagePath . $path);
+                        $relativeFilepath = str_replace($prefixToRemove, '', $packagePath . $path);
 
                         $this->filesWithDependencies[ $relativeFilepath ] = $dependency->getName();
 
@@ -99,13 +99,22 @@ class FileEnumerator
 
                     // else it is a directory.
 
+                    $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
                     $sourcePath = $packagePath. $path;
 
-                    $finder->files()->in($sourcePath);
+                    // Only returning directories ... bh-wp-logger... symlink issue?
+
+                    $realSourcePath = realpath($sourcePath);
+
+
+//                    $finder->files()->in($realSourcePath)
+                    $finder->files()->in($sourcePath)->followLinks();
 
                     foreach ($finder as $foundFile) {
-                        $filePath = $foundFile->getRealPath();
-                        $relativeFilepath = str_replace($removePrefix, '', $filePath);
+                        $filePath = $foundFile->getPathname();
+//                        $filePath = str_replace( $realSourcePath, $sourcePath, $filePath );
+                        $relativeFilepath = str_replace($prefixToRemove, '', $filePath);
                         $this->filesWithDependencies[$relativeFilepath] = $dependency->getName();
                     }
                 }

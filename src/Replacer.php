@@ -48,6 +48,7 @@ class Replacer
 
                 $contents = $this->replaceNamespace($contents, $originalNamespace, $namespacePrefix);
             }
+
             foreach ($classes as $originalClassname) {
                 $classmapPrefix = $this->config->getClassmapPrefix();
 
@@ -64,16 +65,16 @@ class Replacer
      *
      * @return string The updated text.
      */
-    public function replaceNamespace($contents, $original, $namespacePrefix)
+    public function replaceNamespace($contents, $originalNamespace, $namespacePrefix)
     {
-        $searchNamespace = preg_quote($original, '/');
+        $searchNamespace = preg_quote($originalNamespace, '/');
 
         $pattern = "
             /                                # Start the pattern
             (namespace\s
             |use\s
             |[^a-zA-Z0-9_\x7f-\xff]\\\)
-            ($searchNamespace)
+            ({$searchNamespace})            
             /Ux";
 
         $replacingFunction = function ($matches) use ($namespacePrefix) {
@@ -81,37 +82,73 @@ class Replacer
             return $matches[1] . $namespacePrefix . $matches[2];
         };
 
-        return preg_replace_callback($pattern, $replacingFunction, $contents);
+        $result = preg_replace_callback($pattern, $replacingFunction, $contents);
+
+        $matchingError = preg_last_error();
+        if (0 !== $matchingError) {
+            $message = "Matching error {$matchingError}";
+            if (PREG_BACKTRACK_LIMIT_ERROR === $matchingError) {
+                $message = 'Backtrack limit was exhausted!';
+            }
+            throw new \Exception($message);
+        }
+
+        return $result;
     }
 
+    /**
+     * In a namespace:
+     * * use \Classname;
+     * * new \Classname()
+     *
+     * In a global namespace:
+     * * new Classname()
+     *
+     * @param $contents
+     * @param $originalClassname
+     * @param $classnamePrefix
+     * @return array|string|string[]|null
+     * @throws \Exception
+     */
     public function replaceClassname($contents, $originalClassname, $classnamePrefix)
     {
+        $searchClassname = preg_quote($originalClassname, '/');
 
-
-        return preg_replace_callback(
-            '
+        $pattern = '
 			/											# Start the pattern
-				namespace\s+([a-zA-Z0-9_\x7f-\xff\\\\]+)[;{\s\n]{1}[\s\S]*?(?=namespace|$) 
+				namespace\s+([a-zA-Z0-9_\x7f-\xff\\\\]+).*?{.*?(namespace|\z) 
 														# Look for a preceeding namespace declaration, up until a 
 														# potential second namespace declaration.
 				|										# if found, match that much before continuing the search on
-														# the remainder of the string.
-				([^a-zA-Z0-9_\x7f-\xff])('. $originalClassname . ')([^a-zA-Z0-9_\x7f-\xff])
+								    		        	# the remainder of the string.
+				([^a-zA-Z0-9_\x7f-\xff])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff])
 				
-			/x', //                                     # x: ignore whitespace in regex.
-            function ($matches) use ($contents, $originalClassname, $classnamePrefix) {
+			/x'; //                                     # x: ignore whitespace in regex.
 
-                // If we're inside a namespace other than the global namespace:
-                if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
-                    $updated = $this->replaceGlobalClassInsideNamedNamespace($matches[0], $originalClassname, $classnamePrefix);
+        $replacingFunction = function ($matches) use ($originalClassname, $classnamePrefix) {
 
-                    return $updated;
-                }
+            // If we're inside a namespace other than the global namespace:
+            if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
+                $updated = $this->replaceGlobalClassInsideNamedNamespace($matches[0], $originalClassname, $classnamePrefix);
 
-                return $matches[2] . $classnamePrefix . $originalClassname . $matches[4];
-            },
-            $contents
-        );
+                return $updated;
+            }
+
+            return $matches[1] . $matches[2] . $matches[3] . $classnamePrefix . $originalClassname . $matches[5];
+        };
+
+        $result = preg_replace_callback($pattern, $replacingFunction, $contents);
+
+        $matchingError = preg_last_error();
+        if (0 !== $matchingError) {
+            $message = "Matching error {$matchingError}";
+            if (PREG_BACKTRACK_LIMIT_ERROR === $matchingError) {
+                $message = 'Backtrack limit was exhausted!';
+            }
+            throw new \Exception($message);
+        }
+
+        return $result;
     }
 
     /**
