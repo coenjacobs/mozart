@@ -5,7 +5,7 @@
  * Should have sensible defaults.
  */
 
-namespace CoenJacobs\Mozart\Composer\Extra;
+namespace BrianHenryIE\Strauss\Composer\Extra;
 
 use Composer\Factory;
 use Composer\IO\NullIO;
