@@ -4,7 +4,7 @@
  * Those replaced are recorded and their uses elsewhere are updated in a later step.
  */
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
 class ChangeEnumerator
 {

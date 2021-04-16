@@ -5,9 +5,9 @@
  * @see \Composer\Autoload\ClassMapGenerator
  */
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use Composer\Autoload\ClassMapGenerator;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
@@ -20,9 +20,9 @@ class Classmap
 
     protected string $workingDir;
 
-    protected NannerlConfig $config;
+    protected StraussConfig $config;
 
-    public function __construct(NannerlConfig $config, string $workingDir)
+    public function __construct(StraussConfig $config, string $workingDir)
     {
         $this->config = $config;
         $this->workingDir = $workingDir;

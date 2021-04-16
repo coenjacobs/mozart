@@ -1,8 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart\Composer;
+namespace BrianHenryIE\Strauss\Composer;
 
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use PHPUnit\Framework\TestCase;
 
 class ProjectComposerPackageTest extends TestCase
@@ -19,8 +19,8 @@ class ProjectComposerPackageTest extends TestCase
 
         $composer = new ProjectComposerPackage($testFile);
 
-        $config = $composer->getNannerlConfig();
+        $config = $composer->getStraussConfig();
 
-        $this->assertInstanceOf(NannerlConfig::class, $config);
+        $this->assertInstanceOf(StraussConfig::class, $config);
     }
 }

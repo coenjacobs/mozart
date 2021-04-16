@@ -3,22 +3,22 @@
  * The extra/mozart key in composer.json.
  */
 
-namespace CoenJacobs\Mozart\Composer\Extra;
+namespace BrianHenryIE\Strauss\Composer\Extra;
 
 use Composer\Composer;
 use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Rename\Rename;
 
-class NannerlConfig
+class StraussConfig
 {
     /**
      * The output directory.
      *
-     * Probably `nannerl/` or `src/nannerl/`.
+     * Probably `strauss/` or `src/strauss/`.
      *
      * @var string
      */
-    protected $targetDirectory = 'nannerl' . DIRECTORY_SEPARATOR;
+    protected $targetDirectory = 'strauss' . DIRECTORY_SEPARATOR;
 
     /**
      * `namespacePrefix` is the prefix to be given to any namespaces.
@@ -64,7 +64,7 @@ class NannerlConfig
     protected $overrideAutoload = [];
 
     /**
-     * After completing `nannerl compose` should the source files be deleted?
+     * After completing `strauss compose` should the source files be deleted?
      * This does not affect symlinked directories.
      *
      * @var bool
@@ -73,7 +73,7 @@ class NannerlConfig
 
     /**
      * Read any existing Mozart config.
-     * Overwrite it with any Nannerl config.
+     * Overwrite it with any Strauss config.
      * Provide sensible defaults.
      *
      * @throws \Exception
@@ -91,9 +91,9 @@ class NannerlConfig
             $mapper = ( new JsonMapperFactory() )->bestFit();
 
             $rename = new Rename();
-            $rename->addMapping(NannerlConfig::class, 'dep_directory', 'targetDirectory');
-            $rename->addMapping(NannerlConfig::class, 'dep_namespace', 'namespacePrefix');
-            $rename->addMapping(NannerlConfig::class, 'exclude_packages', 'excludePrefixPackages');
+            $rename->addMapping(StraussConfig::class, 'dep_directory', 'targetDirectory');
+            $rename->addMapping(StraussConfig::class, 'dep_namespace', 'namespacePrefix');
+            $rename->addMapping(StraussConfig::class, 'exclude_packages', 'excludePrefixPackages');
 
             $mapper->unshift($rename);
             $mapper->push(new \JsonMapper\Middleware\CaseConversion(
@@ -104,8 +104,8 @@ class NannerlConfig
             $mapper->mapObject($mozartExtra, $this);
         }
 
-        if (isset($composer->getPackage()->getExtra()['nannerl'])) {
-            $nannerlExtra = (object) $composer->getPackage()->getExtra()['nannerl'];
+        if (isset($composer->getPackage()->getExtra()['strauss'])) {
+            $straussExtra = (object) $composer->getPackage()->getExtra()['strauss'];
 
             $mapper = ( new JsonMapperFactory() )->bestFit();
 
@@ -114,7 +114,7 @@ class NannerlConfig
                 \JsonMapper\Enums\TextNotation::CAMEL_CASE()
             ));
 
-            $mapper->mapObject($nannerlExtra, $this);
+            $mapper->mapObject($straussExtra, $this);
         }
 
         // Defaults.

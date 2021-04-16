@@ -24,6 +24,6 @@ call_user_func(function ($version) {
         include 'phar://mozart.phar/vendor/autoload.php';
     }
 
-    $app = new CoenJacobs\Mozart\Console\Application($version);
+    $app = new BrianHenryIE\Strauss\Console\Application($version);
     $app->run();
 }, '0.8.0');

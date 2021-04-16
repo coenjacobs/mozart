@@ -1,21 +1,21 @@
 <?php
 /**
- * Extends ComposerPackage to return the typed Nannerl config.
+ * Extends ComposerPackage to return the typed Strauss config.
  */
 
-namespace CoenJacobs\Mozart\Composer;
+namespace BrianHenryIE\Strauss\Composer;
 
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 
 class ProjectComposerPackage extends ComposerPackage
 {
     /**
-     * @return NannerlConfig
+     * @return StraussConfig
      * @throws \Exception
      */
-    public function getNannerlConfig(): NannerlConfig
+    public function getStraussConfig(): StraussConfig
     {
 
-        return new NannerlConfig($this->composer);
+        return new StraussConfig($this->composer);
     }
 }

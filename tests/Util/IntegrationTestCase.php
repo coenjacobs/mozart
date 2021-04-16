@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Util;
+namespace BrianHenryIE\Strauss\Util;
 
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;

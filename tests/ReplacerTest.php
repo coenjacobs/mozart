@@ -1,13 +1,13 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ReplacerTest
- * @package CoenJacobs\Mozart
- * @covers \CoenJacobs\Mozart\Replacer
+ * @package BrianHenryIE\Strauss
+ * @covers \BrianHenryIE\Strauss\Replacer
  */
 class ReplacerTest extends TestCase
 {
@@ -93,11 +93,11 @@ EOD;
         $replacer = new Replacer($config, $workingDir);
 
         $original = "Google\\Http\\Batch";
-        $namespacePrefix = "BrianHenryIE\\Nannerl\\";
+        $namespacePrefix = "BrianHenryIE\\Strauss\\";
 
         $result = $replacer->replaceNamespace($contents, $original, $namespacePrefix);
 
-        $expected = "use BrianHenryIE\\Nannerl\\Google\\Http\\Batch;";
+        $expected = "use BrianHenryIE\\Strauss\\Google\\Http\\Batch;";
 
         $this->assertStringContainsString($expected, $result);
     }
@@ -131,12 +131,19 @@ EOD;
         $replacer = new Replacer($config, $workingDir);
 
         $original = "FPDF";
-        $classnamePrefix = "BrianHenryIE_Nannerl_";
+        $classnamePrefix = "BrianHenryIE_Strauss_";
 
         $result = $replacer->replaceClassname($contents, $original, $classnamePrefix);
 
-        $expected = "class BrianHenryIE_Nannerl_FPDF";
+        $expected = "class BrianHenryIE_Strauss_FPDF";
 
         $this->assertStringContainsString($expected, $result);
+    }
+
+    /**
+     * PHP 7.4 typed parameters need
+     */
+    public function testTypeFunctionParameter()
+    {
     }
 }

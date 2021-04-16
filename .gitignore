@@ -5,7 +5,7 @@ vendor/
 composer.lock
 .phpunit.result.cache
 
-mozart.phar
+strauss.phar
 
 tests/reports
 

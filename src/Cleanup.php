@@ -1,8 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -13,9 +13,9 @@ class Cleanup
     /** @var Filesystem */
     protected $filesystem;
 
-    protected NannerlConfig $config;
+    protected StraussConfig $config;
 
-    public function __construct(NannerlConfig $config, string $workingDir)
+    public function __construct(StraussConfig $config, string $workingDir)
     {
         $this->config = $config;
         $this->filesystem = new Filesystem(new Local($workingDir));

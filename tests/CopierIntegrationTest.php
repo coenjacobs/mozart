@@ -1,17 +1,17 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\ComposerPackage;
-use CoenJacobs\Mozart\Composer\ProjectComposerPackage;
-use CoenJacobs\Mozart\Util\IntegrationTestCase;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
+use BrianHenryIE\Strauss\Util\IntegrationTestCase;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
  * Class CopierTest
- * @package CoenJacobs\Mozart
+ * @package BrianHenryIE\Strauss
  * @coversNothing
  */
 class CopierIntegrationTest extends IntegrationTestCase
@@ -32,7 +32,7 @@ class CopierIntegrationTest extends IntegrationTestCase
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'nannerl' . DIRECTORY_SEPARATOR;
+        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
         $fileEnumerator->compileFileList();
@@ -71,7 +71,7 @@ class CopierIntegrationTest extends IntegrationTestCase
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'nannerl' . DIRECTORY_SEPARATOR;
+        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
         $fileEnumerator->compileFileList();

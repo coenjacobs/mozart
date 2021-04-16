@@ -1,8 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use PHPUnit\Framework\TestCase;
 
 class ComposerPackageTest extends TestCase

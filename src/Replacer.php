@@ -1,15 +1,15 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 
 class Replacer
 {
-    /** @var NannerlConfig */
+    /** @var StraussConfig */
     protected $config;
 
     /** @var Filesystem */

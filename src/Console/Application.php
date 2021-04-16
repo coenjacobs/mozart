@@ -1,8 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart\Console;
+namespace BrianHenryIE\Strauss\Console;
 
-use CoenJacobs\Mozart\Console\Commands\Compose;
+use BrianHenryIE\Strauss\Console\Commands\Compose;
 use Symfony\Component\Console\Application as BaseApplication;
 
 class Application extends BaseApplication

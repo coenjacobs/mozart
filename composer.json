@@ -1,13 +1,17 @@
 {
-    "name": "coenjacobs/mozart",
+    "name": "brianhenryie/strauss",
     "description": "Composes all dependencies as a package inside a WordPress plugin",
     "authors": [
+        {
+            "name": "Brian Henry",
+            "email": "BrianHenryIE@gmail.com"
+        },
         {
             "name": "Coen Jacobs",
             "email": "coenjacobs@gmail.com"
         }
     ],
-    "bin": ["bin/mozart"],
+    "bin": ["bin/strauss","bin/mozart"],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
@@ -21,12 +25,12 @@
     },
     "autoload": {
         "psr-4": {
-            "CoenJacobs\\Mozart\\": "src/"
+            "BrianHenryIE\\Strauss\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "CoenJacobs\\Mozart\\": "tests/"
+            "BrianHenryIE\\Strauss\\": "tests/"
         }
     },
     "require-dev": {

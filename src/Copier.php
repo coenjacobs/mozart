@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;

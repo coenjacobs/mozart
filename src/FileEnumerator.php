@@ -3,9 +3,9 @@
  * Build a list of files from the composer autoloaders.
  */
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -76,7 +76,7 @@ class FileEnumerator
             /**
              * Where $dependency->autoload is ~
              *
-             * [ "psr-4" => [ "BrianHenryIE\Nannerl" => "src" ] ]
+             * [ "psr-4" => [ "BrianHenryIE\Strauss" => "src" ] ]
              */
             $autoloaders = $dependency->getAutoload();
 

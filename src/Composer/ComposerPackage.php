@@ -5,7 +5,7 @@
  * Use this for dependencies. Use ProjectComposerPackage for the primary composer.json.
  */
 
-namespace CoenJacobs\Mozart\Composer;
+namespace BrianHenryIE\Strauss\Composer;
 
 use Composer\Factory;
 use Composer\IO\NullIO;

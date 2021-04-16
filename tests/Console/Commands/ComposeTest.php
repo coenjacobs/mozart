@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Console\Commands\Compose;
+use BrianHenryIE\Strauss\Console\Commands\Compose;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

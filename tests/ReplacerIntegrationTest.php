@@ -1,10 +1,10 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace BrianHenryIE\Strauss;
 
-use CoenJacobs\Mozart\Composer\ComposerPackage;
-use CoenJacobs\Mozart\Composer\ProjectComposerPackage;
-use CoenJacobs\Mozart\Util\IntegrationTestCase;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
+use BrianHenryIE\Strauss\Util\IntegrationTestCase;
 
 class ReplacerIntegrationTest extends IntegrationTestCase
 {
@@ -17,7 +17,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
         exec('composer install');
 
         $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
-        $config = $projectComposerPackage->getNannerlConfig();
+        $config = $projectComposerPackage->getStraussConfig();
 
         $dependencies = array_map(function ($element) {
             $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
@@ -25,7 +25,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'nannerl' . DIRECTORY_SEPARATOR;
+        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
         $absoluteTargetDir = $workingDir . $relativeTargetDir;
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
@@ -48,7 +48,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 
         $updatedFile = file_get_contents($absoluteTargetDir . 'google/apiclient/src/CLient.php');
 
-        $this->assertStringContainsString('use BrianHenryIE\Nannerl\Google\AccessToken\Revoke;', $updatedFile);
+        $this->assertStringContainsString('use BrianHenryIE\Strauss\Google\AccessToken\Revoke;', $updatedFile);
     }
 
 
@@ -60,7 +60,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
         exec('composer install');
 
         $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
-        $config = $projectComposerPackage->getNannerlConfig();
+        $config = $projectComposerPackage->getStraussConfig();
 
         $dependencies = array_map(function ($element) {
             $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
@@ -68,7 +68,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'nannerl' . DIRECTORY_SEPARATOR;
+        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
         $absoluteTargetDir = $workingDir . $relativeTargetDir;
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
@@ -91,6 +91,6 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 
         $updatedFile = file_get_contents($absoluteTargetDir . 'setasign/fpdf/fpdf.php');
 
-        $this->assertStringContainsString('class BrianHenryIE_Nannerl_FPDF', $updatedFile);
+        $this->assertStringContainsString('class BrianHenryIE_Strauss_FPDF', $updatedFile);
     }
 }

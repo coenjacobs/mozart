@@ -1,16 +1,16 @@
 <?php
 
-namespace CoenJacobs\Mozart\Console\Commands;
+namespace BrianHenryIE\Strauss\Console\Commands;
 
-use CoenJacobs\Mozart\ChangeEnumerator;
-use CoenJacobs\Mozart\Classmap;
-use CoenJacobs\Mozart\Cleanup;
-use CoenJacobs\Mozart\Composer\ComposerPackage;
-use CoenJacobs\Mozart\Composer\ProjectComposerPackage;
-use CoenJacobs\Mozart\Copier;
-use CoenJacobs\Mozart\FileEnumerator;
-use CoenJacobs\Mozart\Replacer;
-use CoenJacobs\Mozart\Composer\Extra\NannerlConfig;
+use BrianHenryIE\Strauss\ChangeEnumerator;
+use BrianHenryIE\Strauss\Classmap;
+use BrianHenryIE\Strauss\Cleanup;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
+use BrianHenryIE\Strauss\Copier;
+use BrianHenryIE\Strauss\FileEnumerator;
+use BrianHenryIE\Strauss\Replacer;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,8 +20,8 @@ class Compose extends Command
     /** @var string */
     protected string $workingDir;
 
-    /** @var NannerlConfig */
-    protected NannerlConfig $config;
+    /** @var StraussConfig */
+    protected StraussConfig $config;
 
     protected $projectComposerPackage;
 
@@ -87,7 +87,7 @@ class Compose extends Command
 
         $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
 
-        $config = $this->projectComposerPackage->getNannerlConfig();
+        $config = $this->projectComposerPackage->getStraussConfig();
 
         if (!isset($config->exclude_files_from_copy)) {
             $config->exclude_files_from_copy = [];
