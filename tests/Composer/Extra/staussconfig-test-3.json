@@ -1,12 +1,12 @@
 {
-  "name": "brianhenryie/nannerl-config-test",
+  "name": "brianhenryie/strauss-config-test",
   "require": {
     "league/container": "*"
   },
   "extra": {
-    "nannerl": {
-      "namespace_prefix": "BrianHenryIE\\Nannerl\\",
-      "classmap_prefix": "BrianHenryIE_Nannerl_",
+    "strauss": {
+      "namespace_prefix": "BrianHenryIE\\Strauss\\",
+      "classmap_prefix": "BrianHenryIE_Strauss_",
       "exclude_prefix_packages": [
         "psr/container"
       ],

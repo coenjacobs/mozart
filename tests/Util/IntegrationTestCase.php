@@ -1,4 +1,9 @@
 <?php
+/**
+ * Creates a deletes a temp directory for tests.
+ *
+ * Could just system temp directory, but this is useful for setting breakpoints and seeing what has happened.
+ */
 
 namespace BrianHenryIE\Strauss\Util;
 

@@ -1,5 +1,5 @@
 {
-  "name": "brianhenryie/nannerl-config-test",
+  "name": "brianhenryie/strauss-config-test",
   "require": {
     "league/container": "*"
   }

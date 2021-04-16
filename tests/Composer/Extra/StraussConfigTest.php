@@ -11,7 +11,7 @@ use Composer\Factory;
 use Composer\IO\NullIO;
 use PHPUnit\Framework\TestCase;
 
-class NannerlConfigTest extends TestCase
+class StraussConfigTest extends TestCase
 {
 
     /**
@@ -20,19 +20,19 @@ class NannerlConfigTest extends TestCase
     public function testGetters()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-1.json';
+        $path = __DIR__ . '/straussconfig-test-1.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
         $this->assertContains('pimple/pimple', $sut->getPackages());
 
         $this->assertEquals('target_directory' . DIRECTORY_SEPARATOR, $sut->getTargetDirectory());
 
-        $this->assertEquals("BrianHenryIE\\Nannerl\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
 
-        $this->assertEquals('BrianHenryIE_Nannerl_', $sut->getClassmapPrefix());
+        $this->assertEquals('BrianHenryIE_Strauss_', $sut->getClassmapPrefix());
 
         $this->assertContains('psr/container', $sut->getExcludePrefixPackages());
 
@@ -49,14 +49,14 @@ class NannerlConfigTest extends TestCase
     public function testExtraKey()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-2.json';
+        $path = __DIR__ . '/straussconfig-test-2.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
         $exception = null;
 
         try {
-            $sut = new NannerlConfig($composer);
+            $sut = new StraussConfig($composer);
         } catch (\Exception $e) {
             $exception = $e;
         }
@@ -65,20 +65,20 @@ class NannerlConfigTest extends TestCase
     }
 
     /**
-     * nannerlconfig-test-3.json has no target_dir key.
+     * straussconfig-test-3.json has no target_dir key.
      *
-     * If no target_dir is specified, used "nannerl/"
+     * If no target_dir is specified, used "strauss/"
      */
     public function testDefaultTargetDir()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-3.json';
+        $path = __DIR__ . '/straussconfig-test-3.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals('nannerl'. DIRECTORY_SEPARATOR, $sut->getTargetDirectory());
+        $this->assertEquals('strauss'. DIRECTORY_SEPARATOR, $sut->getTargetDirectory());
     }
 
     /**
@@ -87,13 +87,13 @@ class NannerlConfigTest extends TestCase
     public function testDefaultNamespacePrefixFromAutoloaderPsr4()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-4.json';
+        $path = __DIR__ . '/straussconfig-test-4.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE\\Nannerl\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
     }
 
     /**
@@ -102,30 +102,30 @@ class NannerlConfigTest extends TestCase
     public function testDefaultNamespacePrefixFromAutoloaderPsr0()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-5.json';
+        $path = __DIR__ . '/straussconfig-test-5.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE\\Nannerl\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
     }
 
     /**
      * When the namespace prefix isn't provided, and there's no PSR-0 or PSR-4 autoloader to figure it from...
      *
-     * brianhenryie/nannerl-config-test
+     * brianhenryie/strauss-config-test
      */
     public function testDefaultNamespacePrefixWithNoAutoloader()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-6.json';
+        $path = __DIR__ . '/straussconfig-test-6.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("Brianhenryie\\Nannerl_Config_Test\\", $sut->getNamespacePrefix());
+        $this->assertEquals("Brianhenryie\\Strauss_Config_Test\\", $sut->getNamespacePrefix());
     }
 
     /**
@@ -134,13 +134,13 @@ class NannerlConfigTest extends TestCase
     public function testDefaultClassmapPrefixFromAutoloaderPsr4()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-4.json';
+        $path = __DIR__ . '/straussconfig-test-4.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE_Nannerl_", $sut->getClassmapPrefix());
+        $this->assertEquals("BrianHenryIE_Strauss_", $sut->getClassmapPrefix());
     }
 
     /**
@@ -149,58 +149,58 @@ class NannerlConfigTest extends TestCase
     public function testDefaultClassmapPrefixFromAutoloaderPsr0()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-5.json';
+        $path = __DIR__ . '/straussconfig-test-5.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE_Nannerl_", $sut->getClassmapPrefix());
+        $this->assertEquals("BrianHenryIE_Strauss_", $sut->getClassmapPrefix());
     }
 
     /**
      * When the classmap prefix isn't provided, and there's no PSR-0 or PSR-4 autoloader to figure it from...
      *
-     * brianhenryie/nannerl-config-test
+     * brianhenryie/strauss-config-test
      */
     public function testDefaultClassmapPrefixWithNoAutoloader()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-6.json';
+        $path = __DIR__ . '/straussconfig-test-6.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
-        $this->assertEquals("Brianhenryie_Nannerl_Config_Test", $sut->getClassmapPrefix());
+        $this->assertEquals("Brianhenryie_Strauss_Config_Test", $sut->getClassmapPrefix());
     }
 
     /**
-     * When Nannerl config has packages specified, obviously use them.
+     * When Strauss config has packages specified, obviously use them.
      */
     public function testGetPackagesFromConfig()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-1.json';
+        $path = __DIR__ . '/straussconfig-test-1.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
         $this->assertContains('pimple/pimple', $sut->getPackages());
     }
 
     /**
-     * When Nannerl config has no packages specified, use composer.json's require list.
+     * When Strauss config has no packages specified, use composer.json's require list.
      */
     public function testGetPackagesNoConfig()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-3.json';
+        $path = __DIR__ . '/straussconfig-test-3.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
         $this->assertContains('league/container', $sut->getPackages());
     }
@@ -211,11 +211,11 @@ class NannerlConfigTest extends TestCase
     public function testMapMozartConfig()
     {
 
-        $path = __DIR__ . '/nannerlconfig-test-7.json';
+        $path = __DIR__ . '/straussconfig-test-7.json';
 
         $composer = Factory::create(new NullIO(), $path);
 
-        $sut = new NannerlConfig($composer);
+        $sut = new StraussConfig($composer);
 
         $this->assertContains('pimple/pimple', $sut->getPackages());
 
