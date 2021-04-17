@@ -1,7 +1,0 @@
-{
-  "name": "brianhenryie/strauss-config-test",
-  "require": {
-    "league/container": "*"
-  }
-
-}
