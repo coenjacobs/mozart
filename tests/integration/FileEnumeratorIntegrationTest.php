@@ -1,10 +1,11 @@
 <?php
 
-namespace BrianHenryIE\Strauss;
+namespace BrianHenryIE\Strauss\Tests\Integration;
 
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
-use BrianHenryIE\Strauss\Util\IntegrationTestCase;
+use BrianHenryIE\Strauss\FileEnumerator;
+use BrianHenryIE\Strauss\Tests\Integration\Util\IntegrationTestCase;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -19,9 +20,27 @@ class FileEnumeratorIntegrationTest extends IntegrationTestCase
 
     public function testBuildFileList()
     {
-        copy(__DIR__ . '/fileenumerator-integration-test-1.json', $this->testsWorkingDir . 'composer.json');
+
+        $composerJsonString = <<<'EOD'
+{
+  "name": "brianhenryie/strauss",
+  "require": {
+    "google/apiclient": "*"
+  },
+  "extra": {
+    "strauss": {
+      "namespace_prefix": "BrianHenryIE\\Strauss\\",
+      "classmap_prefix": "BrianHenryIE_Strauss_",
+      "delete_vendor_directories": false
+    }
+  }
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
+
         exec('composer install');
 
         $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);

@@ -1,19 +1,46 @@
 <?php
 
-namespace BrianHenryIE\Strauss;
+namespace BrianHenryIE\Strauss\Tests\Integration;
 
+use BrianHenryIE\Strauss\ChangeEnumerator;
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
-use BrianHenryIE\Strauss\Util\IntegrationTestCase;
+use BrianHenryIE\Strauss\Copier;
+use BrianHenryIE\Strauss\FileEnumerator;
+use BrianHenryIE\Strauss\Replacer;
+use BrianHenryIE\Strauss\Tests\Integration\Util\IntegrationTestCase;
 
+/**
+ * Class ReplacerIntegrationTest
+ * @package BrianHenryIE\Strauss\Tests\Integration
+ * @coversNothing
+ */
 class ReplacerIntegrationTest extends IntegrationTestCase
 {
 
     public function testReplaceNamespace()
     {
-        copy(__DIR__ . '/replacer-integration-test-1.json', $this->testsWorkingDir . 'composer.json');
+
+        $composerJsonString = <<<'EOD'
+{
+  "name": "brianhenryie/strauss",
+  "require": {
+    "google/apiclient": "*"
+  },
+  "extra": {
+    "strauss": {
+      "namespace_prefix": "BrianHenryIE\\Strauss\\",
+      "classmap_prefix": "BrianHenryIE_Strauss_",
+      "delete_vendor_directories": false
+    }
+  }
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
+
         exec('composer install');
 
         $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
@@ -54,9 +81,27 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 
     public function testReplaceClass()
     {
-        copy(__DIR__ . '/replacer-integration-test-2.json', $this->testsWorkingDir . 'composer.json');
+
+        $composerJsonString = <<<'EOD'
+{
+  "name": "brianhenryie/strauss",
+  "require": {
+    "setasign/fpdf": "*"
+  },
+  "extra": {
+    "strauss": {
+      "namespace_prefix": "BrianHenryIE\\Strauss\\",
+      "classmap_prefix": "BrianHenryIE_Strauss_",
+      "delete_vendor_directories": false
+    }
+  }
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
+
         exec('composer install');
 
         $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
