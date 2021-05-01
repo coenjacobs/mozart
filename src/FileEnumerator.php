@@ -6,6 +6,7 @@
 namespace BrianHenryIE\Strauss;
 
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -21,57 +22,64 @@ class FileEnumerator
      */
     protected string $workingDir;
 
-    protected string $targetDir;
-
     /** @var ComposerPackage[] */
     protected array $dependencies;
+
+    protected array $excludePackageNames = array();
+    protected array $excludeNamespaces = array();
+    protected array $excludeFilePatterns = array();
 
     /** @var Filesystem */
     protected Filesystem $filesystem;
 
     /**
+     * Complete list of files specified in packages autoloaders.
+     *
+     * Relative filepaths as key, with their dependency as the value.
+     *
+     * Relative from vendor/
+     *
+     * @var array<string, ComposerPackage>
+     */
+    protected array $filesWithDependencies = [];
+
+    /**
      * Copier constructor.
      * @param ComposerPackage[] $dependencies
      * @param string $workingDir
-     * @param string $relativeTargetDir
      */
-    public function __construct(array $dependencies, string $workingDir, string $relativeTargetDir)
-    {
+    public function __construct(
+        array $dependencies,
+        string $workingDir,
+        StraussConfig $config
+    ) {
         $this->workingDir = $workingDir;
 
         $this->dependencies = $dependencies;
 
-        $this->targetDir = $relativeTargetDir;
+        $this->excludeNamespaces = $config->getExcludeNamespacesFromCopy();
+        $this->excludePackageNames = $config->getExcludePackagesFromCopy();
+        $this->excludeFilePatterns = $config->getExcludeFilePatternsFromCopy();
 
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
 
     /**
-     * Complete list of files to copy.
-     *
-     * Relative filepaths keyed with the same string to eliminate duplicates.
-     *
-     * Relative from vendor/
-     *
-     * @var array<string, string>
-     */
-    protected array $filesWithDependencies = [];
-
-    /**
-     * This should be in another class becuase it needs to build a list per package, all of which will be copied,
-     * only some (most) of which will be prefixed.
-     *
      * Read the autoload keys of the dependencies and generate a list of the files referenced.
      */
     public function compileFileList()
     {
 
-        $finder = new Finder();
-
         // TODO: read 'vendor' from composer.json.
         $prefixToRemove = $this->workingDir .'vendor'. DIRECTORY_SEPARATOR;
 
         foreach ($this->dependencies as $dependency) {
+            if (in_array($dependency->getName(), $this->excludePackageNames)) {
+                continue;
+            }
+
+            $packagePath = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
+                . $dependency->getPath() . DIRECTORY_SEPARATOR;
 
             /**
              * Where $dependency->autoload is ~
@@ -80,57 +88,80 @@ class FileEnumerator
              */
             $autoloaders = $dependency->getAutoload();
 
-            foreach ($autoloaders as $type => $value) {
+            foreach ($autoloaders as $_type => $value) {
                 // Might have to switch/case here.
 
-                foreach ($value as $namespace => $path) {
-                    $packagePath = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
-                        . $dependency->getName() . DIRECTORY_SEPARATOR;
+                foreach ($value as $namespace => $namespace_relative_path) {
+                    if (!empty($namespace) && in_array($namespace, $this->excludeNamespaces)) {
+                        continue;
+                    }
 
-                    if (is_file($packagePath . $path)) {
+                    if (is_file($packagePath . $namespace_relative_path)) {
                         //  $finder->files()->name($file)->in($source_path);
 
-                        $relativeFilepath = str_replace($prefixToRemove, '', $packagePath . $path);
+                        $relativeFilepath = str_replace($prefixToRemove, '', $packagePath . $namespace_relative_path);
 
-                        $this->filesWithDependencies[ $relativeFilepath ] = $dependency->getName();
+                        $this->filesWithDependencies[$relativeFilepath] = $dependency;
 
                         continue;
                     }
 
                     // else it is a directory.
 
-                    $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+                    // trailingslashit().
+                    $namespace_relative_path = rtrim($namespace_relative_path, DIRECTORY_SEPARATOR)
+                        . DIRECTORY_SEPARATOR;
 
-                    $sourcePath = $packagePath. $path;
+                    $sourcePath = $packagePath . $namespace_relative_path;
 
-                    // Only returning directories ... bh-wp-logger... symlink issue?
+                    // trailingslashit(). (to remove duplicates).
+                    $sourcePath = rtrim($sourcePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
-                    $realSourcePath = realpath($sourcePath);
-
-
-//                    $finder->files()->in($realSourcePath)
+                    $finder = new Finder();
                     $finder->files()->in($sourcePath)->followLinks();
 
                     foreach ($finder as $foundFile) {
                         $filePath = $foundFile->getPathname();
-//                        $filePath = str_replace( $realSourcePath, $sourcePath, $filePath );
+
                         $relativeFilepath = str_replace($prefixToRemove, '', $filePath);
-                        $this->filesWithDependencies[$relativeFilepath] = $dependency->getName();
+
+                        // TODO: Is this needed here?! If anything, it's the prefix that needs to be normalised a few
+                        // lines above before being used.
+                        // Replace multiple \ and/or / with OS native DIRECTORY_SEPARATOR.
+                        $relativeFilepath = preg_replace('#[\\\/]+#', DIRECTORY_SEPARATOR, $relativeFilepath);
+
+                        foreach ($this->excludeFilePatterns as $excludePattern) {
+                            if (1 === preg_match($excludePattern, $relativeFilepath)) {
+                                continue 2;
+                            }
+                        }
+
+                        $this->filesWithDependencies[$relativeFilepath] = $dependency;
                     }
                 }
             }
         }
     }
 
-    public function getFileList(): array
+    /**
+     * Returns all found files.
+     *
+     * @return array<string, ComposerPackage>
+     */
+    public function getAllFilesAndDependencyList(): array
     {
-        return array_keys($this->filesWithDependencies);
+        return $this->filesWithDependencies;
     }
 
-    public function getPhpFileList(): array
+    /**
+     * Returns found PHP files.
+     *
+     * @return array<string, ComposerPackage>
+     */
+    public function getPhpFilesAndDependencyList(): array
     {
-        return array_filter($this->getFileList(), function ($element) {
-            return false !== strpos($element, '.php');
-        });
+        return array_filter($this->filesWithDependencies, function ($value, $key) {
+            return false !== strpos($key, '.php');
+        }, ARRAY_FILTER_USE_BOTH);
     }
 }

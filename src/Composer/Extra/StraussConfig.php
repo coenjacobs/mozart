@@ -1,11 +1,12 @@
 <?php
 /**
- * The extra/mozart key in composer.json.
+ * The extra/strauss key in composer.json.
  */
 
 namespace BrianHenryIE\Strauss\Composer\Extra;
 
 use Composer\Composer;
+use Exception;
 use JsonMapper\JsonMapperFactory;
 use JsonMapper\Middleware\Rename\Rename;
 
@@ -18,7 +19,7 @@ class StraussConfig
      *
      * @var string
      */
-    protected $targetDirectory = 'strauss' . DIRECTORY_SEPARATOR;
+    protected $targetDirectory = 'strauss';
 
     /**
      * `namespacePrefix` is the prefix to be given to any namespaces.
@@ -44,12 +45,19 @@ class StraussConfig
      */
     protected array $packages = [];
 
+    // Back-compatibility with Mozart.
+    private array $excludePackages;
+
     /**
-     * When prefixing, do not prefix these packages (which have been copied).
-     *
-     * @var array
+     * @var array{packages?: string[], namespaces?: string[], filePatterns?: string[]}
      */
-    protected $excludePrefixPackages = [];
+    protected array $excludeFromCopy = array();
+
+    /**
+     * @var array{packages?: string[], namespaces?: string[], filePatterns?: string[]}
+     */
+    protected array $excludeFromPrefix = array('filePatterns'=>array('/psr.*/'));
+
 
     /**
      * An array of autoload keys to replace packages' existing autoload key.
@@ -69,14 +77,19 @@ class StraussConfig
      *
      * @var bool
      */
-    protected $deleteVendorDirectories = false;
+    protected $deleteVendorFiles = false;
+
+    protected bool $classmapOutput;
+
+    protected array $namespaceReplacementPatterns = array();
+
 
     /**
      * Read any existing Mozart config.
      * Overwrite it with any Strauss config.
      * Provide sensible defaults.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(Composer $composer)
     {
@@ -86,14 +99,16 @@ class StraussConfig
             $mozartExtra = (object) $composer->getPackage()->getExtra()['mozart'];
 
             // Default setting for Mozart.
-            $this->setDeleteVendorDirectories(true);
+            $this->setDeleteVendorFiles(true);
 
             $mapper = ( new JsonMapperFactory() )->bestFit();
 
             $rename = new Rename();
             $rename->addMapping(StraussConfig::class, 'dep_directory', 'targetDirectory');
             $rename->addMapping(StraussConfig::class, 'dep_namespace', 'namespacePrefix');
-            $rename->addMapping(StraussConfig::class, 'exclude_packages', 'excludePrefixPackages');
+
+            $rename->addMapping(StraussConfig::class, 'exclude_packages', 'excludePackages');
+            $rename->addMapping(StraussConfig::class, 'delete_vendor_directories', 'deleteVendorFiles');
 
             $mapper->unshift($rename);
             $mapper->push(new \JsonMapper\Middleware\CaseConversion(
@@ -126,14 +141,17 @@ class StraussConfig
                 $this->setNamespacePrefix(array_key_first($composer->getPackage()->getAutoload()['psr-4']));
             } elseif (isset($composer->getPackage()->getAutoload()['psr-0'])) {
                 $this->setNamespacePrefix(array_key_first($composer->getPackage()->getAutoload()['psr-0']));
-            } else {
+            } elseif ('__root__' !== $composer->getPackage()->getName()) {
                 $packageName = $composer->getPackage()->getName();
-                $classmapPrefix = preg_replace('/[^\w\/]+/', '_', $packageName);
-                $classmapPrefix = str_replace('/', '\\', $classmapPrefix) . '\\';
-                $classmapPrefix = preg_replace_callback('/(?<=^|_|\\\\)[a-z]/', function ($match) {
+                $namespacePrefix = preg_replace('/[^\w\/]+/', '_', $packageName);
+                $namespacePrefix = str_replace('/', '\\', $namespacePrefix) . '\\';
+                $namespacePrefix = preg_replace_callback('/(?<=^|_|\\\\)[a-z]/', function ($match) {
                     return strtoupper($match[0]);
-                }, $classmapPrefix);
-                $this->setNamespacePrefix($classmapPrefix);
+                }, $namespacePrefix);
+                $this->setNamespacePrefix($namespacePrefix);
+            } elseif (isset($this->classmapPrefix)) {
+                $namespacePrefix = rtrim($this->getClassmapPrefix(), '_');
+                $this->setNamespacePrefix($namespacePrefix);
             }
         }
 
@@ -146,16 +164,25 @@ class StraussConfig
                 $autoloadKey = array_key_first($composer->getPackage()->getAutoload()['psr-0']);
                 $classmapPrefix = str_replace("\\", "_", $autoloadKey);
                 $this->setClassmapPrefix($classmapPrefix);
-            } else {
+            } elseif ('__root__' !== $composer->getPackage()->getName()) {
                 $packageName = $composer->getPackage()->getName();
                 $classmapPrefix = preg_replace('/[^\w\/]+/', '_', $packageName);
                 $classmapPrefix = str_replace('/', '\\', $classmapPrefix);
+                // Uppercase the first letter of each word.
                 $classmapPrefix = preg_replace_callback('/(?<=^|_|\\\\)[a-z]/', function ($match) {
                     return strtoupper($match[0]);
                 }, $classmapPrefix);
                 $classmapPrefix = str_replace("\\", "_", $classmapPrefix);
                 $this->setClassmapPrefix($classmapPrefix);
+            } elseif (isset($this->namespacePrefix)) {
+                $classmapPrefix = preg_replace('/[^\w\/]+/', '_', $this->getNamespacePrefix());
+                $classmapPrefix = rtrim($classmapPrefix, '_') . '_';
+                $this->setClassmapPrefix($classmapPrefix);
             }
+        }
+
+        if (!isset($this->namespacePrefix) || !isset($this->classmapPrefix)) {
+            throw new Exception('Prefix not set. Please set `namespace_prefix`, `classmap_prefix` in composer.json/extra/strauss.');
         }
 
         if (empty($this->packages)) {
@@ -163,6 +190,26 @@ class StraussConfig
                 return $element->getTarget();
             }, $composer->getPackage()->getRequires());
         }
+
+        // If the bool flag for classmapOutput wasn't set in the Json config.
+        if (!isset($this->classmapOutput)) {
+            $this->classmapOutput = true;
+            // Check each autoloader.
+            foreach ($composer->getPackage()->getAutoload() as $autoload) {
+                // To see if one of its paths.
+                foreach ($autoload as $path) {
+                    // Matches the target directory.
+                    if (trim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR === $this->getTargetDirectory()) {
+                        $this->classmapOutput = false;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        // TODO: Throw an exception if any regex patterns in config are invalid.
+        // https://stackoverflow.com/questions/4440626/how-can-i-validate-regex
+        // preg_match('~Valid(Regular)Expression~', null) === false);
     }
 
     /**
@@ -172,7 +219,7 @@ class StraussConfig
      */
     public function getTargetDirectory(): string
     {
-        return $this->targetDirectory;
+        return trim($this->targetDirectory, DIRECTORY_SEPARATOR . '\\/') . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -196,7 +243,7 @@ class StraussConfig
      */
     public function getNamespacePrefix(): string
     {
-        return $this->namespacePrefix;
+        return trim($this->namespacePrefix, '\\');
     }
 
     /**
@@ -223,21 +270,51 @@ class StraussConfig
         $this->classmapPrefix = $classmapPrefix;
     }
 
-    /**
-     * @return array
-     */
-    public function getExcludePrefixPackages(): array
+    public function setExcludeFromCopy(array $excludeFromCopy): void
     {
-        return $this->excludePrefixPackages;
+        $this->excludeFromCopy = $excludeFromCopy;
+    }
+    public function getExcludePackagesFromCopy(): array
+    {
+        return $this->excludeFromCopy['packages'] ?? array();
+    }
+
+    public function getExcludeNamespacesFromCopy(): array
+    {
+        return $this->excludeFromCopy['namespaces'] ?? array();
+    }
+
+    public function getExcludeFilePatternsFromCopy(): array
+    {
+        return $this->excludeFromCopy['filePatterns'] ?? array();
+    }
+
+
+    public function setExcludeFromPrefix(array $excludeFromPrefix): void
+    {
+        $this->excludeFromPrefix = $excludeFromPrefix;
     }
 
     /**
-     * @param array $excludePrefixPackages
+     * When prefixing, do not prefix these packages (which have been copied).
+     *
+     * @var string[]
      */
-    public function setExcludePrefixPackages(array $excludePrefixPackages): void
+    public function getExcludePackagesFromPrefixing(): array
     {
-        $this->excludePrefixPackages = $excludePrefixPackages;
+        return $this->excludeFromPrefix['packages'] ?? array();
     }
+
+    public function getExcludeNamespacesFromPrefixing(): array
+    {
+        return $this->excludeFromPrefix['namespaces'] ?? array();
+    }
+
+    public function getExcludeFilePatternsFromPrefixing(): array
+    {
+        return $this->excludeFromPrefix['filePatterns'] ?? array();
+    }
+
 
     /**
      * @return array
@@ -258,17 +335,17 @@ class StraussConfig
     /**
      * @return bool
      */
-    public function isDeleteVendorDirectories(): bool
+    public function isDeleteVendorFiles(): bool
     {
-        return $this->deleteVendorDirectories;
+        return $this->deleteVendorFiles;
     }
 
     /**
-     * @param bool $deleteVendorDirectories
+     * @param bool $deleteVendorFiles
      */
-    public function setDeleteVendorDirectories(bool $deleteVendorDirectories): void
+    public function setDeleteVendorFiles(bool $deleteVendorFiles): void
     {
-        $this->deleteVendorDirectories = $deleteVendorDirectories;
+        $this->deleteVendorFiles = $deleteVendorFiles;
     }
 
     /**
@@ -285,5 +362,51 @@ class StraussConfig
     public function setPackages(array $packages): void
     {
         $this->packages = $packages;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isClassmapOutput(): bool
+    {
+        return $this->classmapOutput;
+    }
+
+    /**
+     * @param bool $classmapOutput
+     */
+    public function setClassmapOutput(bool $classmapOutput): void
+    {
+        $this->classmapOutput = $classmapOutput;
+    }
+
+    /**
+     * Backwards compatability with Mozart.
+     */
+    public function setExcludePackages(array $excludePackages)
+    {
+
+        if (! isset($this->excludeFromPrefix)) {
+            $this->excludeFromPrefix = array();
+        }
+
+        $this->excludeFromPrefix['packages'] = $excludePackages;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getNamespaceReplacementPatterns(): array
+    {
+        return $this->namespaceReplacementPatterns;
+    }
+
+    /**
+     * @param array $namespaceReplacementPatterns
+     */
+    public function setNamespaceReplacementPatterns(array $namespaceReplacementPatterns): void
+    {
+        $this->namespaceReplacementPatterns = $namespaceReplacementPatterns;
     }
 }

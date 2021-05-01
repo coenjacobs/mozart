@@ -1,28 +1,34 @@
 <?php
+/**
+ * Deletes source files and empty directories.
+ */
 
 namespace BrianHenryIE\Strauss;
 
 use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use RecursiveDirectoryIterator;
 use Symfony\Component\Finder\Finder;
 
 class Cleanup
 {
 
     /** @var Filesystem */
-    protected $filesystem;
+    protected Filesystem $filesystem;
 
-    protected StraussConfig $config;
-
+    protected bool $isDeleteVendorFiles;
+    
     public function __construct(StraussConfig $config, string $workingDir)
     {
-        $this->config = $config;
+
+        $this->isDeleteVendorFiles = $config->isDeleteVendorFiles();
+        
         $this->filesystem = new Filesystem(new Local($workingDir));
     }
 
     /**
-     * Maybe delete the source files that were copied.
+     * Maybe delete the source files that were copied (depending on config),
      * then delete empty directories.
      *
      * @param array $sourceFiles
@@ -32,7 +38,7 @@ class Cleanup
 
         // TODO Don't do this if vendor is the target dir (i.e. in-situ updating).
 
-        if ($this->config->isDeleteVendorDirectories()) {
+        if ($this->isDeleteVendorFiles) {
             foreach ($sourceFiles as $sourceFile) {
                 $relativeFilepath = 'vendor' . DIRECTORY_SEPARATOR . $sourceFile;
 
@@ -72,7 +78,7 @@ class Cleanup
     // TODO: Use Symphony or Flysystem functions.
     protected function dirIsEmpty(string $dir): bool
     {
-        $di = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        $di = new RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
         return iterator_count($di) === 0;
     }
 }

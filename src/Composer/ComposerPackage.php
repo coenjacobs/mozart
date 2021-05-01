@@ -31,6 +31,8 @@ class ComposerPackage
      */
     protected string $name;
 
+    protected string $path;
+
     /**
      * The discovered files, classmap, psr0 and psr4 autoload keys discovered (as parsed by Composer).
      *
@@ -45,26 +47,38 @@ class ComposerPackage
      */
     protected array $requiresNames = [];
 
+    protected string $license;
+
     /**
      * Create a PHP object to represent a composer package.
      *
-     * @param string $path The absolute path to the vendor folder with the composer.json "name", i.e. the domain/package
-     *                     definition, which is the vendor subdir from where the package's composer.json should be read.
-     * @param stdClass $overrideAutoload Optional configuration to replace the package's own autoload definition with
-     *                                    another which Mozart can use.
+     * @param string $absolutePath The absolute path to the vendor folder with the composer.json "name",
+     *          i.e. the domain/package definition, which is the vendor subdir from where the package's
+     *          composer.json should be read.
+     * @param array $overrideAutoload Optional configuration to replace the package's own autoload definition with
+     *                                    another which Strauss can use.
      */
-    public function __construct(string $path, array $overrideAutoload = null)
+    public function __construct(string $absolutePath, array $overrideAutoload = null)
     {
 
-        if (is_dir($path)) {
-            $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
+        if (is_dir($absolutePath)) {
+            $absolutePath = rtrim($absolutePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
         }
 
-        $composer = Factory::create(new NullIO(), $path);
+        $composer = Factory::create(new NullIO(), $absolutePath);
 
         $this->composer = $composer;
 
         $this->name = $composer->getPackage()->getName();
+
+        $relativePath = null;
+
+        // TODO: Test on Windows (DIRECTORY_SEPARATOR).
+        if (1 === preg_match('/vendor\/(\w*\/\w*)\/composer\.json/', $absolutePath, $output_array)) {
+            $relativePath = $output_array[1];
+        }
+
+        $this->path = $relativePath ?? $composer->getPackage()->getName();
 
         if (!is_null($overrideAutoload)) {
             $composer->getPackage()->setAutoload($overrideAutoload);
@@ -72,9 +86,14 @@ class ComposerPackage
 
         $this->autoload = $composer->getPackage()->getAutoload();
 
-        foreach ($composer->getPackage()->getRequires() as $name => $packageLink) {
+        foreach ($composer->getPackage()->getRequires() as $_name => $packageLink) {
             $this->requiresNames[] = $packageLink->getTarget();
         }
+
+        // Try to get the license from the package's composer.json, asssume proprietary (all rights reserved!).
+        $this->license = !empty($composer->getPackage()->getLicense())
+            ? implode(',', $composer->getPackage()->getLicense())
+            : 'proprietary?';
     }
 
     /**
@@ -82,9 +101,14 @@ class ComposerPackage
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
     }
 
     /**
@@ -113,5 +137,10 @@ class ComposerPackage
         };
 
         return array_filter($this->requiresNames, $removePhpExt);
+    }
+
+    public function getLicense():string
+    {
+        return $this->license;
     }
 }

@@ -9,8 +9,10 @@ use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
 use BrianHenryIE\Strauss\Copier;
 use BrianHenryIE\Strauss\FileEnumerator;
-use BrianHenryIE\Strauss\Replacer;
+use BrianHenryIE\Strauss\Licenser;
+use BrianHenryIE\Strauss\Prefixer;
 use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,13 +25,13 @@ class Compose extends Command
     /** @var StraussConfig */
     protected StraussConfig $config;
 
-    protected $projectComposerPackage;
+    protected ProjectComposerPackage $projectComposerPackage;
 
     /** @var Copier */
     protected Copier $copier;
 
-    /** @var Replacer */
-    protected Replacer $replacer;
+    /** @var Prefixer */
+    protected Prefixer $replacer;
     /**
      * @var ChangeEnumerator
      */
@@ -46,7 +48,14 @@ class Compose extends Command
         $this->setHelp('');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @see Command::execute()
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $workingDir = getcwd() . DIRECTORY_SEPARATOR;
         $this->workingDir = $workingDir;
@@ -62,12 +71,14 @@ class Compose extends Command
 
             $this->determineChanges();
 
-            $this->updateNamespaces();
+            $this->performReplacements();
+
+            $this->addLicenses();
 
             $this->generateClassmap();
 
             $this->cleanUp();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->write($e->getMessage());
             return 1;
         }
@@ -80,7 +91,7 @@ class Compose extends Command
     /**
      * 1. Load the composer.json.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function loadProjectComposerPackage()
     {
@@ -88,11 +99,6 @@ class Compose extends Command
         $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
 
         $config = $this->projectComposerPackage->getStraussConfig();
-
-        if (!isset($config->exclude_files_from_copy)) {
-            $config->exclude_files_from_copy = [];
-        }
-
 
         $this->config = $config;
     }
@@ -141,7 +147,7 @@ class Compose extends Command
      */
     protected function getAllDependencies(ComposerPackage $requiredDependency): void
     {
-        $excludedPackagesNames = $this->config->getExcludePrefixPackages();
+        $excludedPackagesNames = $this->config->getExcludePackagesFromPrefixing();
 
         // Unset PHP, ext-*.
         $removePhpExt = function ($element) {
@@ -178,7 +184,7 @@ class Compose extends Command
         $this->fileEnumerator = new FileEnumerator(
             $this->flatDependencyTree,
             $this->workingDir,
-            $this->config->getTargetDirectory()
+            $this->config
         );
 
         $this->fileEnumerator->compileFileList();
@@ -189,7 +195,7 @@ class Compose extends Command
     {
 
         $this->copier = new Copier(
-            $this->fileEnumerator->getFileList(),
+            $this->fileEnumerator->getAllFilesAndDependencyList(),
             $this->workingDir,
             $this->config->getTargetDirectory()
         );
@@ -203,25 +209,40 @@ class Compose extends Command
     protected function determineChanges()
     {
 
-        $this->changeEnumerator = new ChangeEnumerator();
+        $this->changeEnumerator = new ChangeEnumerator($this->config);
 
         $relativeTargetDir = $this->config->getTargetDirectory();
-        $phpFiles = $this->fileEnumerator->getPhpFileList();
+        $phpFiles = $this->fileEnumerator->getPhpFilesAndDependencyList();
         $this->changeEnumerator->findInFiles($relativeTargetDir, $phpFiles);
     }
 
     // 5. Update namespaces and class names.
     // Replace references to updated namespaces and classnames throughout the dependencies.
-    protected function updateNamespaces()
+    protected function performReplacements()
     {
-        $this->replacer = new Replacer($this->config, $this->workingDir);
+        $this->replacer = new Prefixer($this->config, $this->workingDir);
 
-        $namespaces = $this->changeEnumerator->getDiscoveredNamespaces();
+        $namespaces = $this->changeEnumerator->getDiscoveredNamespaceReplacements();
         $classes = $this->changeEnumerator->getDiscoveredClasses();
         
-        $phpFiles = $this->fileEnumerator->getPhpFileList();
+        $phpFiles = $this->fileEnumerator->getPhpFilesAndDependencyList();
 
         $this->replacer->replaceInFiles($namespaces, $classes, $phpFiles);
+    }
+
+    protected function addLicenses(): void
+    {
+
+        $author = $this->projectComposerPackage->getAuthor();
+
+        $dependencies = $this->flatDependencyTree;
+
+        $licenser = new Licenser($this->config, $this->workingDir, $dependencies, $author);
+
+        $licenser->copyLicenses();
+
+        $modifiedFiles = $this->replacer->getModifiedFiles();
+        $licenser->addInformationToUpdatedFiles($modifiedFiles);
     }
 
     /**
@@ -248,7 +269,7 @@ class Compose extends Command
 
         $sourceFiles = array_map(function ($element) {
             return 'vendor' . DIRECTORY_SEPARATOR . $element;
-        }, $this->fileEnumerator->getFileList());
+        }, array_keys($this->fileEnumerator->getAllFilesAndDependencyList()));
 
         // This will check the config to check should it delete or not.
         $cleanup->cleanup($sourceFiles);

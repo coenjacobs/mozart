@@ -1,7 +1,19 @@
 <?php
+/**
+ * Prepares the destination by deleting any files about to be copied.
+ * Copies the files.
+ *
+ * TODO: Exclude files list.
+ *
+ * @author CoenJacobs
+ * @author BrianHenryIE
+ *
+ * @license MIT
+ */
 
 namespace BrianHenryIE\Strauss;
 
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
@@ -24,13 +36,13 @@ class Copier
 
     /**
      * Copier constructor.
-     * @param string[] $filepaths
+     * @param array<string, ComposerPackage> $filepaths
      * @param string $workingDir
      * @param string $relativeTargetDir
      */
     public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir)
     {
-        $this->filepaths = $filepaths;
+        $this->filepaths = array_keys($filepaths);
 
         $this->workingDir = $workingDir;
 
@@ -62,9 +74,9 @@ class Copier
 
 
     /**
-     * @return void
+     *
      */
-    public function copy()
+    public function copy(): void
     {
 
         foreach ($this->filepaths as $relativeFilepath) {
