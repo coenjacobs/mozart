@@ -4,11 +4,16 @@ namespace BrianHenryIE\Strauss\Tests\Integration;
 
 use BrianHenryIE\Strauss\ChangeEnumerator;
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
+use BrianHenryIE\Strauss\Console\Commands\Compose;
 use BrianHenryIE\Strauss\Copier;
 use BrianHenryIE\Strauss\FileEnumerator;
-use BrianHenryIE\Strauss\Replacer;
+use BrianHenryIE\Strauss\Prefixer;
 use BrianHenryIE\Strauss\Tests\Integration\Util\IntegrationTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class ReplacerIntegrationTest
@@ -30,8 +35,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
   "extra": {
     "strauss": {
       "namespace_prefix": "BrianHenryIE\\Strauss\\",
-      "classmap_prefix": "BrianHenryIE_Strauss_",
-      "delete_vendor_directories": false
+      "classmap_prefix": "BrianHenryIE_Strauss_"
     }
   }
 }
@@ -55,21 +59,25 @@ EOD;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
         $absoluteTargetDir = $workingDir . $relativeTargetDir;
 
-        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
+//        $config = $this->createStub(StraussConfig::class);
+//        $config->method('getTargetDirectory')->willReturn('strauss' . DIRECTORY_SEPARATOR);
+
+        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
         $fileEnumerator->compileFileList();
-        $fileList = $fileEnumerator->getFileList();
-        $phpFileList = $fileEnumerator->getPhpFileList();
+        $fileList = $fileEnumerator->getAllFilesAndDependencyList();
+        $phpFileList = $fileEnumerator->getPhpFilesAndDependencyList();
 
         $copier = new Copier($fileList, $workingDir, $relativeTargetDir);
         $copier->prepareTarget();
         $copier->copy();
 
-        $changeEnumerator = new ChangeEnumerator();
+        $changeEnumerator = new ChangeEnumerator($config);
         $changeEnumerator->findInFiles($absoluteTargetDir, $phpFileList);
-        $namespaces = $changeEnumerator->getDiscoveredNamespaces();
+
+        $namespaces = $changeEnumerator->getDiscoveredNamespaceReplacements();
         $classes = $changeEnumerator->getDiscoveredClasses();
 
-        $replacer = new Replacer($config, $workingDir);
+        $replacer = new Prefixer($config, $workingDir);
 
         $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
@@ -92,7 +100,7 @@ EOD;
     "strauss": {
       "namespace_prefix": "BrianHenryIE\\Strauss\\",
       "classmap_prefix": "BrianHenryIE_Strauss_",
-      "delete_vendor_directories": false
+      "delete_vendor_files": false
     }
   }
 }
@@ -104,37 +112,45 @@ EOD;
 
         exec('composer install');
 
-        $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
-        $config = $projectComposerPackage->getStraussConfig();
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
-        $dependencies = array_map(function ($element) {
-            $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
-            return new ComposerPackage($dir);
-        }, $projectComposerPackage->getRequiresNames());
+        $mozartCompose = new Compose();
 
-        $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
-        $absoluteTargetDir = $workingDir . $relativeTargetDir;
+        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
-        $fileEnumerator->compileFileList();
-        $fileList = $fileEnumerator->getFileList();
-        $phpFileList = $fileEnumerator->getPhpFileList();
 
-        $copier = new Copier($fileList, $workingDir, $relativeTargetDir);
-        $copier->prepareTarget();
-        $copier->copy();
+//        $projectComposerPackage = new ProjectComposerPackage($this->testsWorkingDir);
+//        $config = $projectComposerPackage->getStraussConfig();
+//
+//        $dependencies = array_map(function ($element) {
+//            $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
+//            return new ComposerPackage($dir);
+//        }, $projectComposerPackage->getRequiresNames());
+//
+//        $workingDir = $this->testsWorkingDir;
+//        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
+//        $absoluteTargetDir = $workingDir . $relativeTargetDir;
+//
+//        $fileEnumerator = new FileEnumerator($dependencies, $workingDir);
+//        $fileEnumerator->compileFileList();
+//        $fileList = $fileEnumerator->getAllFilesAndDependencyList();
+//        $phpFileList = $fileEnumerator->getPhpFilesAndDependencyList();
+//
+//        $copier = new Copier($fileList, $workingDir, $relativeTargetDir);
+//        $copier->prepareTarget();
+//        $copier->copy();
+//
+//        $changeEnumerator = new ChangeEnumerator();
+//        $changeEnumerator->findInFiles($absoluteTargetDir, $phpFileList);
+//        $namespaces = $changeEnumerator->getDiscoveredNamespaces();
+//        $classes = $changeEnumerator->getDiscoveredClasses();
+//
+//        $replacer = new Replacer($config, $workingDir);
+//
+//        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
-        $changeEnumerator = new ChangeEnumerator();
-        $changeEnumerator->findInFiles($absoluteTargetDir, $phpFileList);
-        $namespaces = $changeEnumerator->getDiscoveredNamespaces();
-        $classes = $changeEnumerator->getDiscoveredClasses();
-
-        $replacer = new Replacer($config, $workingDir);
-
-        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
-
-        $updatedFile = file_get_contents($absoluteTargetDir . 'setasign/fpdf/fpdf.php');
+        $updatedFile = file_get_contents($this->testsWorkingDir . '/strauss/' . 'setasign/fpdf/fpdf.php');
 
         $this->assertStringContainsString('class BrianHenryIE_Strauss_FPDF', $updatedFile);
     }

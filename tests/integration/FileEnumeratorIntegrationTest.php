@@ -3,6 +3,7 @@
 namespace BrianHenryIE\Strauss\Tests\Integration;
 
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
 use BrianHenryIE\Strauss\FileEnumerator;
 use BrianHenryIE\Strauss\Tests\Integration\Util\IntegrationTestCase;
@@ -31,7 +32,7 @@ class FileEnumeratorIntegrationTest extends IntegrationTestCase
     "strauss": {
       "namespace_prefix": "BrianHenryIE\\Strauss\\",
       "classmap_prefix": "BrianHenryIE_Strauss_",
-      "delete_vendor_directories": false
+      "delete_vendor_files": false
     }
   }
 }
@@ -52,13 +53,13 @@ EOD;
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
-        $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
+        $config = $this->createStub(StraussConfig::class);
 
-        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
+        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
 
         $fileEnumerator->compileFileList();
 
-        $list = $fileEnumerator->getFileList();
+        $list = array_keys($fileEnumerator->getAllFilesAndDependencyList());
 
         $this->assertContains('google/apiclient/src/aliases.php', $list);
     }

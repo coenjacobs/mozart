@@ -44,7 +44,7 @@ class StraussConfigTest extends TestCase
           ]
         }
       },
-      "delete_vendor_directories": false
+      "delete_vendor_files": false
     }
   }
 }
@@ -61,15 +61,15 @@ EOD;
 
         $this->assertEquals('target_directory' . DIRECTORY_SEPARATOR, $sut->getTargetDirectory());
 
-        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss", $sut->getNamespacePrefix());
 
         $this->assertEquals('BrianHenryIE_Strauss_', $sut->getClassmapPrefix());
 
-        $this->assertContains('psr/container', $sut->getExcludePrefixPackages());
+        $this->assertContains('/psr.*/', $sut->getExcludeFilePatternsFromPrefixing());
 
         $this->assertArrayHasKey('clancats/container', $sut->getOverrideAutoload());
 
-        $this->assertFalse($sut->isDeleteVendorDirectories());
+        $this->assertFalse($sut->isDeleteVendorFiles());
     }
 
     /**
@@ -104,7 +104,7 @@ EOD;
           ]
         }
       },
-      "delete_vendor_directories": false,
+      "delete_vendor_files": false,
       "unexpected_key": "here"
     }
   }
@@ -155,7 +155,7 @@ EOD;
           ]
         }
       },
-      "delete_vendor_directories": false,
+      "delete_vendor_files": false,
       "unexpected_key": "here"
     }
   }
@@ -200,7 +200,7 @@ EOD;
 
         $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss", $sut->getNamespacePrefix());
     }
 
     /**
@@ -230,7 +230,7 @@ EOD;
 
         $sut = new StraussConfig($composer);
 
-        $this->assertEquals("BrianHenryIE\\Strauss\\", $sut->getNamespacePrefix());
+        $this->assertEquals("BrianHenryIE\\Strauss", $sut->getNamespacePrefix());
     }
 
     /**
@@ -257,7 +257,7 @@ EOD;
 
         $sut = new StraussConfig($composer);
 
-        $this->assertEquals("Brianhenryie\\Strauss_Config_Test\\", $sut->getNamespacePrefix());
+        $this->assertEquals("Brianhenryie\\Strauss_Config_Test", $sut->getNamespacePrefix());
     }
 
     /**
@@ -379,7 +379,7 @@ EOD;
           ]
         }
       },
-      "delete_vendor_directories": false
+      "delete_vendor_files": false
     }
   }
 }
@@ -421,7 +421,7 @@ EOD;
           ]
         }
       },
-      "delete_vendor_directories": false,
+      "delete_vendor_files": false,
       "unexpected_key": "here"
     }
   }
@@ -479,15 +479,45 @@ EOD;
 
         $this->assertEquals('dep_directory' . DIRECTORY_SEPARATOR, $sut->getTargetDirectory());
 
-        $this->assertEquals("My_Mozart_Config\\", $sut->getNamespacePrefix());
+        $this->assertEquals("My_Mozart_Config", $sut->getNamespacePrefix());
 
         $this->assertEquals('My_Mozart_Config_', $sut->getClassmapPrefix());
 
-        $this->assertContains('psr/container', $sut->getExcludePrefixPackages());
+        $this->assertContains('psr/container', $sut->getExcludePackagesFromPrefixing());
 
         $this->assertArrayHasKey('clancats/container', $sut->getOverrideAutoload());
 
         // Mozart default was true.
-        $this->assertTrue($sut->isDeleteVendorDirectories());
+        $this->assertTrue($sut->isDeleteVendorFiles());
+    }
+
+    /**
+     * Since sometimes the namespace we're prefixing will already have a leading backslash, sometimes
+     * the namespace_prefix will want its slash at the beginning, sometimes at the end.
+     *
+     * @see Prefixer::replaceNamespace()
+     *
+     * @covers \BrianHenryIE\Strauss\Composer\Extra\StraussConfig::getNamespacePrefix
+     */
+    public function testNamespacePrefixHasNoSlash()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+  "extra": {
+    "mozart": {
+      "dep_namespace": "My_Mozart_Config\\"
+    }
+  }
+}
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertEquals("My_Mozart_Config", $sut->getNamespacePrefix());
     }
 }

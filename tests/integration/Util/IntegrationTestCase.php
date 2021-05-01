@@ -5,7 +5,7 @@
  * Could just system temp directory, but this is useful for setting breakpoints and seeing what has happened.
  */
 
-namespace BrianHenryIE\Strauss\Util;
+namespace BrianHenryIE\Strauss\Tests\Integration\Util;
 
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
@@ -52,7 +52,9 @@ class IntegrationTestCase extends TestCase {
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $file) {
-            if ($file->isDir()) {
+            if( is_link( $file ) ) {
+                unlink( $file );
+            }elseif ($file->isDir()) {
                 rmdir($file->getRealPath());
             } else {
                 unlink($file->getRealPath());

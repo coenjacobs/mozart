@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace BrianHenryIE\Strauss\Tests\Unit\Console\Commands;
+
 use BrianHenryIE\Strauss\Console\Commands\Compose;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
@@ -8,25 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ComposeTest extends TestCase
 {
-    static $cwd;
-
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        self::$cwd = getcwd();
-    }
-
-    /**
-     * Before each test ensure the current working directory is this one.
-     *
-     * Record the previous PHPUnit cwd to restore after.
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        chdir(dirname(__FILE__));
-    }
 
     /**
      * When composer.json is absent, instead of failing with:
@@ -37,6 +20,7 @@ class ComposeTest extends TestCase
      */
     public function it_fails_gracefully_when_composer_json_absent(): void
     {
+        chdir(sys_get_temp_dir());
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -66,7 +50,9 @@ class ComposeTest extends TestCase
 
         $badComposerJson = '{ "name": "coenjacobs/mozart", }';
 
-        file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
+        $tmpfname = tempnam(sys_get_temp_dir(), 'Strauss-' . __CLASS__ . '-' . __FUNCTION__);
+        file_put_contents($tmpfname, $badComposerJson);
+        chdir(dirname($tmpfname));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -89,14 +75,17 @@ class ComposeTest extends TestCase
      * "Undefined property: stdClass::$extra"
      * a better message should be written to the OutputInterface.
      *
-     * @test
+     * When package name is not set, `\Composer\Composer::getPackage()->getName()` returns '__root__'.
+     *
      */
-    public function it_handles_absent_extra_config_with_grace(): void
+    public function test_it_handles_absent_extra_config_with_grace(): void
     {
 
-        $badComposerJson = '{ "name": "coenjacobs/mozart" }';
+        $badComposerJson = '{ }';
 
-        file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
+        $tmpfname = tempnam(sys_get_temp_dir(), 'Strauss-' . __CLASS__ . '-' . __FUNCTION__);
+        file_put_contents($tmpfname, $badComposerJson);
+        chdir(dirname($tmpfname));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -127,7 +116,9 @@ class ComposeTest extends TestCase
 
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": [] }';
 
-        file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
+        $tmpfname = tempnam(sys_get_temp_dir(), 'Strauss-' . __CLASS__ . '-' . __FUNCTION__);
+        file_put_contents($tmpfname, $badComposerJson);
+        chdir(dirname($tmpfname));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -157,7 +148,9 @@ class ComposeTest extends TestCase
 
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "moozart": {} } }';
 
-        file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
+        $tmpfname = tempnam(sys_get_temp_dir(), 'Strauss-' . __CLASS__ . '-' . __FUNCTION__);
+        file_put_contents($tmpfname, $badComposerJson);
+        chdir(dirname($tmpfname));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -189,7 +182,9 @@ class ComposeTest extends TestCase
 
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "mozart": []  }';
 
-        file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
+        $tmpfname = tempnam(sys_get_temp_dir(), 'Strauss-' . __CLASS__ . '-' . __FUNCTION__);
+        file_put_contents($tmpfname, $badComposerJson);
+        chdir(dirname($tmpfname));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -205,21 +200,5 @@ class ComposeTest extends TestCase
                 $this->execute($inputInterfaceMock, $outputInterfaceMock);
             }
         };
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        $composer_json = __DIR__ . '/composer.json';
-        if (file_exists($composer_json)) {
-            unlink($composer_json);
-        }
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        parent::tearDownAfterClass();
-        chdir(self::$cwd);
     }
 }

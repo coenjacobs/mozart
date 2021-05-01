@@ -4,6 +4,7 @@ namespace BrianHenryIE\Strauss\Tests\Integration;
 
 use BrianHenryIE\Strauss\ChangeEnumerator;
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
 use BrianHenryIE\Strauss\Copier;
 use BrianHenryIE\Strauss\FileEnumerator;
@@ -33,7 +34,7 @@ class ChangeEnumeratorIntegrationTest extends IntegrationTestCase
     "strauss": {
       "namespace_prefix": "BrianHenryIE\\Strauss\\",
       "classmap_prefix": "BrianHenryIE_Strauss_",
-      "delete_vendor_directories": false
+      "delete_vendor_files": false
     }
   }
 }
@@ -55,28 +56,33 @@ EOD;
         $workingDir = $this->testsWorkingDir;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
 
-        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $relativeTargetDir);
+        $config = $this->createStub(StraussConfig::class);
+
+        $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
 
         $fileEnumerator->compileFileList();
 
-        $copier = new Copier($fileEnumerator->getFileList(), $workingDir, $relativeTargetDir);
+        $copier = new Copier($fileEnumerator->getAllFilesAndDependencyList(), $workingDir, $relativeTargetDir);
 
         $copier->prepareTarget();
 
         $copier->copy();
 
+        $config = $this->createStub(StraussConfig::class);
 
+        $config->method('getExcludePackagesFromPrefixing')->willReturn(array());
+        $config->method('getExcludeNamespacesFromPrefixing')->willReturn(array());
 
-        $changeEnumerator = new ChangeEnumerator();
+        $changeEnumerator = new ChangeEnumerator($config);
 
-        $phpFileList = $fileEnumerator->getPhpFileList();
+        $phpFileList = $fileEnumerator->getPhpFilesAndDependencyList();
 
         $changeEnumerator->findInFiles($workingDir . $relativeTargetDir, $phpFileList);
 
 
         $classes = $changeEnumerator->getDiscoveredClasses();
 
-        $namespaces = $changeEnumerator->getDiscoveredNamespaces();
+        $namespaces = $changeEnumerator->getDiscoveredNamespaceReplacements();
 
         $this->assertNotEmpty($classes);
         $this->assertNotEmpty($namespaces);

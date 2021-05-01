@@ -1,6 +1,6 @@
 <?php
 
-namespace BrianHenryIE\Strauss;
+namespace BrianHenryIE\Strauss\Tests\Unit\Composer;
 
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use PHPUnit\Framework\TestCase;
