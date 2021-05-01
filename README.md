@@ -1,12 +1,10 @@
 # Strauss
 
-A fork of [Mozart](https://github.com/coenjacobs/mozart/). For [Composer](https://getcomposer.org/) for PHP.
-
 A tool to prefix namespaces and classnames in PHP files to avoid autoloading collisions.
 
+A fork of [Mozart](https://github.com/coenjacobs/mozart/). For [Composer](https://getcomposer.org/) for PHP.
+
 The primary use case is WordPress plugins, where different plugins active in a single WordPress install could each include different versions of the same library. The version of the class loaded would be whichever plugin registered the autoloader first, and all subsequent instantiations of the class will use that version, with potentially unpredictable behaviour and missing functionality.    
-
-
 
 ## Use
 
@@ -17,7 +15,7 @@ Its use can be automated in Composer scripts. The following will download it if 
 ```
 "scripts": {
     "strauss": [
-        "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.0/strauss.phar || true",
+        "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.1/strauss.phar || true",
         "@php strauss.phar"
     ],
     "post-install-cmd": [
@@ -84,19 +82,19 @@ The following configuration is inferred:
 The following configuration is default:
 
 - `delete_vendor_files`: `false` a boolean flag to indicate if files copied from the packages' vendor directories should be deleted after being processed. It defaults to false, so any destructive change is opt-in.
-- `exclude_from_prefix` / `file_patterns` : `[/psr.*/]` PSR namespaces are ignored by default for interoperability. If you override this key, be sure to include `/psr.*/` too.
+- `exclude_from_prefix` / [`file_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L92-L96) : `[/psr.*/]` PSR namespaces are ignored by default for interoperability. If you override this key, be sure to include `/psr.*/` too.
 
 The remainder is empty:
 
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
-- `exclude_from_copy` is an optional array of regex patterns to check filenames against (including the path) where Mozart will skip that file if there is a match.
-  - `packages`
-  - `namespaces`
-  - `file_patterns`
+- `exclude_from_copy` 
+  - [`packages`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L77-L79) array of package names to be skipped
+  - [`namespaces`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L95-L97) array of namespaces to skip (exact match from the package autoload keys)
+  - [`file_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L133-L137) array of regex patterns to check filenames against (including vendor relative path) where Strauss will skip that file if there is a match
 - `exclude_from_prefix`
-  - `packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
-  - `namespaces`
-- `namespace_replacement_patterns` a dictionary to use in `preg_replace` instead of prefixing with `namespace_prefix`.
+  - [`packages`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L86-L90) array of package names to exclude from prefixing.
+  - [`namespaces`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L177-L181) array of exact match namespaces to exclude (i.e. not substring/parent namespaces)
+- [`namespace_replacement_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L183-L190) a dictionary to use in `preg_replace` instead of prefixing with `namespace_prefix`.
 
 ## Autoloading
 
@@ -106,7 +104,7 @@ Strauss uses Composer's own tools to generate a classmap file in the `target_dir
 require_once __DIR__ . '/strauss/autoload.php';
 ```
 
-If you prefer to use Composer's autoloader, add your `target_directory` to either the `classmap` key or `psr-4` key and strauss will not create its own `autoload.php`. If using `psr-4` autoloading, ensure your `namespace_prefix` correctly matches your directory structure.
+If you prefer to use Composer's autoloader, add your `target_directory` to the `classmap` and strauss will not create its own `autoload.php`. `psr-4` autoloading is not straightforward with Strauss's approach to copying files, so stick with Mozart for that.
 
 ```json
 "autoload": {
@@ -117,14 +115,6 @@ If you prefer to use Composer's autoloader, add your `target_directory` to eithe
 },
 ```
 
-```json
-"autoload": {
-    "psr-4": {
-        "BrianHenryIE\\My_Project\\": "src/",
-        "BrianHenryIE\\My_Project\\Strauss\\": "strauss/"
-    }
-},
-```
 
 ## Motivation & Comparison to Mozart
 
@@ -133,7 +123,7 @@ I was happy to make PRs to Mozart to fix bugs, but they weren't being reviewed a
 Benefits over Mozart:
 
 * A single output directory whose structure matches source vendor directory structure (conceptually easier than Mozart's independent `classmap_directory` and `dep_directory`)
-* A generated `autoload.php` to `include` in your project (analagous to Composer's `vendor/autoload.php`)  
+* A generated `autoload.php` to `include` in your project (analogous to Composer's `vendor/autoload.php`)  
 * Handles `files` autoloaders – and any autoloaders that Composer itself recognises, since Strauss uses Composer's own tooling to parse the packages
 * Zero configuration – Strauss infers sensible defaults from your `composer.json`
 * No destructive defaults – `delete_vendor_files` defaults to `false`, so any destruction is explicitly opt-in
