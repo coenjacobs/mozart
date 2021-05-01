@@ -140,6 +140,7 @@ class Prefixer
             \\\\*                            # maybe preceeded by a backslash
             {$searchNamespace}            # followed by the namespace to replace
             )
+            (?!:)               # Not followd by : which would only be valid after a classname
             (
             \s*;                            # followed by a semicolon 
             |\\\\{1,2}[a-zA-Z0-9_\x7f-\xff]+         # or a classname no slashes 

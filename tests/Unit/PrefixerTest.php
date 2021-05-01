@@ -653,4 +653,20 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * Another mpdf issue where the class "Mpdf" is in the namespace "Mpdf" and incorrect replacements are being made.
+     */
+    public function testClassnameNotConfusedWithNamespace() {
+
+        $contents = '$default_font_size = $mmsize * (Mpdf::SCALE);';
+        $expected = $contents;
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'Mpdf', 'BrianHenryIE\Strauss\Mpdf');
+
+        $this->assertEquals($expected, $result);
+    }
 }
