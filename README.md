@@ -8,14 +8,17 @@ The primary use case is WordPress plugins, where different plugins active in a s
 
 ## Use
 
-Download `strauss.phar` from releases, run it from the root of your project folder using `php strauss.phar`.
+Download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
 
-Its use can be automated in Composer scripts. The following will download it if not already present then run it. `|| true` will continue on failure, e.g. no network connection, so if `strauss.phar` is already present it can still be run.
+```
+curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.1/strauss.phar
+```
+
+Then run it from the root of your project folder using `php strauss.phar`. Its use should be automated in Composer scripts. 
 
 ```
 "scripts": {
     "strauss": [
-        "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.1/strauss.phar || true",
         "@php strauss.phar"
     ],
     "post-install-cmd": [
