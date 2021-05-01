@@ -17,7 +17,7 @@ Its use can be automated in Composer scripts. The following will download it if 
 ```
 "scripts": {
     "strauss": [
-        "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/v0.8.0/strauss.phar || true",
+        "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.0/strauss.phar || true",
         "@php strauss.phar"
     ],
     "post-install-cmd": [
