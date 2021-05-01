@@ -111,8 +111,8 @@ If you prefer to use Composer's autoloader, add your `target_directory` to eithe
 ```json
 "autoload": {
     "classmap": [
-        'src',
-        'strauss'
+        "src",
+        "strauss"
     ]   
 },
 ```
