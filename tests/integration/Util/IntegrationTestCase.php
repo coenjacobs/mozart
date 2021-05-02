@@ -11,8 +11,8 @@ use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-class IntegrationTestCase extends TestCase {
-
+class IntegrationTestCase extends TestCase
+{
     protected $testsWorkingDir;
 
     public function setUp(): void
@@ -22,10 +22,10 @@ class IntegrationTestCase extends TestCase {
         $this->testsWorkingDir = __DIR__ . '/temptestdir/';
 
         if (file_exists($this->testsWorkingDir)) {
-            $this->deleteDir( $this->testsWorkingDir );
+            $this->deleteDir($this->testsWorkingDir);
         }
 
-        @mkdir($this->testsWorkingDir, );
+        @mkdir($this->testsWorkingDir);
     }
 
 
@@ -52,9 +52,9 @@ class IntegrationTestCase extends TestCase {
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $file) {
-            if( is_link( $file ) ) {
-                unlink( $file );
-            }elseif ($file->isDir()) {
+            if (is_link($file)) {
+                unlink $file);
+            } elseif ($file->isDir()) {
                 rmdir($file->getRealPath());
             } else {
                 unlink($file->getRealPath());
@@ -62,5 +62,4 @@ class IntegrationTestCase extends TestCase {
         }
         rmdir($dir);
     }
-
 }

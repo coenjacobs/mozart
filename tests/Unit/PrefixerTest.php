@@ -657,8 +657,8 @@ EOD;
     /**
      * Another mpdf issue where the class "Mpdf" is in the namespace "Mpdf" and incorrect replacements are being made.
      */
-    public function testClassnameNotConfusedWithNamespace() {
-
+    public function testClassnameNotConfusedWithNamespace()
+    {
         $contents = '$default_font_size = $mmsize * (Mpdf::SCALE);';
         $expected = $contents;
 
