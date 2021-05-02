@@ -151,7 +151,7 @@ class Prefixer
             )                            
             /Ux";                          // U: Non-greedy matching, x: ignore whitespace in pattern.
 
-        $replacingFunction = function ($matches) use ($originalNamespace, $contents, $replacement) {
+        $replacingFunction = function ($matches) use ($originalNamespace, $replacement) {
 
             $singleBackslash = '\\\\';
             $doubleBackslash = '\\\\\\\\';
@@ -169,7 +169,7 @@ class Prefixer
             } elseif (preg_match($containsDoubleBackslashPattern, $matches[2])) {
                 $replacement = str_replace("\\", "\\\\", $replacement);
             }
-            
+
             return $matches[1] . $replacement . $matches[3];
         };
 
@@ -195,11 +195,11 @@ class Prefixer
      * In a global namespace:
      * * new Classname()
      *
-     * @param $contents
-     * @param $originalClassname
-     * @param $classnamePrefix
+     * @param string $contents
+     * @param string $originalClassname
+     * @param string $classnamePrefix
      * @return array|string|string[]|null
-     * @throws Exception
+     * @throws \Exception
      */
     public function replaceClassname($contents, $originalClassname, $classnamePrefix)
     {
@@ -250,25 +250,21 @@ class Prefixer
     /**
      * Pass in a string and look for \Classname instances.
      *
-     * @param $content
-     * @param $originalClassname
-     * @param $classnamePrefix
+     * @param string $contents
+     * @param string $originalClassname
+     * @param string $classnamePrefix
      * @return string
      */
     protected function replaceGlobalClassInsideNamedNamespace($contents, $originalClassname, $classnamePrefix): string
     {
 
         return preg_replace_callback(
-            '/([^a-zA-Z0-9_\x7f-\xff]      # Not a class character
-                                    \\\)                       # Followed by a backslash to indicate global namespace
-                                    ('.$originalClassname.')   # Followed by the classname
-                                    ([^\\\;]+)         # Not a backslash or semicolon which might indicate a namespace
-                                                        
-                                    
-			        /x', //                                     # x: ignore whitespace in regex.
-            function ($matches) use ($contents, $originalClassname, $classnamePrefix) {
-
-
+			'/([^a-zA-Z0-9_\x7f-\xff]  # Not a class character
+			\\\)                       # Followed by a backslash to indicate global namespace
+			('.$originalClassname.')   # Followed by the classname
+			([^\\\;]+)                 # Not a backslash or semicolon which might indicate a namespace
+			/x', //                    # x: ignore whitespace in regex.
+            function ($matches) use ($originalClassname, $classnamePrefix) {
                 return $matches[1] . $classnamePrefix . $originalClassname . $matches[3];
             },
             $contents
