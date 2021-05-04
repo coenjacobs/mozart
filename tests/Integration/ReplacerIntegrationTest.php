@@ -81,7 +81,7 @@ EOD;
 
         $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
-        $updatedFile = file_get_contents($absoluteTargetDir . 'google/apiclient/src/CLient.php');
+        $updatedFile = file_get_contents($absoluteTargetDir . 'google/apiclient/src/Client.php');
 
         $this->assertStringContainsString('use BrianHenryIE\Strauss\Google\AccessToken\Revoke;', $updatedFile);
     }
