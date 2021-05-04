@@ -5,8 +5,9 @@ vendor/
 composer.lock
 .phpunit.result.cache
 
-strauss.phar
+*.phar
 
 tests/reports
 
 temptestdir
+build
