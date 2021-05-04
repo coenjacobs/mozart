@@ -130,6 +130,7 @@ class Prefixer
             |\"
             |'
             |implements\s
+            |extends\s                     # when the class being extended is namespaced inline
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
