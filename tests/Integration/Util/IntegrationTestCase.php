@@ -53,7 +53,7 @@ class IntegrationTestCase extends TestCase
         $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $file) {
             if (is_link($file)) {
-                unlink ($file);
+                unlink($file);
             } elseif ($file->isDir()) {
                 rmdir($file->getRealPath());
             } else {

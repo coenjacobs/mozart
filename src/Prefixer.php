@@ -260,7 +260,7 @@ class Prefixer
     {
 
         return preg_replace_callback(
-			'/([^a-zA-Z0-9_\x7f-\xff]  # Not a class character
+            '/([^a-zA-Z0-9_\x7f-\xff]  # Not a class character
 			\\\)                       # Followed by a backslash to indicate global namespace
 			('.$originalClassname.')   # Followed by the classname
 			([^\\\;]+)                 # Not a backslash or semicolon which might indicate a namespace
