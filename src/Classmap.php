@@ -67,6 +67,8 @@ class Classmap
             $targetDirectory
         );
 
+        $dirname = '';
+
         foreach ($dirs as $dir) {
             if (!is_dir($dir)) {
                 continue;

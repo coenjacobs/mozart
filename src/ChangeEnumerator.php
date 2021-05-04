@@ -35,8 +35,7 @@ class ChangeEnumerator
 
     /**
      * ChangeEnumerator constructor.
-     * @param array $excludePackagesPaths
-     * @param array $excludeNamespaces
+     * @param \BrianHenryIE\Strauss\Composer\Extra\StraussConfig $config
      */
     public function __construct(StraussConfig $config)
     {
@@ -155,7 +154,7 @@ class ChangeEnumerator
 				(?:{|extends|implements|\n|$)			# Class declaration can be followed by {, extends, implements 
 														# or a new line
 			/x', //                                     # x: ignore whitespace in regex.
-            function ($matches) use ($contents) {
+            function ($matches) {
 
                 // If we're inside a namespace other than the global namespace:
                 if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
