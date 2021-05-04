@@ -8,6 +8,7 @@ namespace BrianHenryIE\Strauss\Tests\Issues;
 
 use BrianHenryIE\Strauss\Console\Commands\Compose;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use BrianHenryIE\Strauss\Tests\Integration\Util\IntegrationTestCase;
@@ -120,5 +121,54 @@ EOD;
 
         // Confirm solution is correct.
         $this->assertStringContainsString('public function __construct(Mpdf $mpdf)', $mpdf_php);
+    }
+    // src/strauss/mpdf/mpdf/src/Barcode/BarcodeException.php
+
+
+
+    /**
+     * Another Mpdf problem, presumably down to the classname matching the namespace.
+     *
+     *  @see mpdf/mpdf/src/Barcode/BarcodeException.php
+     */
+    public function testItDoesPrefixNamespacedExtends()
+    {
+
+
+        $composerJsonString = <<<'EOD'
+{
+	"name": "brianhenryie/mozart-issue-124",
+	"require": {
+		"mpdf/mpdf": "8.0.10"
+	},
+	"extra": {
+		"strauss": {
+			"namespace_prefix": "BrianHenryIE\\Strauss\\",
+			"classmap_prefix": "BrianHenryIE_Strauss_"
+		}
+	}
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+
+        chdir($this->testsWorkingDir);
+
+        exec('composer install');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $mpdf_php = file_get_contents($this->testsWorkingDir .'/strauss/mpdf/mpdf/src/Barcode/BarcodeException.php');
+
+        // Confirm problem is gone.
+        $this->assertStringNotContainsString('class BarcodeException extends \Mpdf\MpdfException', $mpdf_php);
+
+        // Confirm solution is correct.
+        $this->assertStringContainsString('class BarcodeException extends \BrianHenryIE\Strauss\Mpdf\MpdfException', $mpdf_php);
     }
 }
