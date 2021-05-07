@@ -85,8 +85,12 @@ class FileEnumerator
              * Where $dependency->autoload is ~
              *
              * [ "psr-4" => [ "BrianHenryIE\Strauss" => "src" ] ]
+             * Exclude "exclude-from-classmap"
+             * @see https://getcomposer.org/doc/04-schema.md#exclude-files-from-classmaps
              */
-            $autoloaders = $dependency->getAutoload();
+            $autoloaders = array_filter($dependency->getAutoload(), function ($type) {
+                return 'exclude-from-classmap' !== $type;
+            }, ARRAY_FILTER_USE_KEY);
 
             foreach ($autoloaders as $_type => $value) {
                 // Might have to switch/case here.
