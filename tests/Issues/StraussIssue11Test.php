@@ -73,4 +73,65 @@ EOD;
         $this->assertEquals("MZoo\\MBO_Sandbox\\Dependencies", $straussConfig->getNamespacePrefix());
     }
 
+
+
+    /**
+     * @author BrianHenryIE
+     */
+    public function test_carbon_fields()
+    {
+
+        $composerJsonString = <<<'EOD'
+{
+	"name": "brianhenryie/strauss-issue-8",
+	"require":{
+	    "htmlburger/carbon-fields": "*"
+	},
+	"extra": {
+		"mozart": {
+			"dep_namespace": "MZoo\\MBO_Sandbox\\Dependencies\\",
+			"dep_directory": "/src/Mozart/",
+			"packages": [
+				"htmlburger/carbon-fields"
+			],
+			"delete_vendor_files": false,
+			"override_autoload": {
+				"htmlburger/carbon-fields": {
+					"psr-4": {
+						"Carbon_Fields\\": "core/"
+					},
+					"files": [
+						"config.php",
+						"templates",
+						"assets",
+						"build"
+					]
+				}
+			}
+
+		}
+	}
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
+
+        chdir($this->testsWorkingDir);
+
+        exec('composer install');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $phpString = file_get_contents($this->testsWorkingDir .'src/Mozart/htmlburger/carbon-fields/core/Carbon_Fields.php');
+
+        // This was not being prefixed.
+        $this->assertStringNotContainsString('$ioc->register( new \Carbon_Fields\Provider\Container_Condition_Provider() );', $phpString);
+
+        $this->assertStringContainsString('$ioc->register( new \MZoo\MBO_Sandbox\Dependencies\Carbon_Fields\Provider\Container_Condition_Provider() );', $phpString);
+    }
 }

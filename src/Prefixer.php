@@ -127,6 +127,7 @@ class Prefixer
             (
             namespace\s                    # The namespace keyword
             |use\s                         # or the use keyword
+            |new\s+
             |\"
             |'
             |implements\s

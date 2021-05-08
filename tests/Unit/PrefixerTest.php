@@ -684,4 +684,23 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * Prefix namespaced classnames after `new` keyword.
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/11
+     */
+    public function testNewNamespacedClassIsPrefixed()
+    {
+
+        $contents = '$ioc->register( new \Carbon_Fields\Provider\Container_Condition_Provider() );';
+        $expected = '$ioc->register( new \BrianHenryIE\Strauss\Carbon_Fields\Provider\Container_Condition_Provider() );';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'Carbon_Fields\Provider', 'BrianHenryIE\Strauss\Carbon_Fields\Provider');
+
+        $this->assertEquals($expected, $result);
+    }
 }
