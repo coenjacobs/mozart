@@ -94,14 +94,22 @@ class StraussConfig
     public function __construct(Composer $composer)
     {
 
+        $configExtraSettings = null;
+
         // Backwards compatibility with Mozart.
         if (isset($composer->getPackage()->getExtra()['mozart'])) {
-            $mozartExtra = (object) $composer->getPackage()->getExtra()['mozart'];
+            $configExtraSettings = (object)$composer->getPackage()->getExtra()['mozart'];
 
             // Default setting for Mozart.
             $this->setDeleteVendorFiles(true);
+        }
 
-            $mapper = ( new JsonMapperFactory() )->bestFit();
+        if (isset($composer->getPackage()->getExtra()['strauss'])) {
+            $configExtraSettings = (object)$composer->getPackage()->getExtra()['strauss'];
+        }
+
+        if (!is_null($configExtraSettings)) {
+            $mapper = (new JsonMapperFactory())->bestFit();
 
             $rename = new Rename();
             $rename->addMapping(StraussConfig::class, 'dep_directory', 'targetDirectory');
@@ -116,20 +124,7 @@ class StraussConfig
                 \JsonMapper\Enums\TextNotation::CAMEL_CASE()
             ));
 
-            $mapper->mapObject($mozartExtra, $this);
-        }
-
-        if (isset($composer->getPackage()->getExtra()['strauss'])) {
-            $straussExtra = (object) $composer->getPackage()->getExtra()['strauss'];
-
-            $mapper = ( new JsonMapperFactory() )->bestFit();
-
-            $mapper->push(new \JsonMapper\Middleware\CaseConversion(
-                \JsonMapper\Enums\TextNotation::UNDERSCORE(),
-                \JsonMapper\Enums\TextNotation::CAMEL_CASE()
-            ));
-
-            $mapper->mapObject($straussExtra, $this);
+            $mapper->mapObject($configExtraSettings, $this);
         }
 
         // Defaults.
