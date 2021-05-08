@@ -703,4 +703,26 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+
+
+    /**
+     * Prefix namespaced classnames after `static` keyword.
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/11
+     */
+    public function testStaticNamespacedClassIsPrefixed()
+    {
+
+        $contents = '@method static \Carbon_Fields\Container\Comment_Meta_Container';
+        $expected = '@method static \BrianHenryIE\Strauss\Carbon_Fields\Container\Comment_Meta_Container';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'Carbon_Fields\Container', 'BrianHenryIE\Strauss\Carbon_Fields\Container');
+
+        $this->assertEquals($expected, $result);
+    }
+
 }

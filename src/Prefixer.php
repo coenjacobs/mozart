@@ -128,6 +128,7 @@ class Prefixer
             namespace\s                    # The namespace keyword
             |use\s                         # or the use keyword
             |new\s+
+            |static\s+
             |\"
             |'
             |implements\s
