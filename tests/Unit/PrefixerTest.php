@@ -724,5 +724,4 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
-
 }

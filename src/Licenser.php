@@ -238,7 +238,6 @@ class Licenser
         if (1 === preg_match($noCommentBetweenPhpOpenAndFirstCodePattern, $phpString)) {
             $modifiedComment = "/**\n * {$licenseDeclaration}\n *\n * {$modifiedDeclaration}\n * {$straussLink}\n */";
             $updatedPhpString = preg_replace('~<\?php~', "<?php\n". $modifiedComment, $phpString, 1);
-
         } else {
             $updatedPhpString = preg_replace_callback(
                 $multilineCommentCapturePattern,
