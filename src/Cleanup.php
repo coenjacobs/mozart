@@ -18,6 +18,8 @@ class Cleanup
     protected Filesystem $filesystem;
 
     protected bool $isDeleteVendorFiles;
+
+    protected string $vendorDirectory = 'vendor'. DIRECTORY_SEPARATOR;
     
     public function __construct(StraussConfig $config, string $workingDir)
     {
@@ -40,7 +42,7 @@ class Cleanup
 
         if ($this->isDeleteVendorFiles) {
             foreach ($sourceFiles as $sourceFile) {
-                $relativeFilepath = 'vendor' . DIRECTORY_SEPARATOR . $sourceFile;
+                $relativeFilepath = $this->vendorDirectory . $sourceFile;
 
                 $this->filesystem->delete($relativeFilepath);
             }

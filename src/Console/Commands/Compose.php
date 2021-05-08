@@ -267,9 +267,7 @@ class Compose extends Command
 
         $cleanup = new Cleanup($this->config, $this->workingDir);
 
-        $sourceFiles = array_map(function ($element) {
-            return 'vendor' . DIRECTORY_SEPARATOR . $element;
-        }, array_keys($this->fileEnumerator->getAllFilesAndDependencyList()));
+        $sourceFiles = array_keys($this->fileEnumerator->getAllFilesAndDependencyList());
 
         // This will check the config to check should it delete or not.
         $cleanup->cleanup($sourceFiles);
