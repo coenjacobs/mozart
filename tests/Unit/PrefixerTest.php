@@ -724,7 +724,7 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
-    
+
     /**
      * Prefix namespaced classnames after return statement.
      *
@@ -739,7 +739,7 @@ EOD;
         $config = $this->createMock(StraussConfig::class);
 
         $replacer = new Prefixer($config, __DIR__);
-        $result = $replacer->replaceNamespace($contents, 'Carbon_Fields\Carbon_Fields', 'BrianHenryIE\Strauss\Carbon_Fields\Carbon_Fields');
+        $result = $replacer->replaceNamespace($contents, 'Carbon_Fields', 'BrianHenryIE\Strauss\Carbon_Fields');
 
         $this->assertEquals($expected, $result);
     }
