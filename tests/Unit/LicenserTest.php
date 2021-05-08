@@ -397,4 +397,45 @@ EOD;
 
         $this->assertEquals($expected, $actual);
     }
+
+    /**
+     * The licence was being inserted after every `<?php` in the file.
+     */
+    public function testLicenseDetailsOnlyInsertedOncePerFile() {
+
+        $config = $this->createStub(StraussConfig::class);
+        $author = 'BrianHenryIE';
+        $sut = new Licenser($config, __DIR__, array(), $author);
+
+        $fileContents = <<<'EOD'
+<?php
+
+?>
+
+<?php
+
+?>
+EOD;
+
+        $expected = <<<'EOD'
+<?php
+/**
+ * @license MIT
+ *
+ * Modified by BrianHenryIE on 25-April-2021 using Strauss.
+ * @see https://github.com/BrianHenryIE/strauss
+ */
+
+?>
+
+<?php
+
+?>
+EOD;
+
+
+        $actual = $sut->addChangeDeclarationToPhpString($fileContents, '25-April-2021', 'MIT');
+
+        $this->assertEquals($expected, $actual);
+    }
 }

@@ -186,7 +186,7 @@ class Licenser
         $straussLink = "@see https://github.com/BrianHenryIE/strauss";
 
         // php-open followed by some whitespace and new line until the first ...
-        $noCommentBetweenPhpOpenAndFirstCodePattern = '~<\?php[\s\n]*[\w]+~';
+        $noCommentBetweenPhpOpenAndFirstCodePattern = '~<\?php[\s\n]*[\w\\\?]+~';
 
         $multilineCommentCapturePattern = '
             ~                        # Start the pattern
@@ -237,7 +237,8 @@ class Licenser
         // If it's a simple case where there is no existing header, add the existing license.
         if (1 === preg_match($noCommentBetweenPhpOpenAndFirstCodePattern, $phpString)) {
             $modifiedComment = "/**\n * {$licenseDeclaration}\n *\n * {$modifiedDeclaration}\n * {$straussLink}\n */";
-            $updatedPhpString = str_replace('<?php', "<?php\n". $modifiedComment, $phpString);
+            $updatedPhpString = preg_replace('~<\?php~', "<?php\n". $modifiedComment, $phpString, 1);
+
         } else {
             $updatedPhpString = preg_replace_callback(
                 $multilineCommentCapturePattern,
