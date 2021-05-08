@@ -401,7 +401,8 @@ EOD;
     /**
      * The licence was being inserted after every `<?php` in the file.
      */
-    public function testLicenseDetailsOnlyInsertedOncePerFile() {
+    public function testLicenseDetailsOnlyInsertedOncePerFile()
+    {
 
         $config = $this->createStub(StraussConfig::class);
         $author = 'BrianHenryIE';
