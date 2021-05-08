@@ -125,7 +125,8 @@ class Prefixer
         $pattern = "
             /                              # Start the pattern
             (
-            namespace\s                    # The namespace keyword
+            ^\s+|\s                     # start of the line or space
+            |namespace\s                    # The namespace keyword
             |use\s                         # or the use keyword
             |new\s+
             |static\s+

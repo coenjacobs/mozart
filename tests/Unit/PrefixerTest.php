@@ -752,16 +752,16 @@ EOD;
     public function testNamespacedStaticIsPrefixed()
     {
 
-        $contents = "		\Carbon_Fields\Carbon_Fields::service( 'legacy_storage' )->enable()";
-        $expected = "		\BrianHenryIE\Strauss\Carbon_Fields\Carbon_Fields::service( 'legacy_storage' )->enable()";
+        $contents = "		\\Carbon_Fields\\Carbon_Fields::service( 'legacy_storage' )->enable()";
+        $expected = "		\\BrianHenryIE\\Strauss\\Carbon_Fields\\Carbon_Fields::service( 'legacy_storage' )->enable()";
 
         $config = $this->createMock(StraussConfig::class);
 
         $replacer = new Prefixer($config, __DIR__);
         $result = $replacer->replaceNamespace(
             $contents,
-            'Carbon_Fields\Carbon_Fields',
-            'BrianHenryIE\Strauss\Carbon_Fields\Carbon_Fields'
+            'Carbon_Fields',
+            'BrianHenryIE\Strauss\Carbon_Fields'
         );
 
         $this->assertEquals($expected, $result);
