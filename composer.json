@@ -43,6 +43,7 @@
     "scripts": {
         "lint": [
             "composer validate",
+            "phpcbf",
             "phpcs"
         ],
         "test": [
