@@ -125,7 +125,8 @@ class Prefixer
         $pattern = "
             /                              # Start the pattern
             (
-            namespace\s                    # The namespace keyword
+            ^\s+|\s                     # start of the line or space
+            |namespace\s                    # The namespace keyword
             |use\s                         # or the use keyword
             |new\s+
             |static\s+
@@ -133,6 +134,7 @@ class Prefixer
             |'
             |implements\s
             |extends\s                     # when the class being extended is namespaced inline
+            |return\s+
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
