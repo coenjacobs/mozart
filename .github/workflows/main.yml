@@ -48,3 +48,8 @@ jobs:
         run: composer install --prefer-dist --no-suggest --no-progress
       - name: Run validate
         run: composer run lint
+
+      - name: Commit PHPCBF changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        with:
+          commit_message: "PHPCBF"
