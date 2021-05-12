@@ -11,7 +11,7 @@
             "email": "coenjacobs@gmail.com"
         }
     ],
-    "bin": ["bin/strauss","bin/mozart"],
+    "bin": ["bin/strauss"],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
