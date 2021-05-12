@@ -40,3 +40,12 @@ php -v
 composer -V
 
 
+
+
+if [ ! "$(php -m | grep -i xdebug)" ] && [ -e "$ext_dir/xdebug.so" ]; then
+  echo "zend_extension=xdebug" >> 'php -i | grep "Loaded Configuration" | sed -e "s|.*=>s*||"'
+echo "\033[32;1mEnabled xdebug\033[0m";
+ elif [ "$(php -m | grep -i xdebug)" ]; then 
+echo "\033[32;1mExtension xdebug was already enabled\033[0m"; fi
+if [ ! "$(php -m | grep -i xdebug)" ]; then ./xdebug.sh >/dev/null 2>&1 && echo "zend_extension=xdebug.so" >> $ini_file && echo "\033[32;1mInstalled and enabled xdebug\033[0m" || echo "\033[31;1mCould not find php7.4-xdebug on APT repository\033[0m"; fi
+echo "\033[32;1mXdebug enabled as coverage driver\033[0m"
