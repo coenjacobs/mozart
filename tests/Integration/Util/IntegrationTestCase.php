@@ -11,6 +11,11 @@ use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
+/**
+ * Class IntegrationTestCase
+ * @package BrianHenryIE\Strauss\Tests\Integration\Util
+ * @coversNothing
+ */
 class IntegrationTestCase extends TestCase
 {
     protected $testsWorkingDir;
