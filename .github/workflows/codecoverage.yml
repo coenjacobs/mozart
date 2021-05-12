@@ -48,9 +48,9 @@ jobs:
       - name: Edit phpcov html output to work with gh-pages
         run: |
           cd tests/reports/html
-          mv .css css; find . -depth -name '*.html' -exec sed -i "s/.css\//css\//" {} +
-          mv .icons icons; find . -depth -name '*.html' -exec sed -i "s/.icons\//icons\//" {} +
-          mv .js js; find . -depth -name '*.html' -exec sed -i "s/.js\//js\//" {} +
+          mv _css css; find . -depth -name '*.html' -exec sed -i "s/_css\//css\//" {} +
+          mv _icons icons; find . -depth -name '*.html' -exec sed -i "s/_icons\//icons\//" {} +
+          mv _js js; find . -depth -name '*.html' -exec sed -i "s/_js\//js\//" {} +
           git add *
           cd ../../..
 
