@@ -1,73 +1,154 @@
-# Mozart [![Build Status](https://api.travis-ci.org/coenjacobs/mozart.png)](https://travis-ci.org/coenjacobs/mozart) [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart)  [![PHPUnit ](.github/coverage.svg)](https://coenjacobs.github.io/mozart/) 
-Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
+[![PHPUnit ](.github/coverage.svg)](https://brianhenryie.github.io/strauss/)
 
-This package requires PHP 7.2 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
+# Strauss
 
-**Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
+A tool to prefix namespaces and classnames in PHP files to avoid autoloading collisions.
 
-## Installation
-Install through Composer, only required in development environments:
+A fork of [Mozart](https://github.com/coenjacobs/mozart/). For [Composer](https://getcomposer.org/) for PHP.
 
-`composer require coenjacobs/mozart --dev`
+The primary use case is WordPress plugins, where different plugins active in a single WordPress install could each include different versions of the same library. The version of the class loaded would be whichever plugin registered the autoloader first, and all subsequent instantiations of the class will use that version, with potentially unpredictable behaviour and missing functionality.    
 
-This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
+## Use
 
-After configuring Mozart properly, the `mozart compose` command does all the magic.
+Download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
+
+```
+curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.1/strauss.phar
+```
+
+Then run it from the root of your project folder using `php strauss.phar`. Its use should be automated in Composer scripts. 
+
+```
+"scripts": {
+    "strauss": [
+        "@php strauss.phar"
+    ],
+    "post-install-cmd": [
+        "@strauss"
+    ],
+    "post-update-cmd": [
+        "@strauss"
+    ]
+}
+```
+
+Alternatively, require as normal with Composer:
+
+`composer require --dev brianhenryie/strauss`
+
+and use `vendor/bin/strauss` to execute.
 
 ## Configuration
-Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
+
+Strauss potentially requires zero configuration, but likely you'll want to customize a little, by adding in your `composer.json` an `extra/strauss` object. The following is the default config, where the `namespace_prefix` and `classmap_prefix` are determined from your `composer.json`'s `autoload` or `name` key and `packages` is determined from the `require` key:
 
 ```
 "extra": {
-    "mozart": {
-        "dep_namespace": "CoenJacobs\\TestProject\\Dependencies\\",
-        "dep_directory": "/src/Dependencies/",
-        "classmap_directory": "/classes/dependencies/",
-        "classmap_prefix": "CJTP_",
+    "strauss": {
+        "target_directory": "strauss",
+        "namespace_prefix": "BrianHenryIE\\My_Project\\",
+        "classmap_prefix": "BrianHenryIE_My_Project_",
         "packages": [
-            "pimple/pimple"
         ],
         "override_autoload": {
-            "google/apiclient": {
-                "classmap": [
-                    "src/"
-                ]
-            }
         },
-        "delete_vendor_directories": true
+        "exclude_from_copy": {
+            "packages": [
+            ],
+            "namespaces": [
+            ],
+            "patterns": [
+            ]
+        },
+        "exclude_from_prefix": {
+            "packages": [
+            ],
+            "namespaces": [
+            ],
+            "patterns": [
+                "/^psr.*$/"
+            ]
+        },
+        "namespace_replacement_patterns" : {
+        },
+        "delete_vendor_files": false
     }
 },
 ```
 
-The following configuration values are required:
+The following configuration is inferred:
 
-- `dep_namespace` defines the root namespace that each package will be put in. Example: Should the package we're loading be using the `Pimple` namespace, then the package will be put inside the `CoenJacobs\\TestProject\\Dependencies\\Pimple` namespace, when using the configuration example above.
-- `dep_directory` defines the directory the files of the package will be stored in. Note that the directory needs to correspond to the namespace being used in your autoloader and the namespace defined for the bundled packages. Best results are achieved when your projects are using the [PSR-4 autoloader specification](http://www.php-fig.org/psr/psr-4/).
-- `classmap_directory` defines the directory files that are being autoloaded through a classmap, will be stored in. Note that this directory needs to be autoloaded by a classmap in your projects autoloader.
-- `classmap_prefix` defines the prefix that will be applied to all classes inside the classmap of the package you bundle. Say a class named `Pimple` and the defined prefix of `CJTP_` will result in the class name `CJTP_Pimple`.
+- `target_directory` defines the directory the files will be copied to
+- `namespace_prefix` defines the default string to prefix each namespace with
+- `classmap_prefix` defines the default string to prefix class names in the global namespace
+- `packages` is the list of packages to process. If absent, all packages in the `require` key of your `composer.json` are included
+- `classmap_output` is a `bool` to decide if Strauss will create `autoload-classmap.php` and `autoload.php`. If it is not set, it is `false` if `target_directory` is in your project's `autoload` key, `true` otherwise.
 
-**Important:** Since Mozart automatically processes the full dependency tree of the packages you specify, you **need to specify all these configuration options**, because you can't reliably determine what kind of autoloaders are being used in the full dependency tree. A package way down the tree might suddenly use a classmap autoloader for example. Make sure you also include the namespace directory and classmap directory in your own autoloader, so they are always loaded.
+The following configuration is default:
 
-The following configuration is optional:
+- `delete_vendor_files`: `false` a boolean flag to indicate if files copied from the packages' vendor directories should be deleted after being processed. It defaults to false, so any destructive change is opt-in.
+- `exclude_from_prefix` / [`file_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L92-L96) : `[/psr.*/]` PSR namespaces are ignored by default for interoperability. If you override this key, be sure to include `/psr.*/` too.
 
-- `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
-- `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
+The remainder is empty:
+
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
+- `exclude_from_copy` 
+  - [`packages`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L77-L79) array of package names to be skipped
+  - [`namespaces`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L95-L97) array of namespaces to skip (exact match from the package autoload keys)
+  - [`file_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L133-L137) array of regex patterns to check filenames against (including vendor relative path) where Strauss will skip that file if there is a match
+- `exclude_from_prefix`
+  - [`packages`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L86-L90) array of package names to exclude from prefixing.
+  - [`namespaces`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L177-L181) array of exact match namespaces to exclude (i.e. not substring/parent namespaces)
+- [`namespace_replacement_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L183-L190) a dictionary to use in `preg_replace` instead of prefixing with `namespace_prefix`.
 
-After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
+## Autoloading
 
-## Scripts
-Mozart is designed to install and be forgotten about. Using Composer scripts, the Mozart script can be run as soon as Composer either installs a new package, or updates an already installed one. This ensures that the packages you want to bundle, are always bundled in the latest installed version, automatically. These scripts also offer you the possibility to script dumping the autoloader, after Mozart is finished running:
+Strauss uses Composer's own tools to generate a classmap file in the `target_directory` and creates an `autoload.php` alongside it, so in many projects autoloading is just a matter of: 
 
+```php
+require_once __DIR__ . '/strauss/autoload.php';
 ```
-"scripts": {
-    "post-install-cmd": [
-        "\"vendor/bin/mozart\" compose",
-        "composer dump-autoload"
-    ],
-    "post-update-cmd": [
-        "\"vendor/bin/mozart\" compose",
-        "composer dump-autoload"
-    ]
-}
+
+If you prefer to use Composer's autoloader, add your `target_directory` to the `classmap` and strauss will not create its own `autoload.php`. `psr-4` autoloading is not straightforward with Strauss's approach to copying files, so stick with Mozart for that.
+
+```json
+"autoload": {
+    "classmap": [
+        "src",
+        "strauss"
+    ]   
+},
 ```
+
+
+## Motivation & Comparison to Mozart
+
+I was happy to make PRs to Mozart to fix bugs, but they weren't being reviewed and merged. At the time of writing, somewhere approaching 50% of Mozart's code [was written by me](https://github.com/coenjacobs/mozart/graphs/contributors) with an additional [nine open PRs](https://github.com/coenjacobs/mozart/pulls?q=is%3Apr+author%3ABrianHenryIE+) and the majority of issues' solutions [provided by me](https://github.com/coenjacobs/mozart/issues?q=is%3Aissue+). This fork is a means to merge all outstanding bugfixes I've written and make some more drastic changes I see as a better approach to the problem.
+
+Benefits over Mozart:
+
+* A single output directory whose structure matches source vendor directory structure (conceptually easier than Mozart's independent `classmap_directory` and `dep_directory`)
+* A generated `autoload.php` to `include` in your project (analogous to Composer's `vendor/autoload.php`)  
+* Handles `files` autoloaders – and any autoloaders that Composer itself recognises, since Strauss uses Composer's own tooling to parse the packages
+* Zero configuration – Strauss infers sensible defaults from your `composer.json`
+* No destructive defaults – `delete_vendor_files` defaults to `false`, so any destruction is explicitly opt-in
+* Licence files are included and PHP file headers are edited to adhere to licence requirements around modifications. My understanding is that re-distributing code that Mozart has handled is non-compliant with most open source licences – illegal!
+* Extensively tested – PhpUnit tests have been written to validate that many of Mozart's bugs are not present in Strauss
+* More configuration options – allowing exclusions in copying and editing files, and allowing specific/multiple namespace renaming
+
+Strauss will read the Mozart configuration from your `composer.json` to enable a seamless migration.
+
+## Changes before v1.0
+
+* Comprehensive attribution of code forked from Mozart – changes have been drastic and `git blame` is now useless, so I intend to add more attributions
+* More consistent naming. Are we prefixing or are we renaming?
+* Further unit tests, particularly file-system related
+* Regex patterns in config need to be validated
+
+## Changes before v2.0
+
+The correct approach to this problem is probably via [PHP-Parser](https://github.com/nikic/PHP-Parser/). At least all the tests will be useful. 
+
+## Acknowledgements
+
+[Coen Jacobs](https://github.com/coenjacobs/) and all the [contributors to Mozart](https://github.com/coenjacobs/mozart/graphs/contributors), particularly those who wrote nice issues.

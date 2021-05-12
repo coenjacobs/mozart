@@ -1,181 +1,275 @@
 <?php
 
-namespace CoenJacobs\Mozart\Console\Commands;
+namespace BrianHenryIE\Strauss\Console\Commands;
 
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
-use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
-use CoenJacobs\Mozart\Composer\Package;
-use CoenJacobs\Mozart\Mover;
-use CoenJacobs\Mozart\Replacer;
+use BrianHenryIE\Strauss\ChangeEnumerator;
+use BrianHenryIE\Strauss\Classmap;
+use BrianHenryIE\Strauss\Cleanup;
+use BrianHenryIE\Strauss\Composer\ComposerPackage;
+use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
+use BrianHenryIE\Strauss\Copier;
+use BrianHenryIE\Strauss\FileEnumerator;
+use BrianHenryIE\Strauss\Licenser;
+use BrianHenryIE\Strauss\Prefixer;
+use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Compose extends Command
 {
-    /** @var Mover */
-    private $mover;
-
-    /** @var Replacer */
-    private $replacer;
-
     /** @var string */
-    private $workingDir;
+    protected string $workingDir;
 
-    /** @var */
-    private $config;
+    /** @var StraussConfig */
+    protected StraussConfig $config;
 
+    protected ProjectComposerPackage $projectComposerPackage;
+
+    /** @var Copier */
+    protected Copier $copier;
+
+    /** @var Prefixer */
+    protected Prefixer $replacer;
+    /**
+     * @var ChangeEnumerator
+     */
+    protected ChangeEnumerator $changeEnumerator;
+
+
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('compose');
-        $this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
+        $this->setDescription("Copy composer's `require` and prefix their namespace and classnames.");
         $this->setHelp('');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @see Command::execute()
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $workingDir = getcwd();
+        $workingDir = getcwd() . DIRECTORY_SEPARATOR;
         $this->workingDir = $workingDir;
 
-        $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
-        if (!file_exists($composerFile)) {
-            $output->write('No composer.json found at current directory: ' . $workingDir);
+        try {
+            $this->loadProjectComposerPackage();
+
+            $this->buildDependencyList();
+
+            $this->enumerateFiles();
+
+            $this->copyFiles();
+
+            $this->determineChanges();
+
+            $this->performReplacements();
+
+            $this->addLicenses();
+
+            $this->generateClassmap();
+
+            $this->cleanUp();
+        } catch (Exception $e) {
+            $output->write($e->getMessage());
             return 1;
         }
 
-        $composer = json_decode(file_get_contents($composerFile));
-        // If the json was malformed.
-        if (!is_object($composer)) {
-            $output->write('Unable to parse composer.json read at: ' . $workingDir);
-            return 1;
-        }
-
-        // if `extra` is missing or not an object or if it does not have a `mozart` key which is an object.
-        if (!isset($composer->extra) || !is_object($composer->extra)
-            || !isset($composer->extra->mozart) || !is_object($composer->extra->mozart)) {
-            $output->write('Mozart config not readable in composer.json at extra->mozart');
-            return 1;
-        }
-        $config = $composer->extra->mozart;
-
-        $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
-
-        $this->config = $config;
-
-        $require = array();
-        if (isset($config->packages) && is_array($config->packages)) {
-            $require = $config->packages;
-        } elseif (isset($composer->require) && is_object($composer->require)) {
-            $require = array_keys(get_object_vars($composer->require));
-        }
-
-        $packages = $this->findPackages($require);
-
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
-
-        $this->mover->deleteTargetDirs($packages);
-        $this->movePackages($packages);
-        $this->replacePackages($packages);
-
-        foreach ($packages as $package) {
-            $this->replacer->replaceParentPackage($package, null);
-        }
-
-        $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
-        
+        // What should this be?!
         return 0;
     }
 
-    /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
-     */
-    protected function movePackages($packages)
-    {
-        foreach ($packages as $package) {
-            $this->movePackage($package);
-        }
 
-        $this->mover->deleteEmptyDirs();
+    /**
+     * 1. Load the composer.json.
+     *
+     * @throws Exception
+     */
+    protected function loadProjectComposerPackage()
+    {
+
+        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
+
+        $config = $this->projectComposerPackage->getStraussConfig();
+
+        $this->config = $config;
+    }
+
+
+    /** @var ComposerPackage[] */
+    protected array $flatDependencyTree = [];
+
+    /**
+     * 2. Built flat list of packages and dependencies.
+     *
+     * 2.1 Initiate getting dependencies for the project composer.json.
+     *
+     * @see Compose::flatDependencyTree
+     */
+    protected function buildDependencyList()
+    {
+
+        $requiredPackageNames = $this->config->getPackages();
+
+        // Unset PHP, ext-*.
+        $removePhpExt = function ($element) {
+            return !( 0 === strpos($element, 'ext') || 'php' === $element );
+        };
+
+        $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
+
+        foreach ($requiredPackageNames as $requiredPackageName) {
+            $packageDir = $this->workingDir . 'vendor' .DIRECTORY_SEPARATOR
+                . $requiredPackageName . DIRECTORY_SEPARATOR;
+
+            $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
+                ? $this->config->getOverrideAutoload()[$requiredPackageName]
+                : null;
+
+            $requiredComposerPackage = new ComposerPackage($packageDir, $overrideAutoload);
+            $this->flatDependencyTree[$requiredComposerPackage->getName()] = $requiredComposerPackage;
+            $this->getAllDependencies($requiredComposerPackage);
+        }
     }
 
     /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
+     * 2.2 Recursive function to get dependencies.
+     *
+     * @param ComposerPackage $requiredDependency
      */
-    protected function replacePackages($packages)
+    protected function getAllDependencies(ComposerPackage $requiredDependency): void
     {
-        foreach ($packages as $package) {
-            $this->replacePackage($package);
-        }
-    }
+        $excludedPackagesNames = $this->config->getExcludePackagesFromPrefixing();
 
-    /**
-     * Move all the packages over, one by one, starting on the deepest level of dependencies.
-     */
-    public function movePackage($package)
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->movePackage($dependency);
-            }
-        }
+        // Unset PHP, ext-*.
+        $removePhpExt = function ($element) {
+            return !( 0 === strpos($element, 'ext') || 'php' === $element );
+        };
 
-        $this->mover->movePackage($package);
-    }
+        $required = array_filter($requiredDependency->getRequiresNames(), $removePhpExt);
 
-    /**
-     * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
-     */
-    public function replacePackage($package)
-    {
-        if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
-                $this->replacePackage($dependency);
-            }
-        }
-
-        $this->replacer->replacePackage($package);
-    }
-
-    /**
-     * Loops through all dependencies and their dependencies and so on...
-     * will eventually return a list of all packages required by the full tree.
-     */
-    private function findPackages($slugs)
-    {
-        $packages = [];
-
-        foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                          . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
-
-            if (! is_dir($packageDir)) {
+        foreach ($required as $dependencyName) {
+            if (in_array($dependencyName, $excludedPackagesNames)) {
                 continue;
             }
 
-            $autoloaders = null;
-            if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug)) {
-                $autoloaders = $this->config->override_autoload->$package_slug;
-            }
+            $overrideAutoload = isset($this->config->getOverrideAutoload()[$dependencyName])
+                ? $this->config->getOverrideAutoload()[$dependencyName]
+                : null;
 
-            $package = new Package($packageDir, $autoloaders);
-            $package->findAutoloaders();
+            $dependencyComposerPackage = new ComposerPackage(
+                $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
+                . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json',
+                $overrideAutoload
+            );
 
-            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
-
-            $dependencies = [];
-            if (isset($config->require)) {
-                $dependencies = array_keys((array)$config->require);
-            }
-
-            $package->dependencies = $this->findPackages($dependencies);
-            $packages[] = $package;
+            $this->flatDependencyTree[$dependencyName] = $dependencyComposerPackage;
+            $this->getAllDependencies($dependencyComposerPackage);
         }
+    }
 
-        return $packages;
+    protected FileEnumerator $fileEnumerator;
+
+    protected function enumerateFiles()
+    {
+
+        $this->fileEnumerator = new FileEnumerator(
+            $this->flatDependencyTree,
+            $this->workingDir,
+            $this->config
+        );
+
+        $this->fileEnumerator->compileFileList();
+    }
+
+    // 3. Copy autoloaded files for each
+    protected function copyFiles()
+    {
+
+        $this->copier = new Copier(
+            $this->fileEnumerator->getAllFilesAndDependencyList(),
+            $this->workingDir,
+            $this->config->getTargetDirectory()
+        );
+
+        $this->copier->prepareTarget();
+
+        $this->copier->copy();
+    }
+
+    // 4. Determine namespace and classname changes
+    protected function determineChanges()
+    {
+
+        $this->changeEnumerator = new ChangeEnumerator($this->config);
+
+        $relativeTargetDir = $this->config->getTargetDirectory();
+        $phpFiles = $this->fileEnumerator->getPhpFilesAndDependencyList();
+        $this->changeEnumerator->findInFiles($relativeTargetDir, $phpFiles);
+    }
+
+    // 5. Update namespaces and class names.
+    // Replace references to updated namespaces and classnames throughout the dependencies.
+    protected function performReplacements()
+    {
+        $this->replacer = new Prefixer($this->config, $this->workingDir);
+
+        $namespaces = $this->changeEnumerator->getDiscoveredNamespaceReplacements();
+        $classes = $this->changeEnumerator->getDiscoveredClasses();
+        
+        $phpFiles = $this->fileEnumerator->getPhpFilesAndDependencyList();
+
+        $this->replacer->replaceInFiles($namespaces, $classes, $phpFiles);
+    }
+
+    protected function addLicenses(): void
+    {
+
+        $author = $this->projectComposerPackage->getAuthor();
+
+        $dependencies = $this->flatDependencyTree;
+
+        $licenser = new Licenser($this->config, $this->workingDir, $dependencies, $author);
+
+        $licenser->copyLicenses();
+
+        $modifiedFiles = $this->replacer->getModifiedFiles();
+        $licenser->addInformationToUpdatedFiles($modifiedFiles);
+    }
+
+    /**
+     * 6. Generate classmap.
+     */
+    protected function generateClassmap()
+    {
+
+        $classmap = new Classmap($this->config, $this->workingDir);
+
+        $classmap->generate();
+    }
+
+
+    /**
+     * 7.
+     * Delete source files if desired.
+     * Delete empty directories in destination.
+     */
+    protected function cleanUp()
+    {
+
+        $cleanup = new Cleanup($this->config, $this->workingDir);
+
+        $sourceFiles = array_keys($this->fileEnumerator->getAllFilesAndDependencyList());
+
+        // This will check the config to check should it delete or not.
+        $cleanup->cleanup($sourceFiles);
     }
 }

@@ -4,3 +4,16 @@ vendor/
 .DS_Store
 composer.lock
 .phpunit.result.cache
+
+*.phar
+
+tests/reports
+
+temptestdir
+build
+scratch
+
+# GitHub Actions
+pcov.sh
+xdebug.sh
+7.4linux.sh

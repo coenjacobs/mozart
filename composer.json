@@ -1,29 +1,42 @@
 {
-    "name": "coenjacobs/mozart",
+    "name": "brianhenryie/strauss",
     "description": "Composes all dependencies as a package inside a WordPress plugin",
     "authors": [
+        {
+            "name": "Brian Henry",
+            "email": "BrianHenryIE@gmail.com"
+        },
         {
             "name": "Coen Jacobs",
             "email": "coenjacobs@gmail.com"
         }
     ],
-    "bin": ["bin/mozart"],
+    "bin": ["bin/strauss"],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
     "require": {
-        "php": "^7.2",
+        "composer/composer": "*",
+        "json-mapper/json-mapper": "^2.2",
+        "php": "^7.4|^8.0",
         "symfony/console": "^4|^5",
         "symfony/finder": "^4|^5",
         "league/flysystem": "^1.0"
     },
     "autoload": {
         "psr-4": {
-            "CoenJacobs\\Mozart\\": "src/"
+            "BrianHenryIE\\Strauss\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BrianHenryIE\\Strauss\\Tests\\": "tests/"
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.5",
+        "ext-json": "*",
+        "phpunit/phpunit": "^9",
+        "clue/phar-composer": "^1.2",
         "squizlabs/php_codesniffer": "^3.5",
         "jaschilz/php-coverage-badger": "^2.0",
         "mheap/phpunit-github-actions-printer": "^1.4"
@@ -31,6 +44,7 @@
     "scripts": {
         "lint": [
             "composer validate",
+            "phpcbf || true",
             "phpcs"
         ],
         "test": [
