@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Create Strauss phar on new release
     steps:
-      - uses: actions/checkout@v1
+      - name: Git checkout
+        uses: actions/checkout@v2
 
       - name: Install PHP
         uses: shivammathur/setup-php@1.3.7
