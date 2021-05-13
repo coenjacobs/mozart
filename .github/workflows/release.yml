@@ -7,7 +7,7 @@ on:
 jobs:
   create-phar:
     runs-on: ubuntu-latest
-    name: Create Mozart phar
+    name: Create Strauss phar on new release
     steps:
       - uses: actions/checkout@v1
 
@@ -38,3 +38,14 @@ jobs:
           files: strauss.phar
           gzip: false
           allow_override: true
+
+      - name: Edit README.md to update the version number
+        env:
+          CURRENT_RELEASE: ${{ github.event.release.tag_name }}
+        run: |
+          find . -name 'README.md' -exec sed -i "s/download\/[^\/]*/download\/$CURRENT_RELEASE/" {} +
+
+      - name: Commit updated README.md
+        uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        with:
+          commit_message: "🤖 Update version number in README.md"
