@@ -3,7 +3,7 @@
 namespace BrianHenryIE\Strauss\Console\Commands;
 
 use BrianHenryIE\Strauss\ChangeEnumerator;
-use BrianHenryIE\Strauss\Classmap;
+use BrianHenryIE\Strauss\Autoload;
 use BrianHenryIE\Strauss\Cleanup;
 use BrianHenryIE\Strauss\Composer\ComposerPackage;
 use BrianHenryIE\Strauss\Composer\ProjectComposerPackage;
@@ -75,7 +75,7 @@ class Compose extends Command
 
             $this->addLicenses();
 
-            $this->generateClassmap();
+            $this->generateAutoloader();
 
             $this->cleanUp();
         } catch (Exception $e) {
@@ -246,12 +246,14 @@ class Compose extends Command
     }
 
     /**
-     * 6. Generate classmap.
+     * 6. Generate autoloader.
      */
-    protected function generateClassmap()
+    protected function generateAutoloader()
     {
 
-        $classmap = new Classmap($this->config, $this->workingDir);
+        $files = $this->fileEnumerator->getFilesAutoloaders();
+
+        $classmap = new Autoload($this->config, $this->workingDir, $files);
 
         $classmap->generate();
     }

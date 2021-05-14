@@ -1,6 +1,8 @@
 <?php
 /**
  * Build a list of files from the composer autoloaders.
+ *
+ * Also record the `files` autoloaders.
  */
 
 namespace BrianHenryIE\Strauss;
@@ -42,6 +44,13 @@ class FileEnumerator
      * @var array<string, ComposerPackage>
      */
     protected array $filesWithDependencies = [];
+
+    /**
+     * Record the files autolaoders for later use in building our own autoloader.
+     *
+     * @var array
+     */
+    protected array $filesAutoloaders = [];
 
     /**
      * Copier constructor.
@@ -92,8 +101,12 @@ class FileEnumerator
                 return 'exclude-from-classmap' !== $type;
             }, ARRAY_FILTER_USE_KEY);
 
-            foreach ($autoloaders as $_type => $value) {
+            foreach ($autoloaders as $type => $value) {
                 // Might have to switch/case here.
+
+                if ('files' === $type) {
+                    $this->filesAutoloaders[$dependency->getPath()] = $value;
+                }
 
                 foreach ($value as $namespace => $namespace_relative_path) {
                     if (!empty($namespace) && in_array($namespace, $this->excludeNamespaces)) {
@@ -167,5 +180,15 @@ class FileEnumerator
         return array_filter($this->filesWithDependencies, function ($value, $key) {
             return false !== strpos($key, '.php');
         }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /**
+     * Get the recorded files autoloaders.
+     *
+     * @return array<string, array<string>>
+     */
+    public function getFilesAutoloaders(): array
+    {
+        return $this->filesAutoloaders;
     }
 }
