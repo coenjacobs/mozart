@@ -22,7 +22,7 @@ class ChangeEnumerator
     protected array $excludePackagesFromPrefixing = array();
     protected array $excludeNamespacesFromPrefixing = array();
 
-    protected array $excludeFilePatternsFromPrefixing = array( '/psr.*/');
+    protected array $excludeFilePatternsFromPrefixing = array();
 
     protected array $namespaceReplacementPatterns = array();
 

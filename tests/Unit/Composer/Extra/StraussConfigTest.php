@@ -65,7 +65,8 @@ EOD;
 
         $this->assertEquals('BrianHenryIE_Strauss_', $sut->getClassmapPrefix());
 
-        $this->assertContains('/psr.*/', $sut->getExcludeFilePatternsFromPrefixing());
+        // @see https://github.com/BrianHenryIE/strauss/issues/14
+        $this->assertContains('/^psr.*$/', $sut->getExcludeFilePatternsFromPrefixing());
 
         $this->assertArrayHasKey('clancats/container', $sut->getOverrideAutoload());
 

@@ -56,7 +56,7 @@ class StraussConfig
     /**
      * @var array{packages?: string[], namespaces?: string[], filePatterns?: string[]}
      */
-    protected array $excludeFromPrefix = array('filePatterns'=>array('/psr.*/'));
+    protected array $excludeFromPrefix = array('filePatterns'=>array('/^psr.*$/'));
 
 
     /**
