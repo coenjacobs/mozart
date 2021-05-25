@@ -65,7 +65,7 @@ jobs:
         with:
           repository: tests/reports/html
           branch: gh-pages
-          commit_message: "Commit code coverage to gh-pages"
+          commit_message: "🤖 Commit code coverage to gh-pages"
           commit_options:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -76,6 +76,6 @@ jobs:
       - name: Commit code coverage badge
         uses: stefanzweifel/git-auto-commit-action@v4.1.1
         with:
-          commit_message: "Commit code coverage badge"
+          commit_message: "🤖 Commit code coverage badge"
 
 
