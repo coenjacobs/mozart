@@ -125,7 +125,7 @@ class Prefixer
         $pattern = "
             /                              # Start the pattern
             (
-            ^\s+                           # start of the line or space
+            ^\s*                           # start of the line
             |namespace\s+                  # the namespace keyword
             |use\s+                        # the use keyword
             |new\s+
@@ -139,7 +139,7 @@ class Prefixer
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
             |=\s*                          # as the value being assigned to a variable
-            |\*\s+@\w*\s+                  # In a comments param etc  
+            |\*\s+@\w+\s+                  # In a comments param etc  
             )        
             (
             \\\\*                          # maybe preceeded by a backslash
