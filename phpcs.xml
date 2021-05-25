@@ -10,4 +10,5 @@
     </rule>
     <file>./src</file>
     <file>./tests</file>
+    <exclude-pattern>/tests/reports/</exclude-pattern>
 </ruleset>
