@@ -125,36 +125,34 @@ class Prefixer
         $pattern = "
             /                              # Start the pattern
             (
-            ^\s+|\s                     # start of the line or space
-            |namespace\s                    # The namespace keyword
-            |use\s                         # or the use keyword
+            ^\s+                           # start of the line or space
+            |namespace\s+                  # the namespace keyword
+            |use\s+                        # the use keyword
             |new\s+
             |static\s+
-            |\"
-            |'
-            |implements\s
-            |extends\s                     # when the class being extended is namespaced inline
             |\"[^\s]*                      # inside a string that does not contain spaces
             |'[^\s]*
+            |implements\s+
+            |extends\s+                    # when the class being extended is namespaced inline
             |return\s+
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
-            |=\s*
+            |=\s*                          # as the value being assigned to a variable
             |\*\s+@\w*\s+                  # In a comments param etc  
             )        
             (
-            \\\\*                            # maybe preceeded by a backslash
-            {$searchNamespace}            # followed by the namespace to replace
+            \\\\*                          # maybe preceeded by a backslash
+            {$searchNamespace}             # followed by the namespace to replace
             )
-            (?!:)               # Not followd by : which would only be valid after a classname
+            (?!:)                          # Not followed by : which would only be valid after a classname
             (
-            \s*;                            # followed by a semicolon 
+            \s*;                           # followed by a semicolon 
             |\\\\{1,2}[a-zA-Z0-9_\x7f-\xff]+         # or a classname no slashes 
-            |\s+as          # or the keyword as 
-            |\"         # or quotes
-            |'                         #or single quote         
-            |: # or a colon to access a static
+            |\s+as                         # or the keyword as 
+            |\"                            # or quotes
+            |'                             # or single quote         
+            |:                             # or a colon to access a static
             )                            
             /Ux";                          // U: Non-greedy matching, x: ignore whitespace in pattern.
 
