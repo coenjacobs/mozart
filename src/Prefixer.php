@@ -134,6 +134,8 @@ class Prefixer
             |'
             |implements\s
             |extends\s                     # when the class being extended is namespaced inline
+            |\"[^\s]*                      # inside a string that does not contain spaces
+            |'[^\s]*
             |return\s+
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type

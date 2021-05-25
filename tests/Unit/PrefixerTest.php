@@ -766,4 +766,25 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * Sometimes the namespace in a string should be replaced, but sometimes not.
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/15
+     */
+    public function testDoNotReplaceInStringThatIsNotCode()
+    {
+        $originalNamespace = "TrustedLogin";
+        $replacement = "Prefix\\TrustedLogin";
+        $contents = "esc_html__( 'Learn about TrustedLogin', 'trustedlogin' )";
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, $originalNamespace, $replacement);
+
+        $expected = "esc_html__( 'Learn about TrustedLogin', 'trustedlogin' )";
+
+        $this->assertEquals($expected, $result);
+    }
 }
