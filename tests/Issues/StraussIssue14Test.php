@@ -55,13 +55,47 @@ EOD;
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $php_string = file_get_contents($this->testsWorkingDir .'/strauss/guzzlehttp/psr7/src/AppendStream.php');
+        $php_string = file_get_contents($this->testsWorkingDir . '/strauss/guzzlehttp/psr7/src/AppendStream.php');
 
         // was namespace GuzzleHttp\Psr7;
 
         // Confirm solution is correct.
         $this->assertStringContainsString('namespace BrianHenryIE\Strauss\GuzzleHttp\Psr7;', $php_string);
+    }
 
+    public function testFilesAutoloaderIsGenerated()
+    {
 
+        $composerJsonString = <<<'EOD'
+{
+  "name": "brianhenryie/strauss-issue-14",
+  "require":{
+    "guzzlehttp/psr7": "*"
+  },
+  "require-dev":{
+    "brianhenryie/strauss": "*"
+  },
+  "extra": {
+    "strauss": {
+      "namespace_prefix": "BrianHenryIE\\Strauss\\"
+    }
+  }
+}
+EOD;
+
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
+
+        chdir($this->testsWorkingDir);
+
+        exec('composer install');
+
+        $inputInterfaceMock = $this->createMock(InputInterface::class);
+        $outputInterfaceMock = $this->createMock(OutputInterface::class);
+
+        $mozartCompose = new Compose();
+
+        $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
+
+        $this->assertFileExists($this->testsWorkingDir . '/strauss/autoload-files.php');
     }
 }
