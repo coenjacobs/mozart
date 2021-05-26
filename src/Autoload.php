@@ -146,7 +146,8 @@ class Autoload
         foreach ($filesAutoloaders as $pacakgePath => $files) {
             foreach ($files as $file) {
                 $filepath = DIRECTORY_SEPARATOR . $pacakgePath . DIRECTORY_SEPARATOR . $file;
-                if ('php' !== pathinfo(__DIR__ . $filepath)['extension']) {
+                $filePathinfo = pathinfo(__DIR__ . $filepath);
+                if (!isset($filePathinfo['extension']) || 'php' !== $filePathinfo['extension']) {
                     continue;
                 }
                 echo "require_once __DIR__ . '{$filepath}';\n";
