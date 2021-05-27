@@ -218,7 +218,7 @@ class Prefixer
 														# potential second namespace declaration.
 				|										# if found, match that much before continuing the search on
 								    		        	# the remainder of the string.
-				([^a-zA-Z0-9_\x7f-\xff])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff])
+				([^a-zA-Z0-9_\x7f-\xff\$])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff])
 				
 			/x'; //                                     # x: ignore whitespace in regex.
 

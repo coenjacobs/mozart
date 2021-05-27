@@ -787,4 +787,28 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+
+    /**
+     *
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/19
+     *
+     */
+    public function testDoNotReplaceInVariableNames()
+    {
+        $originalClassname = 'object';
+        $classnamePrefix = 'Strauss_Issue19_';
+        $contents = "public static function objclone(\$object) {";
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceClassname($contents, $originalClassname, $classnamePrefix);
+
+        // NOT public static function objclone($Strauss_Issue19_object) {
+        $expected = "public static function objclone(\$object) {";
+
+        $this->assertEquals($expected, $result);
+    }
 }
