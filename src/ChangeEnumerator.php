@@ -108,15 +108,14 @@ class ChangeEnumerator
 
 
     /**
-     * TODO: Don't use preg_replace!
+     * TODO: Don't use preg_replace_callback!
      *
      * @param string $contents
      *
-     * @return string $contents (unmodified)
+     * @return string $contents
      */
     public function find(string $contents): string
     {
-
 
         // If the entire file is under one namespace, all we want is the namespace.
         $singleNamespacePattern = '/
@@ -136,7 +135,7 @@ class ChangeEnumerator
 
         return preg_replace_callback(
             '
-			/											# Start the pattern
+			~											# Start the pattern
 				namespace\s+([a-zA-Z0-9_\x7f-\xff\\\\]+)[;{\s\n]{1}[\s\S]*?(?=namespace|$) 
 														# Look for a preceeding namespace declaration, 
 														# followed by a semicolon, open curly bracket, space or new line
@@ -144,21 +143,24 @@ class ChangeEnumerator
 														# potential second namespace declaration or end of file.
 														# if found, match that much before continuing the search on
 				|										# the remainder of the string.
-				^\s*\/\/.*$ |							# Skip line comments
-				^\s*\*[^$\n]*? |						# Skip multiline comment bodies
-				^[^$\n]*?(?:\*\/) |						# Skip multiline comment endings
+				\/\*[\s\S]*?\*\/ |                      # Skip multiline comments
+				^\s*\/\/.*$	|   						# Skip single line comments
 				\s*										# Whitespace is allowed before 
 				(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
 				([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first non-classname-valid character
 				\s?										# Allow a space after
 				(?:{|extends|implements|\n|$)			# Class declaration can be followed by {, extends, implements 
 														# or a new line
-			/x', //                                     # x: ignore whitespace in regex.
+			~x', //                                     # x: ignore whitespace in regex.
             function ($matches) {
 
                 // If we're inside a namespace other than the global namespace:
                 if (1 === preg_match('/^namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*/', $matches[0])) {
                     $this->addDiscoveredNamespaceChange($matches[1]);
+                    return $matches[0];
+                }
+
+                if (count($matches) < 3) {
                     return $matches[0];
                 }
 

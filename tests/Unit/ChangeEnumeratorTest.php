@@ -388,4 +388,41 @@ EOD;
         $this->assertContains('BrianHenryIE\Prefix\PdfHelpers', $changeEnumerator->getDiscoveredNamespaceReplacements());
         $this->assertNotContains('BrianHenryIE\Prefix\BrianHenryIE\PdfHelpers', $changeEnumerator->getDiscoveredNamespaceReplacements());
     }
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/19
+     */
+    public function testPhraseClassObjectIsNotMistaken()
+    {
+
+        $contents = <<<'EOD'
+<?php
+
+class TCPDF_STATIC
+{
+
+    /**
+     * Creates a copy of a class object
+     * @param $object (object) class object to be cloned
+     * @return cloned object
+     * @since 4.5.029 (2009-03-19)
+     * @public static
+     */
+    public static function objclone($object)
+    {
+        if (($object instanceof Imagick) and (version_compare(phpversion('imagick'), '3.0.1') !== 1)) {
+            // on the versions after 3.0.1 the clone() method was deprecated in favour of clone keyword
+            return @$object->clone();
+        }
+        return @clone($object);
+    }
+}
+EOD;
+
+        $config = $this->createMock(StraussConfig::class);
+        $changeEnumerator = new ChangeEnumerator($config);
+        $changeEnumerator->find($contents);
+
+        $this->assertNotContains('object', $changeEnumerator->getDiscoveredClasses());
+    }
 }
