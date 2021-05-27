@@ -117,7 +117,8 @@ class FileEnumerator
                         //  $finder->files()->name($file)->in($source_path);
 
                         $relativeFilepath = str_replace($prefixToRemove, '', $packagePath . $namespace_relative_path);
-
+                        $relativeFilepath = preg_replace('#[\\\/]+#', DIRECTORY_SEPARATOR, $relativeFilepath);
+                        
                         $this->filesWithDependencies[$relativeFilepath] = $dependency;
 
                         continue;
