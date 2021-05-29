@@ -65,7 +65,7 @@ class Compose extends Command
         if (isset($composer->config) && isset($composer->config->{'vendor-dir'})) {
             $vendorDir = $composer->config->{'vendor-dir'};
         }
-        $config->vendor_dir = $vendorDir        
+        $config->vendor_dir = $vendorDir;
 
         $this->config = $config;
 
