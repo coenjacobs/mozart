@@ -60,6 +60,12 @@ class Compose extends Command
         $config = $composer->extra->mozart;
 
         $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
+        
+        $vendorDir = 'vendor';
+        if (isset($composer->config) && isset($composer->config->{'vendor-dir'})) {
+            $vendorDir = $composer->config->{'vendor-dir'};
+        }
+        $config->vendor_dir = $vendorDir        
 
         $this->config = $config;
 
@@ -166,13 +172,9 @@ class Compose extends Command
     private function findPackages(array $slugs): array
     {
         $packages = [];
-        $vendorDir = 'vendor';
-        if (isset($this->config->config) && isset($this->config->config->vendor-dir)) {
-            $vendorDir = $this->config->config->{'vendor-dir'};
-        }
 
         foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . $vendorDir
+            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . $this->config->vendor_dir
                           . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
 
             if (! is_dir($packageDir)) {
