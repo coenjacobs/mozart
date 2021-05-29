@@ -166,9 +166,13 @@ class Compose extends Command
     private function findPackages(array $slugs): array
     {
         $packages = [];
+        $vendorDir = 'vendor';
+        if (isset($this->config->config) && isset($this->config->config->vendor-dir)) {
+            $vendorDir = $this->config->config->{'vendor-dir'};
+        }
 
         foreach ($slugs as $package_slug) {
-            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+            $packageDir = $this->workingDir . DIRECTORY_SEPARATOR . $vendorDir
                           . DIRECTORY_SEPARATOR . $package_slug . DIRECTORY_SEPARATOR;
 
             if (! is_dir($packageDir)) {
