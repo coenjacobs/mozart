@@ -44,7 +44,7 @@ class Copier
      * @param string $relativeTargetDir
      * @param string $vendorDir
      */
-    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir, string $vendorDir = false)
+    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir, string $vendorDir = '')
     {
         $this->filepaths = array_keys($filepaths);
 
@@ -52,7 +52,7 @@ class Copier
 
         $this->targetDir = $relativeTargetDir;
 
-        if ( false == $vendorDir )
+        if ( '' == $vendorDir )
         {
             $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
         }
