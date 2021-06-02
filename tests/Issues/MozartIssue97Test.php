@@ -39,7 +39,7 @@ class MozartIssue97Test extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 

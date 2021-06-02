@@ -24,7 +24,8 @@ class IntegrationTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->testsWorkingDir =  rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
+        $this->testsWorkingDir = DIRECTORY_SEPARATOR . 'private'
+            . rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
             . 'strausstestdir' . DIRECTORY_SEPARATOR;
 
         if (file_exists($this->testsWorkingDir)) {

@@ -27,6 +27,8 @@ class Licenser
 
     protected string $workingDir;
 
+    protected string $vendorDir;
+
     protected array $dependencies;
 
     // The author of the current project who is running Strauss to make the changes to the required libraries.
@@ -58,6 +60,7 @@ class Licenser
         $this->author = $author;
 
         $this->targetDirectory = $config->getTargetDirectory();
+        $this->vendorDir = $config->getVendorDirectory();
 
         $this->filesystem = new Filesystem(new Local($workingDir));
     }
@@ -82,7 +85,7 @@ class Licenser
             }
 
             $this->filesystem->copy(
-                'vendor' . DIRECTORY_SEPARATOR . $licenseFile,
+                $this->vendorDir . $licenseFile,
                 $targetLicenseFile
             );
         }
@@ -98,12 +101,11 @@ class Licenser
         // Include all license files in the dependency path.
         $finder = $finder ?? new Finder();
 
-        // TODO: read 'vendor' from composer.json.
-        $prefixToRemove = 'vendor' . DIRECTORY_SEPARATOR;
+        $prefixToRemove = $this->vendorDir;
 
         /** @var ComposerPackage $dependency */
         foreach ($this->dependencies as $dependency) {
-            $packagePath = 'vendor' . DIRECTORY_SEPARATOR . $dependency->getPath();
+            $packagePath = $this->vendorDir . $dependency->getPath();
 
             // If packages happen to have their vendor dir, i.e. locally required packages, don't included the licenses
             // from their vendor dir (they should be included otherwise anyway).

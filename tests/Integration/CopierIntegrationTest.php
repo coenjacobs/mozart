@@ -37,7 +37,7 @@ class CopierIntegrationTest extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -52,14 +52,16 @@ EOD;
 
         $workingDir = $this->testsWorkingDir;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
+        $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
 
         $config = $this->createStub(StraussConfig::class);
+        $config->method('getVendorDirectory')->willReturn($vendorDir);
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
         $fileEnumerator->compileFileList();
         $filepaths = $fileEnumerator->getAllFilesAndDependencyList();
 
-        $copier = new Copier($filepaths, $workingDir, $relativeTargetDir);
+        $copier = new Copier($filepaths, $workingDir, $relativeTargetDir, $vendorDir);
 
         $file = 'ContainerAwareTrait.php';
         $relativePath = 'league/container/src/';
@@ -96,7 +98,7 @@ EOD;
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -111,12 +113,16 @@ EOD;
 
         $workingDir = $this->testsWorkingDir;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
+        $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
+
         $config = $this->createStub(StraussConfig::class);
+        $config->method('getVendorDirectory')->willReturn($vendorDir);
+
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
         $fileEnumerator->compileFileList();
         $filepaths = $fileEnumerator->getAllFilesAndDependencyList();
 
-        $copier = new Copier($filepaths, $workingDir, $relativeTargetDir);
+        $copier = new Copier($filepaths, $workingDir, $relativeTargetDir, $vendorDir);
 
         $file = 'Client.php';
         $relativePath = 'google/apiclient/src/';
@@ -170,7 +176,7 @@ EOD;
         $composer->extra = new stdClass();
         $composer->extra->mozart = $mozartConfig;
 
-        $composerFilepath = $this->testsWorkingDir . '/composer.json';
+        $composerFilepath = $this->testsWorkingDir . 'composer.json';
         $composerJson = json_encode($composer) ;
         file_put_contents($composerFilepath, $composerJson);
 

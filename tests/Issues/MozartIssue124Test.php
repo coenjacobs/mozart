@@ -49,7 +49,7 @@ class MozartIssue124Test extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -101,7 +101,7 @@ EOD;
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -114,7 +114,7 @@ EOD;
 
         $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $mpdf_php = file_get_contents($this->testsWorkingDir .'/strauss/mpdf/mpdf/src/Conversion/DecToOther.php');
+        $mpdf_php = file_get_contents($this->testsWorkingDir .'strauss/mpdf/mpdf/src/Conversion/DecToOther.php');
 
         // Confirm problem is gone.
         $this->assertStringNotContainsString('public function __construct(BrianHenryIE\Strauss\Mpdf $mpdf)', $mpdf_php);
@@ -150,7 +150,7 @@ EOD;
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -163,7 +163,7 @@ EOD;
 
         $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $mpdf_php = file_get_contents($this->testsWorkingDir .'/strauss/mpdf/mpdf/src/Barcode/BarcodeException.php');
+        $mpdf_php = file_get_contents($this->testsWorkingDir .'strauss/mpdf/mpdf/src/Barcode/BarcodeException.php');
 
         // Confirm problem is gone.
         $this->assertStringNotContainsString('class BarcodeException extends \Mpdf\MpdfException', $mpdf_php);

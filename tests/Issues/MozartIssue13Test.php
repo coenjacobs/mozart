@@ -50,7 +50,7 @@ class MozartIssue13Test extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -63,7 +63,7 @@ EOD;
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $phpString = file_get_contents($this->testsWorkingDir .'/strauss/paypal/rest-api-sdk-php/lib/PayPal/Log/PayPalLogger.php');
+        $phpString = file_get_contents($this->testsWorkingDir .'strauss/paypal/rest-api-sdk-php/lib/PayPal/Log/PayPalLogger.php');
 
         // Confirm solution is correct.
         $this->assertStringContainsString('constant("\\\\BrianHenryIE\\\\Strauss\\\\Psr\\\\Log\\\\LogLevel::$loggingLevel")', $phpString);

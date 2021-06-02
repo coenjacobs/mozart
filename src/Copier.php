@@ -29,6 +29,9 @@ class Copier
 
     protected string $targetDir;
 
+    /** @var string */
+    protected string $vendorDir;
+
     protected array $filepaths;
 
     /** @var Filesystem */
@@ -39,14 +42,17 @@ class Copier
      * @param array<string, ComposerPackage> $filepaths
      * @param string $workingDir
      * @param string $relativeTargetDir
+     * @param string $vendorDir
      */
-    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir)
+    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir, string $vendorDir)
     {
         $this->filepaths = array_keys($filepaths);
 
         $this->workingDir = $workingDir;
 
         $this->targetDir = $relativeTargetDir;
+
+        $this->vendorDir = $vendorDir;
 
         $this->filesystem = new Filesystem(new Local($this->workingDir));
     }
@@ -80,7 +86,7 @@ class Copier
     {
 
         foreach ($this->filepaths as $relativeFilepath) {
-            $sourceFileRelativePath = 'vendor' . DIRECTORY_SEPARATOR . $relativeFilepath;
+            $sourceFileRelativePath = $this->vendorDir . $relativeFilepath;
 
             $targetFileRelativePath = $this->targetDir . $relativeFilepath;
 

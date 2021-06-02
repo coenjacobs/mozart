@@ -41,7 +41,7 @@ class MozartIssue90Test extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -59,6 +59,6 @@ EOD;
         // This test would only fail on Windows?
         $this->assertDirectoryDoesNotExist($this->testsWorkingDir .'strauss/iio/libmergepdf/vendor/iio/libmergepdf/tcpdi');
 
-        $this->assertFileExists($this->testsWorkingDir .'/strauss/iio/libmergepdf/tcpdi/tcpdi.php');
+        $this->assertFileExists($this->testsWorkingDir .'strauss/iio/libmergepdf/tcpdi/tcpdi.php');
     }
 }

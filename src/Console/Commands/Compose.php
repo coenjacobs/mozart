@@ -96,7 +96,7 @@ class Compose extends Command
     protected function loadProjectComposerPackage()
     {
 
-        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
+        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir);
 
         $config = $this->projectComposerPackage->getStraussConfig();
 
@@ -127,7 +127,7 @@ class Compose extends Command
         $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
 
         foreach ($requiredPackageNames as $requiredPackageName) {
-            $packageDir = $this->workingDir . 'vendor' .DIRECTORY_SEPARATOR
+            $packageDir = $this->workingDir . $this->config->getVendorDirectory()
                 . $requiredPackageName . DIRECTORY_SEPARATOR;
 
             $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
@@ -166,7 +166,7 @@ class Compose extends Command
                 : null;
 
             $dependencyComposerPackage = new ComposerPackage(
-                $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
+                $this->workingDir . $this->config->getVendorDirectory()
                 . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json',
                 $overrideAutoload
             );
@@ -197,7 +197,8 @@ class Compose extends Command
         $this->copier = new Copier(
             $this->fileEnumerator->getAllFilesAndDependencyList(),
             $this->workingDir,
-            $this->config->getTargetDirectory()
+            $this->config->getTargetDirectory(),
+            $this->config->getVendorDirectory()
         );
 
         $this->copier->prepareTarget();

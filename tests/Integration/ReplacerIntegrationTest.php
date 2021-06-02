@@ -41,7 +41,7 @@ class ReplacerIntegrationTest extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -58,6 +58,7 @@ EOD;
         $workingDir = $this->testsWorkingDir;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
         $absoluteTargetDir = $workingDir . $relativeTargetDir;
+        $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
 
 //        $config = $this->createStub(StraussConfig::class);
 //        $config->method('getTargetDirectory')->willReturn('strauss' . DIRECTORY_SEPARATOR);
@@ -67,7 +68,7 @@ EOD;
         $fileList = $fileEnumerator->getAllFilesAndDependencyList();
         $phpFileList = $fileEnumerator->getPhpFilesAndDependencyList();
 
-        $copier = new Copier($fileList, $workingDir, $relativeTargetDir);
+        $copier = new Copier($fileList, $workingDir, $relativeTargetDir, $vendorDir);
         $copier->prepareTarget();
         $copier->copy();
 
@@ -106,7 +107,7 @@ EOD;
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -150,7 +151,7 @@ EOD;
 //
 //        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
 
-        $updatedFile = file_get_contents($this->testsWorkingDir . '/strauss/' . 'setasign/fpdf/fpdf.php');
+        $updatedFile = file_get_contents($this->testsWorkingDir .'strauss/' . 'setasign/fpdf/fpdf.php');
 
         $this->assertStringContainsString('class BrianHenryIE_Strauss_FPDF', $updatedFile);
     }
