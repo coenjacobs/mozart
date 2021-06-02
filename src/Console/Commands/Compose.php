@@ -96,7 +96,7 @@ class Compose extends Command
     protected function loadProjectComposerPackage()
     {
 
-        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir . 'composer.json');
+        $this->projectComposerPackage = new ProjectComposerPackage($this->workingDir);
 
         $config = $this->projectComposerPackage->getStraussConfig();
 
