@@ -44,7 +44,7 @@ class Copier
      * @param string $relativeTargetDir
      * @param string $vendorDir
      */
-    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir, string $vendorDir = '')
+    public function __construct(array $filepaths, string $workingDir, string $relativeTargetDir, string $vendorDir)
     {
         $this->filepaths = array_keys($filepaths);
 
@@ -52,10 +52,6 @@ class Copier
 
         $this->targetDir = $relativeTargetDir;
 
-        if ( '' == $vendorDir )
-        {
-            $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
-        }
         $this->vendorDir = $vendorDir;
 
         $this->filesystem = new Filesystem(new Local($this->workingDir));
