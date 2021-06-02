@@ -24,6 +24,9 @@ class FileEnumerator
      */
     protected string $workingDir;
 
+    /** @var string */
+    protected string $vendorDir;
+
     /** @var ComposerPackage[] */
     protected array $dependencies;
 
@@ -63,6 +66,7 @@ class FileEnumerator
         StraussConfig $config
     ) {
         $this->workingDir = $workingDir;
+        $this->vendorDir = $config->getVendorDirectory();
 
         $this->dependencies = $dependencies;
 
@@ -79,15 +83,14 @@ class FileEnumerator
     public function compileFileList()
     {
 
-        // TODO: read 'vendor' from composer.json.
-        $prefixToRemove = $this->workingDir .'vendor'. DIRECTORY_SEPARATOR;
+        $prefixToRemove = $this->workingDir . $this->vendorDir;
 
         foreach ($this->dependencies as $dependency) {
             if (in_array($dependency->getName(), $this->excludePackageNames)) {
                 continue;
             }
 
-            $packagePath = $this->workingDir . 'vendor' . DIRECTORY_SEPARATOR
+            $packagePath = $this->workingDir . $this->vendorDir
                 . $dependency->getPath() . DIRECTORY_SEPARATOR;
 
             /**

@@ -22,6 +22,15 @@ class StraussConfig
     protected $targetDirectory = 'strauss';
 
     /**
+     * The vendor directory.
+     * 
+     * Probably 'vendor/'
+     * 
+     * @var string
+     */
+    protected $vendorDirectory = 'vendor';
+
+    /**
      * `namespacePrefix` is the prefix to be given to any namespaces.
      * Presumably this will take the form `My_Project_Namespace\dep_directory`.
      *
@@ -231,6 +240,22 @@ class StraussConfig
             DIRECTORY_SEPARATOR
         )
             . DIRECTORY_SEPARATOR ;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVendorDirectory(): string
+    {
+        return $this->vendorDirectory;
+    }
+
+    /**
+     * @param string $vendorDirectory
+     */
+    public function setVendorDirectory(string $vendorDirectory): void
+    {
+        $this->vendorDirectory = $vendorDirectory;
     }
 
     /**

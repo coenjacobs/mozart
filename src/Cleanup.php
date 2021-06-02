@@ -23,6 +23,7 @@ class Cleanup
     
     public function __construct(StraussConfig $config, string $workingDir)
     {
+        $this->vendorDirectory = $config->getVendorDirectory();
 
         $this->isDeleteVendorFiles = $config->isDeleteVendorFiles();
         

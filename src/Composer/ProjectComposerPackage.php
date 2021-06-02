@@ -39,8 +39,9 @@ class ProjectComposerPackage extends ComposerPackage
      */
     public function getStraussConfig(): StraussConfig
     {
-
-        return new StraussConfig($this->composer);
+        $config = new StraussConfig($this->composer);
+        $config->setVendorDirectory($this->getVendorDirectory());
+        return $config;
     }
 
 
