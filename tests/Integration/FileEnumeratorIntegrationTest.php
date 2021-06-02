@@ -38,7 +38,7 @@ class FileEnumeratorIntegrationTest extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -53,7 +53,10 @@ EOD;
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
+        $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
+
         $config = $this->createStub(StraussConfig::class);
+        $config->method('getVendorDirectory')->willReturn($vendorDir);
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
 

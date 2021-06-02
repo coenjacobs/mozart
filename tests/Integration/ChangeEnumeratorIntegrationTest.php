@@ -40,7 +40,7 @@ class ChangeEnumeratorIntegrationTest extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -55,14 +55,16 @@ EOD;
 
         $workingDir = $this->testsWorkingDir;
         $relativeTargetDir = 'strauss' . DIRECTORY_SEPARATOR;
+        $vendorDir = 'vendor' . DIRECTORY_SEPARATOR;
 
         $config = $this->createStub(StraussConfig::class);
+        $config->method('getVendorDirectory')->willReturn($vendorDir);
 
         $fileEnumerator = new FileEnumerator($dependencies, $workingDir, $config);
 
         $fileEnumerator->compileFileList();
 
-        $copier = new Copier($fileEnumerator->getAllFilesAndDependencyList(), $workingDir, $relativeTargetDir);
+        $copier = new Copier($fileEnumerator->getAllFilesAndDependencyList(), $workingDir, $relativeTargetDir, $vendorDir);
 
         $copier->prepareTarget();
 
