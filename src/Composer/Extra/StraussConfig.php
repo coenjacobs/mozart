@@ -23,9 +23,9 @@ class StraussConfig
 
     /**
      * The vendor directory.
-     * 
+     *
      * Probably 'vendor/'
-     * 
+     *
      * @var string
      */
     protected $vendorDirectory = 'vendor';
@@ -247,7 +247,7 @@ class StraussConfig
      */
     public function getVendorDirectory(): string
     {
-        return $this->vendorDirectory;
+        return trim($this->vendorDirectory, DIRECTORY_SEPARATOR . '\\/') . DIRECTORY_SEPARATOR;
     }
 
     /**
