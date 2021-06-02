@@ -73,8 +73,8 @@ class ComposerPackage
 
         $relativePath = null;
 
-        // TODO: Test on Windows (DIRECTORY_SEPARATOR).
-        if (1 === preg_match('/vendor\/(\w*\/\w*)\/composer\.json/', $absolutePath, $output_array)) {
+        // Get the last two directory levels above composer.json.
+        if (1 === preg_match('~'.DIRECTORY_SEPARATOR.'(\w*[/\\\]{1}\w*)'.DIRECTORY_SEPARATOR.'composer\.json~', $absolutePath, $output_array)) {
             $relativePath = $output_array[1];
         }
 
