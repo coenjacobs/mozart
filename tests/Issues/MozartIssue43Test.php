@@ -53,7 +53,7 @@ class MozartIssue43Test extends IntegrationTestCase
 }
 EOD;
 
-        file_put_contents($this->testsWorkingDir . '/composer.json', $composerJsonString);
+        file_put_contents($this->testsWorkingDir . 'composer.json', $composerJsonString);
 
         chdir($this->testsWorkingDir);
 
@@ -68,6 +68,6 @@ EOD;
 //
 //        $this->assertEquals(0, $result);
 
-        $this->assertFileExists($this->testsWorkingDir . '/strauss/aws/aws-sdk-php/src/AWS/Common/Aws.php');
+        $this->assertFileExists($this->testsWorkingDir .'strauss/aws/aws-sdk-php/src/AWS/Common/Aws.php');
     }
 }
