@@ -56,7 +56,7 @@ class StraussConfig
     /**
      * @var array{packages?: string[], namespaces?: string[], filePatterns?: string[]}
      */
-    protected array $excludeFromPrefix = array('filePatterns'=>array('/^psr.*$/'));
+    protected array $excludeFromPrefix = array('file_patterns'=>array('/^psr.*$/'));
 
 
     /**
@@ -281,7 +281,7 @@ class StraussConfig
 
     public function getExcludeFilePatternsFromCopy(): array
     {
-        return $this->excludeFromCopy['filePatterns'] ?? array();
+        return $this->excludeFromCopy['file_patterns'] ?? array();
     }
 
 
@@ -307,7 +307,7 @@ class StraussConfig
 
     public function getExcludeFilePatternsFromPrefixing(): array
     {
-        return $this->excludeFromPrefix['filePatterns'] ?? array();
+        return $this->excludeFromPrefix['file_patterns'] ?? array();
     }
 
 

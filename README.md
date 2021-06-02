@@ -57,7 +57,7 @@ Strauss potentially requires zero configuration, but likely you'll want to custo
             ],
             "namespaces": [
             ],
-            "patterns": [
+            "file_patterns": [
             ]
         },
         "exclude_from_prefix": {
@@ -65,7 +65,7 @@ Strauss potentially requires zero configuration, but likely you'll want to custo
             ],
             "namespaces": [
             ],
-            "patterns": [
+            "file_patterns": [
                 "/^psr.*$/"
             ]
         },
