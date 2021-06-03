@@ -225,10 +225,11 @@ class Compose extends Command
 
         $namespaces = $this->changeEnumerator->getDiscoveredNamespaceReplacements();
         $classes = $this->changeEnumerator->getDiscoveredClasses();
+        $constants = $this->changeEnumerator->getDiscoveredConstants();
         
         $phpFiles = $this->fileEnumerator->getPhpFilesAndDependencyList();
 
-        $this->replacer->replaceInFiles($namespaces, $classes, $phpFiles);
+        $this->replacer->replaceInFiles($namespaces, $classes, $constants, $phpFiles);
     }
 
     protected function addLicenses(): void

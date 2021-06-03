@@ -48,6 +48,7 @@ Strauss potentially requires zero configuration, but likely you'll want to custo
         "target_directory": "strauss",
         "namespace_prefix": "BrianHenryIE\\My_Project\\",
         "classmap_prefix": "BrianHenryIE_My_Project_",
+        "constant_prefix": "BHMP_",
         "packages": [
         ],
         "override_autoload": {
@@ -135,6 +136,8 @@ Benefits over Mozart:
 * Licence files are included and PHP file headers are edited to adhere to licence requirements around modifications. My understanding is that re-distributing code that Mozart has handled is non-compliant with most open source licences – illegal!
 * Extensively tested – PhpUnit tests have been written to validate that many of Mozart's bugs are not present in Strauss
 * More configuration options – allowing exclusions in copying and editing files, and allowing specific/multiple namespace renaming
+* Respects `composer.json` `vendor-dir` configuration
+* Prefixes constants (`define`)
 
 Strauss will read the Mozart configuration from your `composer.json` to enable a seamless migration.
 

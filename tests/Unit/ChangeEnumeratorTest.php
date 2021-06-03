@@ -426,7 +426,8 @@ EOD;
         $this->assertNotContains('object', $changeEnumerator->getDiscoveredClasses());
     }
 
-    public function test_define_constant() {
+    public function testDefineConstant()
+    {
 
         $contents = <<<'EOD'
 /*******************************************************************************
@@ -454,7 +455,5 @@ EOD;
 
         $this->assertContains('FPDF_VERSION', $constants);
         $this->assertContains('ANOTHER_CONSTANT', $constants);
-
-
     }
 }

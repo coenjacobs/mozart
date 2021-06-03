@@ -38,12 +38,18 @@ class StraussConfig
      *
      * @var string
      */
-    protected $namespacePrefix;
+    protected string $namespacePrefix;
 
     /**
      * @var string
      */
-    protected $classmapPrefix;
+    protected string $classmapPrefix;
+
+
+    /**
+     * @var ?string
+     */
+    protected ?string $constantsPrefix = null;
 
     /**
      * Packages to copy and (maybe) prefix.
@@ -290,10 +296,27 @@ class StraussConfig
         $this->classmapPrefix = $classmapPrefix;
     }
 
+    /**
+     * @return string
+     */
+    public function getConstantsPrefix(): ?string
+    {
+        return $this->constantsPrefix;
+    }
+
+    /**
+     * @param string $constantsPrefix
+     */
+    public function setConstantsPrefix(string $constantsPrefix): void
+    {
+        $this->constantsPrefix = $constantsPrefix;
+    }
+
     public function setExcludeFromCopy(array $excludeFromCopy): void
     {
         $this->excludeFromCopy = $excludeFromCopy;
     }
+
     public function getExcludePackagesFromCopy(): array
     {
         return $this->excludeFromCopy['packages'] ?? array();

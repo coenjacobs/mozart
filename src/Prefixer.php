@@ -20,6 +20,7 @@ class Prefixer
     protected string $targetDirectory;
     protected string $namespacePrefix;
     protected string $classmapPrefix;
+    protected ?string $constantsPrefix;
 
     protected array $excludePackageNamesFromPrefixing;
     protected array $excludeNamespacesFromPrefixing;
@@ -35,6 +36,7 @@ class Prefixer
         $this->targetDirectory = $config->getTargetDirectory();
         $this->namespacePrefix = $config->getNamespacePrefix();
         $this->classmapPrefix = $config->getClassmapPrefix();
+        $this->constantsPrefix = $config->getConstantsPrefix();
 
         $this->excludePackageNamesFromPrefixing = $config->getExcludePackagesFromPrefixing();
         $this->excludeNamespacesFromPrefixing = $config->getExcludeNamespacesFromPrefixing();
@@ -51,7 +53,7 @@ class Prefixer
      * @param array<string, ComposerPackage> $phpFileList
      * @throws FileNotFoundException
      */
-    public function replaceInFiles(array $namespaceChanges, array $classChanges, array $phpFileList)
+    public function replaceInFiles(array $namespaceChanges, array $classChanges, array $constants, array $phpFileList)
     {
 
         foreach ($phpFileList as $sourceRelativeFilePathFromVendor => $package) {
@@ -73,7 +75,7 @@ class Prefixer
             // Throws an exception, but unlikely to happen.
             $contents = $this->filesystem->read($targetRelativeFilepathFromProject);
 
-            $updatedContents = $this->replaceInString($namespaceChanges, $classChanges, $contents);
+            $updatedContents = $this->replaceInString($namespaceChanges, $classChanges, $constants, $contents);
 
             if ($updatedContents !== $contents) {
                 $this->changedFiles[$sourceRelativeFilePathFromVendor] = $package;
@@ -82,7 +84,7 @@ class Prefixer
         }
     }
 
-    public function replaceInString(array $namespacesChanges, array $classes, string $contents): string
+    public function replaceInString(array $namespacesChanges, array $classes, array $originalConstants, string $contents): string
     {
 
         foreach ($namespacesChanges as $originalNamespace => $replacement) {
@@ -97,6 +99,10 @@ class Prefixer
             $classmapPrefix = $this->classmapPrefix;
 
             $contents = $this->replaceClassname($contents, $originalClassname, $classmapPrefix);
+        }
+
+        if (!is_null($this->constantsPrefix)) {
+            $contents = $this->replaceConstants($contents, $originalConstants, $this->constantsPrefix);
         }
 
         return $contents;
@@ -274,6 +280,21 @@ class Prefixer
             },
             $contents
         );
+    }
+
+    protected function replaceConstants($contents, $originalConstants, $prefix): string
+    {
+
+        foreach ($originalConstants as $constant) {
+            $contents = $this->replaceConstant($contents, $constant, $prefix . $constant);
+        }
+
+        return $contents;
+    }
+
+    protected function replaceConstant($contents, $originalConstant, $replacementConstant): string
+    {
+        return str_replace($originalConstant, $replacementConstant, $contents);
     }
 
     /**

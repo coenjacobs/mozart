@@ -77,10 +77,11 @@ EOD;
 
         $namespaces = $changeEnumerator->getDiscoveredNamespaceReplacements();
         $classes = $changeEnumerator->getDiscoveredClasses();
+        $constants = array();
 
         $replacer = new Prefixer($config, $workingDir);
 
-        $replacer->replaceInFiles($namespaces, $classes, $phpFileList);
+        $replacer->replaceInFiles($namespaces, $classes, $constants, $phpFileList);
 
         $updatedFile = file_get_contents($absoluteTargetDir . 'google/apiclient/src/Client.php');
 

@@ -376,7 +376,7 @@ EOD;
 
         $replacer = new Prefixer($config, __DIR__);
 
-        $result = $replacer->replaceInString([$originalClassname], [], $contents);
+        $result = $replacer->replaceInString([$originalClassname], [], [], $contents);
 
         $this->assertEquals($contents, $result);
     }
@@ -810,5 +810,40 @@ EOD;
         $expected = "public static function objclone(\$object) {";
 
         $this->assertEquals($expected, $result);
+    }
+
+    public function testReplaceConstants()
+    {
+
+        $contents = <<<'EOD'
+/*******************************************************************************
+ * FPDF                                                                         *
+ *                                                                              *
+ * Version: 1.83                                                                *
+ * Date:    2021-04-18                                                          *
+ * Author:  Olivier PLATHEY                                                     *
+ *******************************************************************************
+ */
+
+define('FPDF_VERSION', '1.83');
+
+define('ANOTHER_CONSTANT', '1.83');
+
+class FPDF
+{
+EOD;
+
+        $config = $this->createMock(StraussConfig::class);
+        $config->method('getConstantsPrefix')->willReturn('BHMP_');
+        $replacer = new Prefixer($config, __DIR__);
+
+        $namespacesChanges = array();
+        $classes = array();
+        $constants = array('FPDF_VERSION','ANOTHER_CONSTANT');
+
+        $result = $replacer->replaceInString($namespacesChanges, $classes, $constants, $contents);
+
+        $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
+        $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
     }
 }
