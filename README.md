@@ -13,7 +13,7 @@ The primary use case is WordPress plugins, where different plugins active in a s
 Download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
 
 ```
-curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.8.10/strauss.phar
+curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.9.0/strauss.phar
 ```
 
 Then run it from the root of your project folder using `php strauss.phar`. Its use should be automated in Composer scripts. 
