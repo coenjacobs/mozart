@@ -32,6 +32,8 @@ class ChangeEnumerator
     /** @var string[] */
     protected array $discoveredClasses = [];
 
+    /** @var string[] */
+    protected array $discoveredConstants = [];
 
     /**
      * ChangeEnumerator constructor.
@@ -73,6 +75,13 @@ class ChangeEnumerator
         return array_keys($this->discoveredClasses);
     }
 
+    /**
+     * @return string[]
+     */
+    public function getDiscoveredConstants(): array
+    {
+        return array_keys($this->discoveredConstants);
+    }
 
     /**
      * @param string $dir
@@ -126,6 +135,11 @@ class ChangeEnumerator
             return $contents;
         }
 
+        if (0 < preg_match_all('/\s*define\s*\(\s*["\']([^"\']*)["\']\s*,\s*["\'][^"\']*["\']\s*\)\s*;/', $contents, $constants)) {
+            foreach ($constants[1] as $constant) {
+                $this->discoveredConstants[$constant] = $constant;
+            }
+        }
 
         // TODO traits
 

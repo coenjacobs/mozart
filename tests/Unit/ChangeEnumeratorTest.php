@@ -425,4 +425,36 @@ EOD;
 
         $this->assertNotContains('object', $changeEnumerator->getDiscoveredClasses());
     }
+
+    public function test_define_constant() {
+
+        $contents = <<<'EOD'
+/*******************************************************************************
+ * FPDF                                                                         *
+ *                                                                              *
+ * Version: 1.83                                                                *
+ * Date:    2021-04-18                                                          *
+ * Author:  Olivier PLATHEY                                                     *
+ *******************************************************************************
+ */
+
+define('FPDF_VERSION', '1.83');
+
+define('ANOTHER_CONSTANT', '1.83');
+
+class FPDF
+{
+EOD;
+
+        $config = $this->createMock(StraussConfig::class);
+        $changeEnumerator = new ChangeEnumerator($config);
+        $changeEnumerator->find($contents);
+
+        $constants = $changeEnumerator->getDiscoveredConstants();
+
+        $this->assertContains('FPDF_VERSION', $constants);
+        $this->assertContains('ANOTHER_CONSTANT', $constants);
+
+
+    }
 }
