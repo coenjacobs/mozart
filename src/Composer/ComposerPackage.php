@@ -90,7 +90,7 @@ class ComposerPackage
             $this->requiresNames[] = $packageLink->getTarget();
         }
 
-        // Try to get the license from the package's composer.json, asssume proprietary (all rights reserved!).
+        // Try to get the license from the package's composer.json, assume proprietary (all rights reserved!).
         $this->license = !empty($composer->getPackage()->getLicense())
             ? implode(',', $composer->getPackage()->getLicense())
             : 'proprietary?';
