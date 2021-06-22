@@ -80,6 +80,7 @@ EOD;
 
         chdir($this->testsWorkingDir);
 
+        // This runs with in the system PHP version, not the test suite's version.
         exec('composer install');
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
