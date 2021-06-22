@@ -112,7 +112,6 @@ EOD;
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
 
-        $this->assertFileExists( $this->testsWorkingDir . 'strauss/omnipay/common/src/Omnipay.php');
+        $this->assertFileExists($this->testsWorkingDir . 'strauss/omnipay/common/src/Omnipay.php');
     }
-
 }

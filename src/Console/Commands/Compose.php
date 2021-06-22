@@ -159,6 +159,7 @@ class Compose extends Command
 
                 $packageComposerFile = $tempComposerFile;
             }
+
             $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
                 ? $this->config->getOverrideAutoload()[$requiredPackageName]
                 : null;
@@ -200,11 +201,33 @@ class Compose extends Command
                 ? $this->config->getOverrideAutoload()[$dependencyName]
                 : null;
 
-            $dependencyComposerPackage = new ComposerPackage(
-                $this->workingDir . $this->config->getVendorDirectory()
-                . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json',
-                $overrideAutoload
-            );
+            $packageComposerFile = $this->workingDir . $this->config->getVendorDirectory()
+                . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json';
+
+            if (!file_exists($packageComposerFile)) {
+                $composerLock = json_decode(file_get_contents($this->workingDir . 'composer.lock'));
+                $requiredPackageComposerJson = null;
+                foreach ($composerLock->packages as $packageJson) {
+                    if ($dependencyName === $packageJson->name) {
+                        $requiredPackageComposerJson = $packageJson;
+                        break;
+                    }
+                }
+                $tempComposerFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $dependencyName . DIRECTORY_SEPARATOR . time();
+
+                mkdir($tempComposerFile, 0777, true);
+                $requiredPackageComposerJsonString = json_encode($requiredPackageComposerJson);
+                $tempComposerFile = $tempComposerFile . DIRECTORY_SEPARATOR . 'composer.json';
+                $result = file_put_contents($tempComposerFile, $requiredPackageComposerJsonString);
+
+                if (false == $result) {
+                    throw new Exception();
+                }
+
+                $packageComposerFile = $tempComposerFile;
+            }
+
+            $dependencyComposerPackage = new ComposerPackage($packageComposerFile, $overrideAutoload);
 
             $this->flatDependencyTree[$dependencyName] = $dependencyComposerPackage;
             $this->getAllDependencies($dependencyComposerPackage);
