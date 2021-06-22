@@ -32,7 +32,7 @@ class MozartIssue48Test extends IntegrationTestCase
         $composerJsonString = <<<'EOD'
 {
     "name": "brianhenryie/mozart-issue-48",
-    "require": { "rubix/tensor": "*" }
+    "require": { "rubix/tensor": "2.2.3" }
 }
 EOD;
 
@@ -48,7 +48,9 @@ EOD;
         $mozartCompose = new Compose();
 
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
-        
+
+        $this->assertEquals(0, $result);
+
         // EigenvalueDecomposition.php
         // assert file exists somewhere in the tree
 
