@@ -119,22 +119,51 @@ class Compose extends Command
 
         $requiredPackageNames = $this->config->getPackages();
 
-        // Unset PHP, ext-*.
-        $removePhpExt = function ($element) {
-            return !( 0 === strpos($element, 'ext') || 'php' === $element );
-        };
+        $virtualPackages = array(
+            'php-http/client-implementation'
+        );
 
+        // Unset PHP, ext-*, ...
+        $removePhpExt = function ($element) use ($virtualPackages) {
+            return !(
+                0 === strpos($element, 'ext')
+                || 'php' === $element
+                || in_array($element, $virtualPackages)
+            );
+        };
         $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
 
         foreach ($requiredPackageNames as $requiredPackageName) {
-            $packageDir = $this->workingDir . $this->config->getVendorDirectory()
-                . $requiredPackageName . DIRECTORY_SEPARATOR;
+            $packageComposerFile = $this->workingDir . $this->config->getVendorDirectory()
+                . $requiredPackageName . DIRECTORY_SEPARATOR . 'composer.json';
 
+            if (!file_exists($packageComposerFile)) {
+                $composerLock = json_decode(file_get_contents($this->workingDir . 'composer.lock'));
+                $requiredPackageComposerJson = null;
+                foreach ($composerLock->packages as $packageJson) {
+                    if ($requiredPackageName === $packageJson->name) {
+                        $requiredPackageComposerJson = $packageJson;
+                        break;
+                    }
+                }
+                $tempComposerFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $requiredPackageName . DIRECTORY_SEPARATOR . time();
+
+                mkdir($tempComposerFile, 0777, true);
+                $requiredPackageComposerJsonString = json_encode($requiredPackageComposerJson);
+                $tempComposerFile = $tempComposerFile . DIRECTORY_SEPARATOR . 'composer.json';
+                $result = file_put_contents($tempComposerFile, $requiredPackageComposerJsonString);
+
+                if (false == $result) {
+                    throw new Exception();
+                }
+
+                $packageComposerFile = $tempComposerFile;
+            }
             $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
                 ? $this->config->getOverrideAutoload()[$requiredPackageName]
                 : null;
 
-            $requiredComposerPackage = new ComposerPackage($packageDir, $overrideAutoload);
+            $requiredComposerPackage = new ComposerPackage($packageComposerFile, $overrideAutoload);
             $this->flatDependencyTree[$requiredComposerPackage->getName()] = $requiredComposerPackage;
             $this->getAllDependencies($requiredComposerPackage);
         }
@@ -149,18 +178,24 @@ class Compose extends Command
     {
         $excludedPackagesNames = $this->config->getExcludePackagesFromPrefixing();
 
-        // Unset PHP, ext-*.
-        $removePhpExt = function ($element) {
-            return !( 0 === strpos($element, 'ext') || 'php' === $element );
+        $requiredPackageNames = $requiredDependency->getRequiresNames();
+
+        $virtualPackageNames = array(
+            'php-http/client-implementation'
+        );
+
+        // Unset PHP, ext-*, ...
+        $removePhpExt = function ($element) use ($excludedPackagesNames, $virtualPackageNames) {
+            return !(
+                0 === strpos($element, 'ext')
+                || 'php' === $element
+                || in_array($element, $excludedPackagesNames)
+                || in_array($element, $virtualPackageNames)
+            );
         };
+        $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
 
-        $required = array_filter($requiredDependency->getRequiresNames(), $removePhpExt);
-
-        foreach ($required as $dependencyName) {
-            if (in_array($dependencyName, $excludedPackagesNames)) {
-                continue;
-            }
-
+        foreach ($requiredPackageNames as $dependencyName) {
             $overrideAutoload = isset($this->config->getOverrideAutoload()[$dependencyName])
                 ? $this->config->getOverrideAutoload()[$dependencyName]
                 : null;
