@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--suppress XmlUnboundNsPrefix -->
-<ruleset name="mozart">
+<ruleset name="strauss">
     <description>Coding standard ruleset based on the PSR-2 coding standard.</description>
     <rule ref="PSR2">
         <exclude name="Generic.Files.LineLength.TooLong"/>
