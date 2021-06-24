@@ -52,7 +52,7 @@ EOD;
 
         $dependencies = array_map(function ($element) {
             $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
-            return new ComposerPackage($dir);
+            return ComposerPackage::fromFile($dir);
         }, $projectComposerPackage->getRequiresNames());
 
         $workingDir = $this->testsWorkingDir;
@@ -127,7 +127,7 @@ EOD;
 //
 //        $dependencies = array_map(function ($element) {
 //            $dir = $this->testsWorkingDir . 'vendor'. DIRECTORY_SEPARATOR . $element;
-//            return new ComposerPackage($dir);
+//            return ComposerPackage::fromFile($dir);
 //        }, $projectComposerPackage->getRequiresNames());
 //
 //        $workingDir = $this->testsWorkingDir;

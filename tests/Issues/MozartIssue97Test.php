@@ -1,4 +1,7 @@
 <?php
+/**
+ * The Packagist named crewlabs/unsplash has the composer name unsplash/unsplash.
+ */
 
 namespace BrianHenryIE\Strauss\Tests\Issues;
 

@@ -16,7 +16,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-libmergepdf.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $this->assertEquals('iio/libmergepdf', $composer->getName());
 
@@ -33,7 +33,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-libmergepdf.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $requiresNames = $composer->getRequiresNames();
 
@@ -49,7 +49,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-easypost-php.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $requiresNames = $composer->getRequiresNames();
 
@@ -66,7 +66,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-easypost-php.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $autoload = $composer->getAutoload();
 
@@ -83,7 +83,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-libmergepdf.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $autoload = $composer->getAutoload();
 
@@ -100,7 +100,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-libmergepdf.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $autoload = $composer->getAutoload();
 
@@ -117,7 +117,7 @@ class ComposerPackageTest extends TestCase
 
         $testFile = __DIR__ . '/composerpackage-test-php-di.json';
 
-        $composer = new ComposerPackage($testFile);
+        $composer = ComposerPackage::fromFile($testFile);
 
         $autoload = $composer->getAutoload();
 

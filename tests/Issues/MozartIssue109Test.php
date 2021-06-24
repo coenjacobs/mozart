@@ -31,9 +31,6 @@ class MozartIssue109Test extends IntegrationTestCase
   "require": {
     "nesbot/carbon":"1.39.0"
   },
-  "require-dev": {
-    "coenjacobs/mozart": "dev-master"
-  },
   "extra": {
     "mozart": {
       "dep_namespace": "Mozart\\",
@@ -57,6 +54,8 @@ EOD;
         chdir($this->testsWorkingDir);
 
         exec('composer install');
+
+        assert(file_exists($this->testsWorkingDir .'vendor/nesbot/carbon/src/Carbon/Carbon.php'));
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);

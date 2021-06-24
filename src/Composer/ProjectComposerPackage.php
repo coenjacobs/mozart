@@ -6,6 +6,8 @@
 namespace BrianHenryIE\Strauss\Composer;
 
 use BrianHenryIE\Strauss\Composer\Extra\StraussConfig;
+use Composer\Factory;
+use Composer\IO\NullIO;
 
 class ProjectComposerPackage extends ComposerPackage
 {
@@ -15,7 +17,18 @@ class ProjectComposerPackage extends ComposerPackage
 
     public function __construct(string $absolutePath, array $overrideAutoload = null)
     {
-        parent::__construct($absolutePath, $overrideAutoload);
+        if (is_dir($absolutePath)) {
+            $absolutePathDir = $absolutePath;
+            $absolutePathFile = rtrim($absolutePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
+        } else {
+            $absolutePathDir = rtrim($absolutePath, 'composer.json');
+            $absolutePathFile = $absolutePath;
+        }
+        unset($absolutePath);
+
+        $composer = Factory::create(new NullIO(), $absolutePathFile);
+
+        parent::__construct($composer, $overrideAutoload);
 
         $authors = $this->composer->getPackage()->getAuthors();
         if (empty($authors) || !isset($authors[0]['name'])) {
@@ -26,7 +39,7 @@ class ProjectComposerPackage extends ComposerPackage
 
         $vendorDirectory = $this->composer->getConfig()->get('vendor-dir');
         if (is_string($vendorDirectory)) {
-            $vendorDirectory = str_replace($absolutePath, '', (string) $vendorDirectory);
+            $vendorDirectory = str_replace($absolutePathDir, '', (string) $vendorDirectory);
             $this->vendorDirectory = $vendorDirectory;
         } else {
             $this->vendorDirectory = 'vendor' . DIRECTORY_SEPARATOR;

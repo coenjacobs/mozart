@@ -7,6 +7,7 @@
 
 namespace BrianHenryIE\Strauss\Composer;
 
+use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\NullIO;
 use stdClass;
@@ -31,7 +32,12 @@ class ComposerPackage
      */
     protected string $name;
 
-    protected string $path;
+    /**
+     * Virtual packages and meta packages do not have a composer.json
+     *
+     * @var ?string
+     */
+    protected ?string $path = null;
 
     /**
      * The discovered files, classmap, psr0 and psr4 autoload keys discovered (as parsed by Composer).
@@ -50,35 +56,63 @@ class ComposerPackage
     protected string $license;
 
     /**
-     * Create a PHP object to represent a composer package.
-     *
      * @param string $absolutePath The absolute path to the vendor folder with the composer.json "name",
      *          i.e. the domain/package definition, which is the vendor subdir from where the package's
      *          composer.json should be read.
-     * @param array $overrideAutoload Optional configuration to replace the package's own autoload definition with
+     * @param ?array $overrideAutoload Optional configuration to replace the package's own autoload definition with
      *                                    another which Strauss can use.
+     * @return ComposerPackage
      */
-    public function __construct(string $absolutePath, array $overrideAutoload = null)
+    public static function fromFile(string $absolutePath, array $overrideAutoload = null): ComposerPackage
     {
-
         if (is_dir($absolutePath)) {
             $absolutePath = rtrim($absolutePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
         }
 
         $composer = Factory::create(new NullIO(), $absolutePath);
 
+        return new ComposerPackage($composer, $overrideAutoload);
+    }
+
+    /**
+     * @param array $jsonArray composer.json decoded to array
+     * @param ?array $overrideAutoload
+     * @return ComposerPackage
+     */
+    public static function fromComposerJsonArray($jsonArray, array $overrideAutoload = null): ComposerPackage
+    {
+        $factory = new Factory();
+        $io = new NullIO();
+        $composer = $factory->createComposer($io, $jsonArray);
+
+        return new ComposerPackage($composer, $overrideAutoload);
+    }
+
+    /**
+     * Create a PHP object to represent a composer package.
+     *
+     * @param array $overrideAutoload Optional configuration to replace the package's own autoload definition with
+     *                                    another which Strauss can use.
+     */
+    public function __construct(Composer $composer, array $overrideAutoload = null)
+    {
         $this->composer = $composer;
 
         $this->name = $composer->getPackage()->getName();
 
-        $relativePath = null;
+        $composerJsonFileAbsolute = $composer->getConfig()->getConfigSource()->getName();
 
-        // Get the last two directory levels above composer.json.
-        if (1 === preg_match('~'.DIRECTORY_SEPARATOR.'(\w*[/\\\]{1}\w*)'.DIRECTORY_SEPARATOR.'composer\.json~', $absolutePath, $output_array)) {
-            $relativePath = $output_array[1];
+        // Not every package gets installed to a folder matching its name (crewlabs/unsplash).
+        if (1 === preg_match('/.*\/([^\/]*\/[^\/]*)\/composer.json/', $composerJsonFileAbsolute, $output_array)) {
+            $this->path = $output_array[1];
+        } else {
+            // Some packages have no composer.json (woocommerce/action-scheduler).
+            $vendorDirectory = $this->composer->getConfig()->get('vendor-dir');
+            if (file_exists($vendorDirectory . DIRECTORY_SEPARATOR . $this->name)) {
+                $this->path = $this->name;
+            }
+            // and meta packages have no path.
         }
-
-        $this->path = $relativePath ?? $composer->getPackage()->getName();
 
         if (!is_null($overrideAutoload)) {
             $composer->getPackage()->setAutoload($overrideAutoload);
@@ -106,7 +140,7 @@ class ComposerPackage
         return $this->name;
     }
 
-    public function getPath(): string
+    public function getPath(): ?string
     {
         return $this->path;
     }

@@ -119,9 +119,17 @@ class Compose extends Command
 
         $requiredPackageNames = $this->config->getPackages();
 
-        $virtualPackages = array(
-            'php-http/client-implementation'
-        );
+        $this->recursiveGetAllDependencies($requiredPackageNames);
+    }
+
+    protected $virtualPackages = array(
+        'php-http/client-implementation'
+    );
+
+    protected function recursiveGetAllDependencies(array $requiredPackageNames)
+    {
+
+        $virtualPackages = $this->virtualPackages;
 
         // Unset PHP, ext-*, ...
         $removePhpExt = function ($element) use ($virtualPackages) {
@@ -137,100 +145,32 @@ class Compose extends Command
             $packageComposerFile = $this->workingDir . $this->config->getVendorDirectory()
                 . $requiredPackageName . DIRECTORY_SEPARATOR . 'composer.json';
 
-            if (!file_exists($packageComposerFile)) {
-                $composerLock = json_decode(file_get_contents($this->workingDir . 'composer.lock'));
-                $requiredPackageComposerJson = null;
-                foreach ($composerLock->packages as $packageJson) {
-                    if ($requiredPackageName === $packageJson->name) {
-                        $requiredPackageComposerJson = $packageJson;
-                        break;
-                    }
-                }
-                $tempComposerFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $requiredPackageName . DIRECTORY_SEPARATOR . time();
-
-                mkdir($tempComposerFile, 0777, true);
-                $requiredPackageComposerJsonString = json_encode($requiredPackageComposerJson);
-                $tempComposerFile = $tempComposerFile . DIRECTORY_SEPARATOR . 'composer.json';
-                $result = file_put_contents($tempComposerFile, $requiredPackageComposerJsonString);
-
-                if (false == $result) {
-                    throw new Exception();
-                }
-
-                $packageComposerFile = $tempComposerFile;
-            }
-
             $overrideAutoload = isset($this->config->getOverrideAutoload()[$requiredPackageName])
                 ? $this->config->getOverrideAutoload()[$requiredPackageName]
                 : null;
 
-            $requiredComposerPackage = new ComposerPackage($packageComposerFile, $overrideAutoload);
-            $this->flatDependencyTree[$requiredComposerPackage->getName()] = $requiredComposerPackage;
-            $this->getAllDependencies($requiredComposerPackage);
-        }
-    }
-
-    /**
-     * 2.2 Recursive function to get dependencies.
-     *
-     * @param ComposerPackage $requiredDependency
-     */
-    protected function getAllDependencies(ComposerPackage $requiredDependency): void
-    {
-        $excludedPackagesNames = $this->config->getExcludePackagesFromPrefixing();
-
-        $requiredPackageNames = $requiredDependency->getRequiresNames();
-
-        $virtualPackageNames = array(
-            'php-http/client-implementation'
-        );
-
-        // Unset PHP, ext-*, ...
-        $removePhpExt = function ($element) use ($excludedPackagesNames, $virtualPackageNames) {
-            return !(
-                0 === strpos($element, 'ext')
-                || 'php' === $element
-                || in_array($element, $excludedPackagesNames)
-                || in_array($element, $virtualPackageNames)
-            );
-        };
-        $requiredPackageNames = array_filter($requiredPackageNames, $removePhpExt);
-
-        foreach ($requiredPackageNames as $dependencyName) {
-            $overrideAutoload = isset($this->config->getOverrideAutoload()[$dependencyName])
-                ? $this->config->getOverrideAutoload()[$dependencyName]
-                : null;
-
-            $packageComposerFile = $this->workingDir . $this->config->getVendorDirectory()
-                . $dependencyName . DIRECTORY_SEPARATOR . 'composer.json';
-
-            if (!file_exists($packageComposerFile)) {
-                $composerLock = json_decode(file_get_contents($this->workingDir . 'composer.lock'));
+            if (file_exists($packageComposerFile)) {
+                $requiredComposerPackage = ComposerPackage::fromFile($packageComposerFile, $overrideAutoload);
+            } else {
+                $composerLock = json_decode(file_get_contents($this->workingDir . 'composer.lock'), true);
                 $requiredPackageComposerJson = null;
-                foreach ($composerLock->packages as $packageJson) {
-                    if ($dependencyName === $packageJson->name) {
+                foreach ($composerLock['packages'] as $packageJson) {
+                    if ($requiredPackageName === $packageJson['name']) {
                         $requiredPackageComposerJson = $packageJson;
                         break;
                     }
                 }
-                $tempComposerFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $dependencyName . DIRECTORY_SEPARATOR . time();
-
-                mkdir($tempComposerFile, 0777, true);
-                $requiredPackageComposerJsonString = json_encode($requiredPackageComposerJson);
-                $tempComposerFile = $tempComposerFile . DIRECTORY_SEPARATOR . 'composer.json';
-                $result = file_put_contents($tempComposerFile, $requiredPackageComposerJsonString);
-
-                if (false == $result) {
-                    throw new Exception();
+                if (is_null($requiredPackageComposerJson)) {
+                    // e.g. composer-plugin-api.
+                    continue;
                 }
 
-                $packageComposerFile = $tempComposerFile;
+                $requiredComposerPackage = ComposerPackage::fromComposerJsonArray($requiredPackageComposerJson, $overrideAutoload);
             }
 
-            $dependencyComposerPackage = new ComposerPackage($packageComposerFile, $overrideAutoload);
-
-            $this->flatDependencyTree[$dependencyName] = $dependencyComposerPackage;
-            $this->getAllDependencies($dependencyComposerPackage);
+            $this->flatDependencyTree[$requiredComposerPackage->getName()] = $requiredComposerPackage;
+            $nextRequiredPackageNames = $requiredComposerPackage->getRequiresNames();
+            $this->recursiveGetAllDependencies($nextRequiredPackageNames);
         }
     }
 
