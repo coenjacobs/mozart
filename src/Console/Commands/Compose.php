@@ -132,6 +132,7 @@ class Compose extends Command
         $virtualPackages = $this->virtualPackages;
 
         // Unset PHP, ext-*, ...
+        // TODO: I think this code is unnecessary due to how the path to packages is handled (null is fine) later.
         $removePhpExt = function ($element) use ($virtualPackages) {
             return !(
                 0 === strpos($element, 'ext')
