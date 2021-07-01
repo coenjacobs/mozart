@@ -846,6 +846,30 @@ EOD;
         $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
         $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
     }
+
+    public function testStaticFunctionCallOfNamespacedClassIsPrefixed()
+    {
+
+        $contents = <<<'EOD'
+public function __construct() {
+    new \ST\StraussTestPackage2();
+    \ST\StraussTestPackage2::hello();
+    new \ST\StraussTestPackage2();
+}
+EOD;
+        $expected = <<<'EOD'
+public function __construct() {
+    new \StraussTest\ST\StraussTestPackage2();
+    \StraussTest\ST\StraussTestPackage2::hello();
+    new \StraussTest\ST\StraussTestPackage2();
+}
+EOD;
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\ST');
+
+        $this->assertEquals($expected, $result);
     }
 
 }
