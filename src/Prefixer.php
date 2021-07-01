@@ -118,29 +118,25 @@ class Prefixer
     public function replaceNamespace($contents, $originalNamespace, $replacement)
     {
 
-        // When namespaces exist inside strings...
-        $searchNamespace =
-            preg_quote($originalNamespace, '/')
-            . '|'
-            . preg_quote(str_replace('\\', '\\\\', $originalNamespace), '/')
-            . '|'
-            . preg_quote('\\' . $originalNamespace, '/')
-            . '|'
-            . preg_quote('\\\\' . str_replace('\\', '\\\\', $originalNamespace), '/');
+        $searchNamespace = '\\'.rtrim($originalNamespace, '\\') . '\\';
+        $searchNamespace = str_replace('\\\\', '\\', $searchNamespace);
+        $searchNamespace = str_replace('\\', '\\\\{0,2}', $searchNamespace);
+
+        $searchNamespace = '\\s*' .$searchNamespace;
 
         $pattern = "
             /                              # Start the pattern
             (
-            ^\s*                           # start of the line
-            |namespace\s+                  # the namespace keyword
-            |use\s+                        # the use keyword
-            |new\s+
-            |static\s+
+            ^|\\n                          # start of the line
+            |namespace\s                   # the namespace keyword
+            |use\s                         # the use keyword
+            |new\s
+            |static\s
             |\"[^\s]*                      # inside a string that does not contain spaces
             |'[^\s]*
-            |implements\s+
-            |extends\s+                    # when the class being extended is namespaced inline
-            |return\s+
+            |implements\s
+            |extends\s                     # when the class being extended is namespaced inline
+            |return\s
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
@@ -163,25 +159,17 @@ class Prefixer
             /Ux";                          // U: Non-greedy matching, x: ignore whitespace in pattern.
 
         $replacingFunction = function ($matches) use ($originalNamespace, $replacement) {
+            $singleBackslash = '\\';
+            $doubleBackslash = '\\\\';
 
-            $singleBackslash = '\\\\';
-            $doubleBackslash = '\\\\\\\\';
-            $originalNamespacePattern = str_replace('\\', '\\\\+', $originalNamespace);
-            $beginsSingleBackslashPattern = "#{$singleBackslash}{$originalNamespacePattern}#";
-            $beginsDoubleBackslashPattern = "#{$doubleBackslash}{$originalNamespacePattern}#";
-            $containsDoubleBackslashPattern = "#{$doubleBackslash}#";
-
-            // Namespace begins with \\.
-            if (preg_match($beginsDoubleBackslashPattern, $matches[2])) {
-                $replacement = str_replace("\\", "\\\\", $replacement);
-                $replacement = "\\\\" . $replacement;
-            } elseif (preg_match($beginsSingleBackslashPattern, $matches[2])) {
-                $replacement = "\\" . $replacement;
-            } elseif (preg_match($containsDoubleBackslashPattern, $matches[2])) {
-                $replacement = str_replace("\\", "\\\\", $replacement);
+            if (false !== strpos($matches[2], $doubleBackslash)) {
+                $originalNamespace = str_replace($singleBackslash, $doubleBackslash, $originalNamespace);
+                $replacement = str_replace($singleBackslash, $doubleBackslash, $replacement);
             }
 
-            return $matches[1] . $replacement . $matches[3];
+            $replaced = str_replace($originalNamespace, $replacement, $matches[0]);
+
+            return $replaced;
         };
 
         $result = preg_replace_callback($pattern, $replacingFunction, $contents);
