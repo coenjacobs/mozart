@@ -155,6 +155,7 @@ class Prefixer
             |\"                            # or quotes
             |'                             # or single quote         
             |:                             # or a colon to access a static
+            |\\\\{
             )                            
             /Ux";                          // U: Non-greedy matching, x: ignore whitespace in pattern.
 

@@ -872,4 +872,18 @@ EOD;
         $this->assertEquals($expected, $result);
     }
 
+
+    public function testItPrefixesGroupedNamespacedClasses() {
+
+        $contents = 'use chillerlan\\QRCode\\{QRCode, QRCodeException};';
+        $expected = 'use BrianHenryIE\\Strauss\\chillerlan\\QRCode\\{QRCode, QRCodeException};';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'chillerlan\\QRCode', 'BrianHenryIE\\Strauss\\chillerlan\\QRCode');
+
+        $this->assertEquals($expected, $result);
+
+    }
 }
