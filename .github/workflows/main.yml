@@ -56,7 +56,7 @@ jobs:
 
       - name: Run validate
         run: |
-          vendor/bin/phpcbf
+          vendor/bin/phpcbf || true
           vendor/bin/phpcs -q -n --report=checkstyle | cs2pr
 
       - name: Commit PHPCBF changes
