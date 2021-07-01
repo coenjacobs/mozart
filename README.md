@@ -19,7 +19,7 @@ and use `vendor/bin/strauss` to execute.
 Or, download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
 
 ```shell
-curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.10.0/strauss.phar
+curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.10.1/strauss.phar
 ```
 
 Then run it from the root of your project folder using `php strauss.phar`. 
