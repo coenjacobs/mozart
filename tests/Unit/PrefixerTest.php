@@ -126,12 +126,12 @@ EOD;
 
         $replacer = new Prefixer($config, __DIR__);
 
-        $original = "Google\\Http\\Batch";
-        $replacement = "BrianHenryIE\\Strauss\\Google\\Http\\Batch";
+        $originalNamespace = 'Google\\Http';
+        $replacement = 'BrianHenryIE\\Strauss\\Google\\Http';
 
-        $result = $replacer->replaceNamespace($contents, $original, $replacement);
+        $result = $replacer->replaceNamespace($contents, $originalNamespace, $replacement);
 
-        $expected = "use BrianHenryIE\\Strauss\\Google\\Http\\Batch;";
+        $expected = 'use BrianHenryIE\\Strauss\\Google\\Http\\Batch;';
 
         $this->assertStringContainsString($expected, $result);
     }
@@ -478,13 +478,13 @@ EOD;
     {
         $contents = 'namespace Test\\Test\\Another;';
 
-        $namespace = "Test\\Another";
-        $prefix = "My\\Mozart\\Prefix";
+        $namespace = 'Test\\Another';
+        $replacement = 'My\\Mozart\\Prefix\\'.$namespace;
 
         $config = $this->createMock(StraussConfig::class);
 
         $replacer = new Prefixer($config, __DIR__);
-        $result = $replacer->replaceNamespace($contents, $namespace, $prefix);
+        $result = $replacer->replaceNamespace($contents, $namespace, $replacement);
 
         $this->assertEquals('namespace Test\\Test\\Another;', $result);
     }
@@ -534,8 +534,8 @@ EOD;
      */
     public function it_replaces_namespace_use_as_declarations(): void
     {
-        $namespace = 'Symfony\Polyfill\Mbstring';
-        $replacement = "MBViews\Dependencies\Symfony\Polyfill\Mbstring";
+        $namespace = 'Symfony\\Polyfill\\';
+        $replacement = "MBViews\\Dependencies\\Symfony\\Polyfill\\";
 
         $contents = "use Symfony\Polyfill\Mbstring as p;";
 
@@ -544,7 +544,7 @@ EOD;
         $replacer = new Prefixer($config, __DIR__);
         $result = $replacer->replaceNamespace($contents, $namespace, $replacement);
 
-        $expected = "use MBViews\Dependencies\Symfony\Polyfill\Mbstring as p;";
+        $expected = "use MBViews\\Dependencies\\Symfony\\Polyfill\\Mbstring as p;";
 
         $this->assertEquals($expected, $result);
     }
@@ -586,8 +586,8 @@ EOD;
 
     public function testDoubleLeadingSlashInString()
     {
-        $originalNamespace = "Strauss\\Test";
-        $replacement = "Prefix\\Strauss\\Test";
+        $originalNamespace = 'Strauss\\Test';
+        $replacement = 'Prefix\\Strauss\\Test';
         $contents = '$mentionedClass = "\\\\Strauss\\\\Test\\\\Classname";';
 
         $config = $this->createMock(StraussConfig::class);
@@ -752,8 +752,8 @@ EOD;
     public function testNamespacedStaticIsPrefixed()
     {
 
-        $contents = "		\\Carbon_Fields\\Carbon_Fields::service( 'legacy_storage' )->enable()";
-        $expected = "		\\BrianHenryIE\\Strauss\\Carbon_Fields\\Carbon_Fields::service( 'legacy_storage' )->enable()";
+        $contents = '		\\Carbon_Fields\\Carbon_Fields::service( \'legacy_storage\' )->enable()';
+        $expected = '		\\BrianHenryIE\\Strauss\\Carbon_Fields\\Carbon_Fields::service( \'legacy_storage\' )->enable()';
 
         $config = $this->createMock(StraussConfig::class);
 
@@ -761,7 +761,7 @@ EOD;
         $result = $replacer->replaceNamespace(
             $contents,
             'Carbon_Fields',
-            'BrianHenryIE\Strauss\Carbon_Fields'
+            'BrianHenryIE\\Strauss\\Carbon_Fields'
         );
 
         $this->assertEquals($expected, $result);
@@ -846,4 +846,30 @@ EOD;
         $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
         $this->assertStringContainsString("define('BHMP_ANOTHER_CONSTANT', '1.83');", $result);
     }
+
+    public function testStaticFunctionCallOfNamespacedClassIsPrefixed()
+    {
+
+        $contents = <<<'EOD'
+public function __construct() {
+    new \ST\StraussTestPackage2();
+    \ST\StraussTestPackage2::hello();
+    new \ST\StraussTestPackage2();
+}
+EOD;
+        $expected = <<<'EOD'
+public function __construct() {
+    new \StraussTest\ST\StraussTestPackage2();
+    \StraussTest\ST\StraussTestPackage2::hello();
+    new \StraussTest\ST\StraussTestPackage2();
+}
+EOD;
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\ST');
+
+        $this->assertEquals($expected, $result);
+    }
+
 }

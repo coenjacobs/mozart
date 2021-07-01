@@ -32,7 +32,7 @@ class MozartIssue48Test extends IntegrationTestCase
         $composerJsonString = <<<'EOD'
 {
     "name": "brianhenryie/mozart-issue-48",
-    "require": { "rubix/tensor": "2.2.3" }
+    "require": { "rubix/tensor": "2.0.5" }
 }
 EOD;
 

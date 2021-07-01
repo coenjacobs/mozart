@@ -31,9 +31,6 @@ class StraussIssue14Test extends \BrianHenryIE\Strauss\Tests\Integration\Util\In
   "require":{
     "guzzlehttp/psr7": "*"
   },
-  "require-dev":{
-    "brianhenryie/strauss": "*"
-  },
   "extra": {
     "strauss": {
       "namespace_prefix": "BrianHenryIE\\Strauss\\"
