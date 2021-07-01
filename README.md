@@ -10,18 +10,26 @@ The primary use case is WordPress plugins, where different plugins active in a s
 
 ## Use
 
-Download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
+Require as normal with Composer:
 
-```
+`composer require --dev brianhenryie/strauss`
+
+and use `vendor/bin/strauss` to execute.
+
+Or, download `strauss.phar` from [releases](https://github.com/BrianHenryIE/strauss/releases/), 
+
+```shell
 curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.9.0/strauss.phar
 ```
 
-Then run it from the root of your project folder using `php strauss.phar`. Its use should be automated in Composer scripts. 
+Then run it from the root of your project folder using `php strauss.phar`. 
 
-```
+Its use should be automated in Composer scripts. 
+
+```json
 "scripts": {
     "strauss": [
-        "@php strauss.phar"
+        "vendor/bin/strauss"
     ],
     "post-install-cmd": [
         "@strauss"
@@ -32,11 +40,16 @@ Then run it from the root of your project folder using `php strauss.phar`. Its u
 }
 ```
 
-Alternatively, require as normal with Composer:
+or
 
-`composer require --dev brianhenryie/strauss`
+```json
+"scripts": {
+    "strauss": [
+        "@php strauss.phar"
+    ],
+    ...
+```
 
-and use `vendor/bin/strauss` to execute.
 
 ## Configuration
 
@@ -92,6 +105,7 @@ The following configuration is default:
 
 The remainder is empty:
 
+- `constant_prefix` is for `define( "A_CONSTANT", value );` -> `define( "MY_PREFIX_A_CONSTANT", value );`. If it is empty, constants are not prefixed (this may change to an inferred value).
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
 - `exclude_from_copy` 
   - [`packages`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/FileEnumerator.php#L77-L79) array of package names to be skipped
@@ -138,6 +152,7 @@ Benefits over Mozart:
 * More configuration options – allowing exclusions in copying and editing files, and allowing specific/multiple namespace renaming
 * Respects `composer.json` `vendor-dir` configuration
 * Prefixes constants (`define`)
+* Handles meta-packages and virtual-packages
 
 Strauss will read the Mozart configuration from your `composer.json` to enable a seamless migration.
 
