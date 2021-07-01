@@ -37,7 +37,7 @@ class MozartIssue108Test extends IntegrationTestCase
         $composerJsonString = <<<'EOD'
 {
   "require": {
-    "woocommerce/action-scheduler": "dev-master",
+    "woocommerce/action-scheduler": "3.1.6",
     "deliciousbrains/wp-background-processing": "1.0.2"
   },
   "extra": {
