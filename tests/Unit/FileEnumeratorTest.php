@@ -7,3 +7,5 @@ namespace BrianHenryIE\Strauss\Tests\Unit;
 // exclude_from_classmap
 
 // exclude regex
+
+// paths outside project directory
