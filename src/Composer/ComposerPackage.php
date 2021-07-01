@@ -102,16 +102,12 @@ class ComposerPackage
 
         $composerJsonFileAbsolute = $composer->getConfig()->getConfigSource()->getName();
 
-        // Not every package gets installed to a folder matching its name (crewlabs/unsplash).
-        if (1 === preg_match('/.*\/([^\/]*\/[^\/]*)\/composer.json/', $composerJsonFileAbsolute, $output_array)) {
+        $vendorDirectory = $this->composer->getConfig()->get('vendor-dir');
+        if (file_exists($vendorDirectory . DIRECTORY_SEPARATOR . $this->name)) {
+            $this->path = $this->name;
+        } elseif (1 === preg_match('/.*\/([^\/]*\/[^\/]*)\/composer.json/', $composerJsonFileAbsolute, $output_array)) {
+            // Not every package gets installed to a folder matching its name (crewlabs/unsplash).
             $this->path = $output_array[1];
-        } else {
-            // Some packages have no composer.json (woocommerce/action-scheduler).
-            $vendorDirectory = $this->composer->getConfig()->get('vendor-dir');
-            if (file_exists($vendorDirectory . DIRECTORY_SEPARATOR . $this->name)) {
-                $this->path = $this->name;
-            }
-            // and meta packages have no path.
         }
 
         if (!is_null($overrideAutoload)) {
