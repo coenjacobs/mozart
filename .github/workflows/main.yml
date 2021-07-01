@@ -55,7 +55,9 @@ jobs:
         run: composer install --prefer-dist --no-suggest --no-progress
 
       - name: Run validate
-        run: vendor/bin/phpcs -q -n --report=checkstyle | cs2pr
+        run: |
+          vendor/bin/phpcbf
+          vendor/bin/phpcs -q -n --report=checkstyle | cs2pr
 
       - name: Commit PHPCBF changes
         uses: stefanzweifel/git-auto-commit-action@v4
