@@ -1230,4 +1230,60 @@ EOD;
         $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
         $this->assertEquals($expected, $result);
     }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/26
+     */
+    public function testDoublePrefixBug()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+        $contents = <<<'EOD'
+namespace ST;
+class StraussTestPackage {
+	public function __construct() {
+	}
+}
+EOD;
+        $expected = <<<'EOD'
+namespace StraussTest\ST;
+class StraussTestPackage {
+	public function __construct() {
+	}
+}
+EOD;
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = <<<'EOD'
+namespace ST\Namespace;
+class StraussTestPackage2
+{
+    public function __construct()
+    {
+        $one = '\ST\Namespace';
+        $two = '\ST\Namespace\StraussTestPackage2';
+    }
+}
+EOD;
+        $expected = <<<'EOD'
+namespace StraussTest\ST\Namespace;
+class StraussTestPackage2
+{
+    public function __construct()
+    {
+        $one = '\StraussTest\ST\Namespace';
+        $two = '\StraussTest\ST\Namespace\StraussTestPackage2';
+    }
+}
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST\\Namespace', 'StraussTest\\ST\\Namespace');
+        $result = $replacer->replaceNamespace($result, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
 }
