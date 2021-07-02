@@ -1285,5 +1285,4 @@ EOD;
         $result = $replacer->replaceNamespace($result, 'ST', 'StraussTest\\ST');
         $this->assertEquals($expected, $result);
     }
-
 }
