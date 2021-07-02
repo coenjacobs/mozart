@@ -122,33 +122,31 @@ class Prefixer
         $searchNamespace = str_replace('\\\\', '\\', $searchNamespace);
         $searchNamespace = str_replace('\\', '\\\\{0,2}', $searchNamespace);
 
-        $searchNamespace = '\\s*' .$searchNamespace;
-
         $pattern = "
             /                              # Start the pattern
             (
-            ^|\\n                          # start of the line
-            |namespace\s                   # the namespace keyword
-            |use\s                         # the use keyword
-            |new\s
-            |static\s
-            |\"[^\s]*                      # inside a string that does not contain spaces
-            |'[^\s]*
-            |implements\s
-            |extends\s                     # when the class being extended is namespaced inline
-            |return\s
+            ^\s*                           # start of the string
+            |\\n\s*                        # start of the line
+            |namespace\s+                  # the namespace keyword
+            |use\s+                        # the use keyword
+            |new\s+
+            |static\s+
+            |\"                            # inside a string that does not contain spaces - needs work
+            |'                             #   right now its just inside a string that doesnt start with a space
+            |implements\s+
+            |extends\s+                    # when the class being extended is namespaced inline
+            |return\s+
             |\(\s*                         # inside a function declaration as the first parameters type
             |,\s*                          # inside a function declaration as a subsequent parameter type
             |\.\s*                         # as part of a concatenated string
             |=\s*                          # as the value being assigned to a variable
-            |\*\s+@\w+\s+                  # In a comments param etc  
-            |&                             # a static call as a second parameter of an if statement
-            |\|
-            |!                             # negating the result of a static call
-            |=>                            # as the value in an associative array
-            )        
+            |\*\s+@\w+\s*                  # In a comments param etc  
+            |&\s*                             # a static call as a second parameter of an if statement
+            |\|\s*
+            |!\s*                             # negating the result of a static call
+            |=>\s*                            # as the value in an associative array
+            )
             (
-            \\\\*                          # maybe preceeded by a backslash
             {$searchNamespace}             # followed by the namespace to replace
             )
             (?!:)                          # Not followed by : which would only be valid after a classname
