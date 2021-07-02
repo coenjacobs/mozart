@@ -885,7 +885,6 @@ EOD;
         $result = $replacer->replaceNamespace($contents, 'chillerlan\\QRCode', 'BrianHenryIE\\Strauss\\chillerlan\\QRCode');
 
         $this->assertEquals($expected, $result);
-
     }
 
     /**
@@ -1230,6 +1229,5 @@ EOD;
 
         $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
         $this->assertEquals($expected, $result);
-
     }
 }
