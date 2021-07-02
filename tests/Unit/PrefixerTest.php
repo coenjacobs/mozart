@@ -884,6 +884,349 @@ EOD;
         $result = $replacer->replaceNamespace($contents, 'chillerlan\\QRCode', 'BrianHenryIE\\Strauss\\chillerlan\\QRCode');
 
         $this->assertEquals($expected, $result);
+    }
 
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticSimpleCall()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+        // Simple call.
+
+        $contents = '\ST\StraussTestPackage2::hello();';
+        $expected = '\StraussTest\ST\StraussTestPackage2::hello();';
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = '! \ST\StraussTestPackage2::hello();';
+        $expected = '! \StraussTest\ST\StraussTestPackage2::hello();';
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticVariableAssignment()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+        // Variable assignment.
+        $contents = '$test1 = \ST\StraussTestPackage2::hello();';
+        $expected = '$test1 = \StraussTest\ST\StraussTestPackage2::hello();';
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = '$test2 = ! \ST\StraussTestPackage2::hello();';
+        $expected = '$test2 = ! \StraussTest\ST\StraussTestPackage2::hello();';
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticIfConditionSingle()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+        // If condition: Single.
+        $contents = <<<'EOD'
+if ( \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = <<<'EOD'
+if ( ! \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( ! \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticIfConditionMultipleAND()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// If condition: Multiple (AND).
+        $contents = <<<'EOD'
+if ( \ST\StraussTestPackage2::hello() && ! \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( \StraussTest\ST\StraussTestPackage2::hello() && ! \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = <<<'EOD'
+if ( ! \ST\StraussTestPackage2::hello() && \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( ! \StraussTest\ST\StraussTestPackage2::hello() && \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticIfConditionMultipleOR()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// If condition: Multiple (OR).
+        $contents = <<<'EOD'
+if ( \ST\StraussTestPackage2::hello() || ! \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( \StraussTest\ST\StraussTestPackage2::hello() || ! \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+
+        $contents = <<<'EOD'
+if ( ! \ST\StraussTestPackage2::hello() || \ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+        $expected = <<<'EOD'
+if ( ! \StraussTest\ST\StraussTestPackage2::hello() || \StraussTest\ST\StraussTestPackage2::hello() ) {
+    echo 'hello world';
+}
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayNonAssociativeSingle()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Non-associative: Single.
+        $contents = <<<'EOD'
+$arr1 = array(
+    \ST\StraussTestPackage2::hello(),
+    ! \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$arr1 = array(
+    \StraussTest\ST\StraussTestPackage2::hello(),
+    ! \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayNonAssociativeMultipleAND()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Non-associative: Multiple (AND).
+        $contents = <<<'EOD'
+$arr2 = array(
+    \ST\StraussTestPackage2::hello() && ! \ST\StraussTestPackage2::hello(),
+    ! \ST\StraussTestPackage2::hello() && \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$arr2 = array(
+    \StraussTest\ST\StraussTestPackage2::hello() && ! \StraussTest\ST\StraussTestPackage2::hello(),
+    ! \StraussTest\ST\StraussTestPackage2::hello() && \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayNonAssociationMultipleOR()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Non-associative: Multiple (OR).
+        $contents = <<<'EOD'
+$arr3 = array(
+    \ST\StraussTestPackage2::hello() || ! \ST\StraussTestPackage2::hello(),
+    ! \ST\StraussTestPackage2::hello() || \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$arr3 = array(
+    \StraussTest\ST\StraussTestPackage2::hello() || ! \StraussTest\ST\StraussTestPackage2::hello(),
+    ! \StraussTest\ST\StraussTestPackage2::hello() || \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayAssociativeSingle()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Associative: Single.
+        $contents = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \ST\StraussTestPackage2::hello(),
+    'two' => ! \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \StraussTest\ST\StraussTestPackage2::hello(),
+    'two' => ! \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayAssociativeMultipleAND()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Associative: Multiple (AND).
+        $contents = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \ST\StraussTestPackage2::hello() && ! \ST\StraussTestPackage2::hello(),
+    'two' => ! \ST\StraussTestPackage2::hello() && \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \StraussTest\ST\StraussTestPackage2::hello() && ! \StraussTest\ST\StraussTestPackage2::hello(),
+    'two' => ! \StraussTest\ST\StraussTestPackage2::hello() && \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
+    }
+
+
+    /**
+     * @see https://github.com/BrianHenryIE/strauss/issues/25
+     * @see https://gist.github.com/adrianstaffen/e1df25cd62c17d3f1a4697db6c449034
+     */
+    public function testStaticArrayAssociativeMultipleOR()
+    {
+
+        $config = $this->createMock(StraussConfig::class);
+        $replacer = new Prefixer($config, __DIR__);
+
+// Array: Associative: Multiple (OR).
+        $contents = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \ST\StraussTestPackage2::hello() || ! \ST\StraussTestPackage2::hello(),
+    'two' => ! \ST\StraussTestPackage2::hello() || \ST\StraussTestPackage2::hello(),
+);
+EOD;
+        $expected = <<<'EOD'
+$assoc_arr1 = array(
+    'one' => \StraussTest\ST\StraussTestPackage2::hello() || ! \StraussTest\ST\StraussTestPackage2::hello(),
+    'two' => ! \StraussTest\ST\StraussTestPackage2::hello() || \StraussTest\ST\StraussTestPackage2::hello(),
+);
+EOD;
+
+        $result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+        $this->assertEquals($expected, $result);
     }
 }
