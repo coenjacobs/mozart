@@ -142,6 +142,10 @@ class Prefixer
             |\.\s*                         # as part of a concatenated string
             |=\s*                          # as the value being assigned to a variable
             |\*\s+@\w+\s+                  # In a comments param etc  
+            |&                             # a static call as a second parameter of an if statement
+            |\|
+            |!                             # negating the result of a static call
+            |=>                            # as the value in an associative array
             )        
             (
             \\\\*                          # maybe preceeded by a backslash
