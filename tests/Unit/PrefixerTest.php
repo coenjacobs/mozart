@@ -1317,5 +1317,4 @@ EOD;
 
         $this->assertEquals($contents, $result);
     }
-
 }
