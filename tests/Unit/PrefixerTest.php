@@ -1285,4 +1285,37 @@ EOD;
         $result = $replacer->replaceNamespace($result, 'ST', 'StraussTest\\ST');
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * A prefixed classname was being replaced inside a namespace.
+     *
+     * namespace Symfony\Polyfill\Intl\Normalizer_Test_Normalizer;
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/27
+     *
+     * @author BrianHenryIE
+     */
+    public function testItDoesNotPrefixClassnameInsideNamespaceName(): void
+    {
+
+        $contents = <<<'EOD'
+namespace Symfony\Polyfill\Intl\Normalizer;
+class NA
+{
+
+}
+EOD;
+
+        $originalClassname = 'Normalizer';
+        $classnamePrefix = 'Normalizer_Test_';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+
+        $result = $replacer->replaceClassname($contents, $originalClassname, $classnamePrefix);
+
+        $this->assertEquals($contents, $result);
+    }
+
 }
