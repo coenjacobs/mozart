@@ -217,7 +217,7 @@ class Prefixer
 								    		        	# the remainder of the string.
                 namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+; # Skip lines just declaring the namespace.
                 |		        	
-				([^a-zA-Z0-9_\x7f-\xff\$])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff])
+				([^a-zA-Z0-9_\x7f-\xff\$\\\])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff\\\])
 				
 			/x'; //                                     # x: ignore whitespace in regex.
 

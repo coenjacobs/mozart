@@ -1317,4 +1317,74 @@ EOD;
 
         $this->assertEquals($contents, $result);
     }
+
+    /**
+     * class Normalizer_Test_Normalizer extends Normalizer_Test\Symfony\Polyfill\Intl\Normalizer_Test_Normalizer\Normalizer
+     *
+     * @throws \Exception
+     */
+    public function testItDoesNotPrefixClassnameInsideInsideNamespaceName(): void
+    {
+
+        $contents = <<<'EOD'
+class Normalizer extends Symfony\Polyfill\Intl\Normalizer\Foo
+{
+
+}
+EOD;
+
+        $expected = <<<'EOD'
+class Normalizer_Test_Normalizer extends Symfony\Polyfill\Intl\Normalizer\Foo
+{
+
+}
+EOD;
+
+        $originalClassname = 'Normalizer';
+        $classnamePrefix = 'Normalizer_Test_';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+
+        $result = $replacer->replaceClassname($contents, $originalClassname, $classnamePrefix);
+
+        $this->assertEquals($expected, $result);
+    }
+
+
+
+    /**
+     * class Normalizer_Test_Normalizer extends Normalizer_Test\Symfony\Polyfill\Intl\Normalizer_Test_Normalizer\Normalizer
+     *
+     * @throws \Exception
+     */
+    public function testItDoesNotPrefixClassnameInsideEndNamespaceName(): void
+    {
+
+        $contents = <<<'EOD'
+class Normalizer extends Symfony\Polyfill\Intl\Foo\Normalizer
+{
+
+}
+EOD;
+
+        $expected = <<<'EOD'
+class Normalizer_Test_Normalizer extends Symfony\Polyfill\Intl\Foo\Normalizer
+{
+
+}
+EOD;
+
+        $originalClassname = 'Normalizer';
+        $classnamePrefix = 'Normalizer_Test_';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+
+        $result = $replacer->replaceClassname($contents, $originalClassname, $classnamePrefix);
+
+        $this->assertEquals($expected, $result);
+    }
 }
