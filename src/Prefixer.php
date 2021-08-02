@@ -219,7 +219,7 @@ class Prefixer
                 |		        	
 				([^a-zA-Z0-9_\x7f-\xff\$\\\])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff\\\])
 				
-			/x'; //                                     # x: ignore whitespace in regex.
+			/xs'; //                                    # x: ignore whitespace in regex.  s dot matches newline
 
         $replacingFunction = function ($matches) use ($originalClassname, $classnamePrefix) {
 

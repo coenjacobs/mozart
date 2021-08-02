@@ -1287,7 +1287,7 @@ EOD;
     }
 
     /**
-     * A prefixed classname was being replaced inside a namespace.
+     * A prefixed classname was being replaced inside a namespace name.
      *
      * namespace Symfony\Polyfill\Intl\Normalizer_Test_Normalizer;
      *
@@ -1352,8 +1352,6 @@ EOD;
         $this->assertEquals($expected, $result);
     }
 
-
-
     /**
      * class Normalizer_Test_Normalizer extends Normalizer_Test\Symfony\Polyfill\Intl\Normalizer_Test_Normalizer\Normalizer
      *
@@ -1374,6 +1372,42 @@ class Normalizer_Test_Normalizer extends Symfony\Polyfill\Intl\Foo\Normalizer
 {
 
 }
+EOD;
+
+        $originalClassname = 'Normalizer';
+        $classnamePrefix = 'Normalizer_Test_';
+
+        $config = $this->createMock(StraussConfig::class);
+
+        $replacer = new Prefixer($config, __DIR__);
+
+        $result = $replacer->replaceClassname($contents, $originalClassname, $classnamePrefix);
+
+        $this->assertEquals($expected, $result);
+    }
+
+
+
+    /**
+     *
+     *
+     * @throws \Exception
+     */
+    public function testItDoesNotPrefixClassDeclarationInsideNamespace(): void
+    {
+
+        $contents = <<<'EOD'
+namespace Symfony\Polyfill\Intl\Normalizer;
+
+class Normalizer
+{
+EOD;
+
+        $expected = <<<'EOD'
+namespace Symfony\Polyfill\Intl\Normalizer;
+
+class Normalizer
+{
 EOD;
 
         $originalClassname = 'Normalizer';
