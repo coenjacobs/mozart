@@ -46,16 +46,15 @@ or
 "scripts": {
     "strauss": [
         "@php strauss.phar"
-    ],
-    ...
+    ]
+}
 ```
-
 
 ## Configuration
 
 Strauss potentially requires zero configuration, but likely you'll want to customize a little, by adding in your `composer.json` an `extra/strauss` object. The following is the default config, where the `namespace_prefix` and `classmap_prefix` are determined from your `composer.json`'s `autoload` or `name` key and `packages` is determined from the `require` key:
 
-```
+```json
 "extra": {
     "strauss": {
         "target_directory": "strauss",
