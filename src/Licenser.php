@@ -36,6 +36,8 @@ class Licenser
 
     protected string $targetDirectory;
 
+    protected bool $includeModifiedDate;
+
     /**
      * An array of files relative to the project vendor folder.
      *
@@ -61,6 +63,7 @@ class Licenser
 
         $this->targetDirectory = $config->getTargetDirectory();
         $this->vendorDir = $config->getVendorDirectory();
+        $this->includeModifiedDate = $config->isIncludeModifiedDate();
 
         $this->filesystem = new Filesystem(new Local($workingDir));
     }
@@ -157,7 +160,7 @@ class Licenser
     }
 
     /**
-     * Given a php file as a string, edit it's header phpdoc, or add a header, to include:
+     * Given a php file as a string, edit its header phpdoc, or add a header, to include:
      *
      * "Modified by {author} on {date} using Strauss.
      * @see https://github.com/BrianHenryIE/strauss"
@@ -184,7 +187,11 @@ class Licenser
         $author = $this->author;
 
         $licenseDeclaration = "@license {$packageLicense}";
-        $modifiedDeclaration = "Modified by {$author} on {$modifiedDate} using Strauss.";
+        if ($this->includeModifiedDate) {
+            $modifiedDeclaration = "Modified by {$author} on {$modifiedDate} using Strauss.";
+        } else {
+            $modifiedDeclaration = "Modified by {$author} using Strauss.";
+        }
         $straussLink = "@see https://github.com/BrianHenryIE/strauss";
 
         // php-open followed by some whitespace and new line until the first ...

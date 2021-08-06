@@ -98,6 +98,13 @@ class StraussConfig
 
     protected array $namespaceReplacementPatterns = array();
 
+    /**
+     * Should a modified date be included in the header for modified files?
+     *
+     * @var bool
+     */
+    protected $includeModifiedDate = true;
+
 
     /**
      * Read any existing Mozart config.
@@ -451,5 +458,21 @@ class StraussConfig
     public function setNamespaceReplacementPatterns(array $namespaceReplacementPatterns): void
     {
         $this->namespaceReplacementPatterns = $namespaceReplacementPatterns;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIncludeModifiedDate(): bool
+    {
+        return $this->includeModifiedDate;
+    }
+
+    /**
+     * @param bool $includeModifiedDate
+     */
+    public function setIncludeModifiedDate(bool $includeModifiedDate): void
+    {
+        $this->includeModifiedDate = $includeModifiedDate;
     }
 }
