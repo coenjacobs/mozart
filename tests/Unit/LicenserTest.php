@@ -84,7 +84,9 @@ class LicenserTest extends TestCase
 
         $author = 'BrianHenryIE';
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $sut = new Licenser($config, __DIR__, array(), $author);
 
         $given = <<<'EOD'
@@ -118,7 +120,9 @@ EOD;
     public function testWithLicenceAlreadyInHeader(): void
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -169,7 +173,9 @@ EOD;
     public function testWithTwoCommentsBeforeFirstCode()
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -230,7 +236,9 @@ EOD;
     public function testUnusualHeaderCommentStyle()
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -275,7 +283,9 @@ EOD;
     public function testCommentWithLicenseWord()
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -334,7 +344,9 @@ EOD;
     public function testIncorrectlyMatching()
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -404,7 +416,9 @@ EOD;
     public function testLicenseDetailsOnlyInsertedOncePerFile()
     {
 
-        $config = $this->createStub(StraussConfig::class);
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
