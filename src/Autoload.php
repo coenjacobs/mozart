@@ -109,6 +109,8 @@ class Autoload
             echo "\${$dirname} = dirname(__FILE__);\n\n";
             echo "return array(\n";
             foreach ($dirMap as $class => $file) {
+                // Always use `/` in paths.
+                $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
                 echo "   '{$class}' => {$file},\n";
             }
             echo ");";
@@ -150,6 +152,8 @@ class Autoload
                 if (!isset($filePathinfo['extension']) || 'php' !== $filePathinfo['extension']) {
                     continue;
                 }
+                // Always use `/` in paths.
+                $filepath = str_replace(DIRECTORY_SEPARATOR, '/', $filepath);
                 echo "require_once __DIR__ . '{$filepath}';\n";
             }
         }
