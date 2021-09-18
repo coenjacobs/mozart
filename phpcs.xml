@@ -11,4 +11,5 @@
     <file>./src</file>
     <file>./tests</file>
     <exclude-pattern>/tests/reports/</exclude-pattern>
+    <exclude-pattern>/tests/Issues/data</exclude-pattern>
 </ruleset>

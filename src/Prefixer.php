@@ -207,17 +207,17 @@ class Prefixer
     {
         $searchClassname = preg_quote($originalClassname, '/');
 
-        // This could be more specific if we could enumerate all preceeding and proceeding words ("new", "("...).
+        // This could be more specific if we could enumerate all preceding and proceeding words ("new", "("...).
         $pattern = '
 			/											# Start the pattern
-				namespace\s+([a-zA-Z0-9_\x7f-\xff\\\\]+).*?{.*?(namespace|\z) 
+				namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+\s*{(.*?)(namespace|\z) 
 														# Look for a preceeding namespace declaration, up until a 
 														# potential second namespace declaration.
 				|										# if found, match that much before continuing the search on
 								    		        	# the remainder of the string.
-                namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+; # Skip lines just declaring the namespace.
+                namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+\s*;(.*) # Skip lines just declaring the namespace.
                 |		        	
-				([^a-zA-Z0-9_\x7f-\xff\$\\\])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff\\\])
+				([^a-zA-Z0-9_\x7f-\xff\$\\\])('. $searchClassname . ')([^a-zA-Z0-9_\x7f-\xff\\\]) # outside a namespace the class will not be prefixed with a slash
 				
 			/xs'; //                                    # x: ignore whitespace in regex.  s dot matches newline
 
@@ -232,9 +232,22 @@ class Prefixer
                 );
 
                 return $updated;
-            }
+            } else {
+                $newContents = '';
+                foreach ($matches as $index => $captured) {
+                    if (0 === $index) {
+                        continue;
+                    }
 
-            return $matches[1] . $matches[2] . $matches[3] . $classnamePrefix . $originalClassname . $matches[5];
+                    if ($captured == $originalClassname) {
+                        $newContents .= $classnamePrefix;
+                    }
+
+                    $newContents .= $captured;
+                }
+                return $newContents;
+            }
+//            return $matches[1] . $matches[2] . $matches[3] . $classnamePrefix . $originalClassname . $matches[5];
         };
 
         $result = preg_replace_callback($pattern, $replacingFunction, $contents);
