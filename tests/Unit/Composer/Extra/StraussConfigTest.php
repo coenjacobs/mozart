@@ -396,6 +396,114 @@ EOD;
         $this->assertContains('pimple/pimple', $sut->getPackages());
     }
 
+
+    public function testGetOldSyntaxExcludePackagesFromPrefixing()
+    {
+        $this->markTestSkipped('Currently needs a reflectable property in the target object');
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+  "name": "brianhenryie/strauss-config-test",
+  "extra": {
+    "strauss": {
+      "exclude_prefix_packages": [
+        "psr/container"
+      ]
+    }
+  }
+}
+
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertContains('psr/container', $sut->getExcludePackagesFromPrefixing());
+    }
+
+
+    public function testGetExcludePackagesFromPrefixing()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+  "name": "brianhenryie/strauss-config-test",
+  "extra": {
+    "strauss": {
+        "exclude_from_prefix": {
+            "packages": [
+                "psr/container"
+            ]
+        }
+    }
+  }
+}
+
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertContains('psr/container', $sut->getExcludePackagesFromPrefixing());
+    }
+
+
+    public function testGetExcludeFilePatternsFromPrefixingDefault()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+  "name": "brianhenryie/strauss-config-test"
+}
+
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertContains('/^psr.*$/', $sut->getExcludeFilePatternsFromPrefixing());
+    }
+
+    /**
+     * When excluding a package, the default file pattern exclusion was being forgotten.
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/32
+     */
+    public function testGetExcludeFilePatternsFromPrefixingDefaultAfterExcludingPackages()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+  "name": "brianhenryie/strauss-config-test",
+    "extra": {
+    "strauss": {
+        "exclude_from_prefix": {
+            "packages": ["yahnis-elsts/plugin-update-checker","erusev/parsedown"]
+        }
+    }
+  }
+}
+
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertContains('/^psr.*$/', $sut->getExcludeFilePatternsFromPrefixing());
+    }
+
     /**
      * When Strauss config has no packages specified, use composer.json's require list.
      */

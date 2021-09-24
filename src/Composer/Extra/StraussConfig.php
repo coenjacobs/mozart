@@ -69,10 +69,9 @@ class StraussConfig
     protected array $excludeFromCopy = array();
 
     /**
-     * @var array{packages?: string[], namespaces?: string[], filePatterns?: string[]}
+     * @var array{packages: string[], namespaces: string[], filePatterns: string[]}
      */
-    protected array $excludeFromPrefix = array('file_patterns'=>array('/^psr.*$/'));
-
+    protected array $excludeFromPrefix = array('file_patterns'=>array('/^psr.*$/'),'namespaces'=>array(),'packages'=>array());
 
     /**
      * An array of autoload keys to replace packages' existing autoload key.
@@ -139,6 +138,8 @@ class StraussConfig
 
             $rename->addMapping(StraussConfig::class, 'exclude_packages', 'excludePackages');
             $rename->addMapping(StraussConfig::class, 'delete_vendor_directories', 'deleteVendorFiles');
+
+            $rename->addMapping(StraussConfig::class, 'exclude_prefix_packages', 'excludePackagesFromPrefixing');
 
             $mapper->unshift($rename);
             $mapper->push(new \JsonMapper\Middleware\CaseConversion(
@@ -342,7 +343,15 @@ class StraussConfig
 
     public function setExcludeFromPrefix(array $excludeFromPrefix): void
     {
-        $this->excludeFromPrefix = $excludeFromPrefix;
+        if (isset($excludeFromPrefix['packages'])) {
+            $this->excludeFromPrefix['packages'] = $excludeFromPrefix['packages'];
+        }
+        if (isset($excludeFromPrefix['namespaces'])) {
+            $this->excludeFromPrefix['namespaces'] = $excludeFromPrefix['namespaces'];
+        }
+        if (isset($excludeFromPrefix['file_patterns'])) {
+            $this->excludeFromPrefix['file_patterns'] = $excludeFromPrefix['file_patterns'];
+        }
     }
 
     /**
@@ -353,6 +362,11 @@ class StraussConfig
     public function getExcludePackagesFromPrefixing(): array
     {
         return $this->excludeFromPrefix['packages'] ?? array();
+    }
+
+    public function setExcludePackagesFromPrefixing(array $excludePackagesFromPrefixing): void
+    {
+        $this->excludeFromPrefix['packages'] = $excludePackagesFromPrefixing;
     }
 
     public function getExcludeNamespacesFromPrefixing(): array
