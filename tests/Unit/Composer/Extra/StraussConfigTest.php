@@ -1,6 +1,6 @@
 <?php
 /**
- * Should accept Nannarl config and Mozart config.
+ * Should accept Strauss config and Mozart config.
  *
  * Should have sensible defaults.
  */
@@ -11,6 +11,9 @@ use Composer\Factory;
 use Composer\IO\NullIO;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \BrianHenryIE\Strauss\Composer\Extra\StraussConfig
+ */
 class StraussConfigTest extends TestCase
 {
 
@@ -628,5 +631,55 @@ EOD;
         $sut = new StraussConfig($composer);
 
         $this->assertEquals("My_Mozart_Config", $sut->getNamespacePrefix());
+    }
+
+    public function testIncludeModifiedDateDefaultTrue()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+ "extra":{
+  "strauss": {
+   "namespace_prefix": "BrianHenryIE\\Strauss\\"
+  }
+ }
+}
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertTrue($sut->isIncludeModifiedDate());
+    }
+
+    /**
+     * "when I add "include_modified_date": false to the extra/strauss object it doesn't take any effect, the date is still added to the header."
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/35
+     */
+    public function testIncludeModifiedDate()
+    {
+
+        $composerExtraStraussJson = <<<'EOD'
+{
+ "extra":{
+  "strauss": {
+   "namespace_prefix": "BrianHenryIE\\Strauss\\",
+   "include_modified_date": false
+  }
+ }
+}
+EOD;
+        $tmpfname = tempnam(sys_get_temp_dir(), 'strauss-test-');
+        file_put_contents($tmpfname, $composerExtraStraussJson);
+
+        $composer = Factory::create(new NullIO(), $tmpfname);
+
+        $sut = new StraussConfig($composer);
+
+        $this->assertFalse($sut->isIncludeModifiedDate());
     }
 }

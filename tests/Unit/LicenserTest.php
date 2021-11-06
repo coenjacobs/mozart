@@ -71,9 +71,6 @@ class LicenserTest extends TestCase
      * @see https://www.phpliveregex.com/p/A5y
      */
 
-    // https://schibsted.com/blog/mocking-the-file-system-using-phpunit-and-vfsstream/
-
-
     /**
      * @see https://github.com/AuthorizeNet/sdk-php/blob/a3e76f96f674d16e892f87c58bedb99dada4b067/lib/net/authorize/api/contract/v1/ANetApiRequestType.php
      *
@@ -103,6 +100,49 @@ EOD;
  * @license proprietary
  *
  * Modified by BrianHenryIE on 25-April-2021 using Strauss.
+ * @see https://github.com/BrianHenryIE/strauss
+ */
+
+namespace net\authorize\api\contract\v1;
+EOD;
+
+        $actual = $sut->addChangeDeclarationToPhpString($given, '25-April-2021', 'proprietary');
+
+        $this->assertEquals($expected, $actual);
+    }
+
+
+    // https://schibsted.com/blog/mocking-the-file-system-using-phpunit-and-vfsstream/
+
+    /**
+     * Not including the date was reported as not working.
+     *
+     * @see https://github.com/BrianHenryIE/strauss/issues/35
+     *
+     * @covers ::addChangeDeclarationToPhpString
+     */
+    public function testAppendHeaderCommentNoDate()
+    {
+
+        $author = 'BrianHenryIE';
+
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(false);
+
+        $sut = new Licenser($config, __DIR__, array(), $author);
+
+        $given = <<<'EOD'
+<?php
+
+namespace net\authorize\api\contract\v1;
+EOD;
+
+        $expected = <<<'EOD'
+<?php
+/**
+ * @license proprietary
+ *
+ * Modified by BrianHenryIE using Strauss.
  * @see https://github.com/BrianHenryIE/strauss
  */
 
