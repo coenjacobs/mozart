@@ -83,6 +83,7 @@ class LicenserTest extends TestCase
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -116,6 +117,7 @@ EOD;
 
     /**
      * Not including the date was reported as not working.
+     * The real problem was the master readme was ahead of the packagist release.
      *
      * @see https://github.com/BrianHenryIE/strauss/issues/35
      *
@@ -128,6 +130,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(false);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -157,12 +160,49 @@ EOD;
     /**
      * @covers ::addChangeDeclarationToPhpString
      */
+    public function testAppendHeaderCommentNoAuthor()
+    {
+
+        $author = 'BrianHenryIE';
+
+        $config = $this->createMock(StraussConfig::class);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(false);
+
+        $sut = new Licenser($config, __DIR__, array(), $author);
+
+        $given = <<<'EOD'
+<?php
+
+namespace net\authorize\api\contract\v1;
+EOD;
+
+        $expected = <<<'EOD'
+<?php
+/**
+ * @license proprietary
+ *
+ * Modified using Strauss.
+ * @see https://github.com/BrianHenryIE/strauss
+ */
+
+namespace net\authorize\api\contract\v1;
+EOD;
+
+        $actual = $sut->addChangeDeclarationToPhpString($given, '25-April-2021', 'proprietary');
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::addChangeDeclarationToPhpString
+     */
     public function testWithLicenceAlreadyInHeader(): void
     {
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
-        
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
+
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
 
@@ -215,6 +255,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
@@ -278,6 +319,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
@@ -325,6 +367,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
@@ -386,6 +429,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);
@@ -458,6 +502,7 @@ EOD;
 
         $config = $this->createMock(StraussConfig::class);
         $config->expects($this->once())->method('isIncludeModifiedDate')->willReturn(true);
+        $config->expects($this->once())->method('isIncludeAuthor')->willReturn(true);
 
         $author = 'BrianHenryIE';
         $sut = new Licenser($config, __DIR__, array(), $author);

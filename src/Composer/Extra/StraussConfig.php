@@ -104,6 +104,12 @@ class StraussConfig
      */
     protected $includeModifiedDate = true;
 
+    /**
+     * Should the author name be included in the header for modified files?
+     *
+     * @var bool
+     */
+    protected $includeAuthor = true;
 
     /**
      * Read any existing Mozart config.
@@ -488,5 +494,22 @@ class StraussConfig
     public function setIncludeModifiedDate(bool $includeModifiedDate): void
     {
         $this->includeModifiedDate = $includeModifiedDate;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isIncludeAuthor(): bool
+    {
+        return $this->includeAuthor;
+    }
+
+    /**
+     * @param bool $includeModifiedDate
+     */
+    public function setIncludeAuthor(bool $includeAuthor): void
+    {
+        $this->includeAuthor = $includeAuthor;
     }
 }

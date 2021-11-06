@@ -96,12 +96,13 @@ The following configuration is inferred:
 - `classmap_prefix` defines the default string to prefix class names in the global namespace
 - `packages` is the list of packages to process. If absent, all packages in the `require` key of your `composer.json` are included
 - `classmap_output` is a `bool` to decide if Strauss will create `autoload-classmap.php` and `autoload.php`. If it is not set, it is `false` if `target_directory` is in your project's `autoload` key, `true` otherwise.
-- `include_modified_date` is a `bool` to decide if Strauss should include a date in the (phpdoc) header written to modified files. Defaults to `true`.
 
 The following configuration is default:
 
 - `delete_vendor_files`: `false` a boolean flag to indicate if files copied from the packages' vendor directories should be deleted after being processed. It defaults to false, so any destructive change is opt-in.
 - `exclude_from_prefix` / [`file_patterns`](https://github.com/BrianHenryIE/strauss/blob/83484b79cfaa399bba55af0bf4569c24d6eb169d/src/ChangeEnumerator.php#L92-L96) : `[/psr.*/]` PSR namespaces are ignored by default for interoperability. If you override this key, be sure to include `/psr.*/` too.
+- `include_modified_date` is a `bool` to decide if Strauss should include a date in the (phpdoc) header written to modified files. Defaults to `true`.
+- `include_author` is a `bool` to decide if Strauss should include the author name in the (phpdoc) header written to modified files. Defaults to `true`.
 
 The remainder is empty:
 

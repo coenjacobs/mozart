@@ -39,6 +39,12 @@ class Licenser
     protected bool $includeModifiedDate;
 
     /**
+     * @see StraussConfig::isIncludeAuthor()
+     * @var bool
+     */
+    protected bool $includeAuthor = true;
+
+    /**
      * An array of files relative to the project vendor folder.
      *
      * @var string[]
@@ -64,6 +70,7 @@ class Licenser
         $this->targetDirectory = $config->getTargetDirectory();
         $this->vendorDir = $config->getVendorDirectory();
         $this->includeModifiedDate = $config->isIncludeModifiedDate();
+        $this->includeAuthor = $config->isIncludeAuthor();
 
         $this->filesystem = new Filesystem(new Local($workingDir));
     }
@@ -187,11 +194,15 @@ class Licenser
         $author = $this->author;
 
         $licenseDeclaration = "@license {$packageLicense}";
-        if ($this->includeModifiedDate) {
-            $modifiedDeclaration = "Modified by {$author} on {$modifiedDate} using Strauss.";
-        } else {
-            $modifiedDeclaration = "Modified by {$author} using Strauss.";
+        $modifiedDeclaration = 'Modified ';
+        if ($this->includeAuthor) {
+            $modifiedDeclaration .= "by {$author} ";
         }
+        if ($this->includeModifiedDate) {
+            $modifiedDeclaration .= "on {$modifiedDate} ";
+        }
+        $modifiedDeclaration .= 'using Strauss.';
+
         $straussLink = "@see https://github.com/BrianHenryIE/strauss";
 
         // php-open followed by some whitespace and new line until the first ...
