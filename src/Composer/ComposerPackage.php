@@ -83,7 +83,7 @@ class ComposerPackage
     {
         $factory = new Factory();
         $io = new NullIO();
-        $composer = $factory->createComposer($io, $jsonArray);
+	    $composer = $factory->createComposer($io, $jsonArray, true);
 
         return new ComposerPackage($composer, $overrideAutoload);
     }
