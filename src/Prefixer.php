@@ -145,6 +145,9 @@ class Prefixer
             |\|\s*
             |!\s*                             # negating the result of a static call
             |=>\s*                            # as the value in an associative array
+            |\[\s*                         # In a square array 
+            |\?\s*                         # In a ternary operator
+            |:\s*                          # In a ternary operator
             )
             (
             {$searchNamespace}             # followed by the namespace to replace

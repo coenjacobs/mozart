@@ -1421,4 +1421,105 @@ EOD;
 
         $this->assertEquals($expected, $result);
     }
+
+
+	/**
+	 *
+	 * @see https://github.com/BrianHenryIE/strauss/issues/36
+	 *
+	 */
+	public function testItReplacesStaticInsideSquareArray(): void
+	{
+
+		$contents = <<<'EOD'
+namespace ST;
+class StraussTestPackage {
+	public function __construct() {
+		$arr = array();
+
+		$arr[ ( new \ST\StraussTestPackage2() )->test() ] = true;
+
+		$arr[ \ST\StraussTestPackage2::test2() ] = true;
+	}
+}
+EOD;
+
+		$expected = <<<'EOD'
+namespace StraussTest\ST;
+class StraussTestPackage {
+	public function __construct() {
+		$arr = array();
+
+		$arr[ ( new \StraussTest\ST\StraussTestPackage2() )->test() ] = true;
+
+		$arr[ \StraussTest\ST\StraussTestPackage2::test2() ] = true;
+	}
+}
+EOD;
+
+		$config = $this->createMock(StraussConfig::class);
+
+		$replacer = new Prefixer($config, __DIR__);
+
+		$result = $replacer->replaceNamespace($contents, 'ST', 'StraussTest\\ST');
+
+		$this->assertEquals($expected, $result);
+	}
+
+	/**
+	 *
+	 * @see https://github.com/BrianHenryIE/strauss/issues/44
+	 *
+	 */
+	public function testItReplacesStaticInsideMultilineTernary(): void
+	{
+
+		$contents = <<<'EOD'
+namespace GuzzleHttp;
+
+use Psr\Http\Message\MessageInterface;
+
+final class BodySummarizer implements BodySummarizerInterface
+{
+    /**
+     * Returns a summarized message body.
+     */
+    public function summarize(MessageInterface $message): ?string
+    {
+        return $this->truncateAt === null
+            ? \GuzzleHttp\Psr7\Message::bodySummary($message)
+            : \GuzzleHttp\Psr7\Message::bodySummary($message, $this->truncateAt);
+    }
+}
+EOD;
+
+		$expected = <<<'EOD'
+namespace StraussTest\GuzzleHttp;
+
+use Psr\Http\Message\MessageInterface;
+
+final class BodySummarizer implements BodySummarizerInterface
+{
+    /**
+     * Returns a summarized message body.
+     */
+    public function summarize(MessageInterface $message): ?string
+    {
+        return $this->truncateAt === null
+            ? \StraussTest\GuzzleHttp\Psr7\Message::bodySummary($message)
+            : \StraussTest\GuzzleHttp\Psr7\Message::bodySummary($message, $this->truncateAt);
+    }
+}
+EOD;
+
+		$config = $this->createMock(StraussConfig::class);
+
+		$replacer = new Prefixer($config, __DIR__);
+
+		$result = $replacer->replaceNamespace($contents, 'GuzzleHttp', 'StraussTest\\GuzzleHttp');
+
+		$this->assertEquals($expected, $result);
+	}
+
+
 }
