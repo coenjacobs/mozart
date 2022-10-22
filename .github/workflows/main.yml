@@ -16,9 +16,9 @@ jobs:
         php: ['7.3', '7.4', '8.0', '8.1']
     name: PHP ${{ matrix.php }} tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install PHP
-        uses: shivammathur/setup-php@2
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
       - name: Debugging
@@ -34,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Lint project files
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install PHP
-        uses: shivammathur/setup-php@2
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
       - name: Debugging
