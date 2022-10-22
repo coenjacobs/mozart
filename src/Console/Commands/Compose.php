@@ -160,8 +160,6 @@ class Compose extends Command
      * @param ((int|string)|mixed)[] $slugs
      *
      * @return Package[]
-     *
-     * @psalm-return array<array-key, Package>
      */
     private function findPackages(array $slugs): array
     {
