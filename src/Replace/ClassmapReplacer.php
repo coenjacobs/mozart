@@ -48,6 +48,11 @@ class ClassmapReplacer extends BaseReplacer
                     return $matches[0] ;
                 }
 
+                // Prevent prepending prefix multiple times.
+                if (substr($matches[1], 0, strlen($this->classmap_prefix)) === $this->classmap_prefix) {
+                    return $matches[0];
+                }
+
                 // The prepended class name.
                 $replace = $this->classmap_prefix . $matches[1];
                 $this->saveReplacedClass($matches[1], $replace);
