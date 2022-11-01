@@ -116,7 +116,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
+                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . $this->config->vendor_dir . DIRECTORY_SEPARATOR
                                    . $package->config->name . DIRECTORY_SEPARATOR . $path;
 
                     $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
@@ -133,7 +133,7 @@ class Mover
                 $files_to_move = array();
 
                 foreach ($autoloader->files as $file) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . $this->config->vendor_dir
                                    . DIRECTORY_SEPARATOR . $package->config->name;
                     $finder->files()->name($file)->in($source_path);
 
@@ -146,7 +146,7 @@ class Mover
                 $finder = new Finder();
 
                 foreach ($autoloader->paths as $path) {
-                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                    $source_path = $this->workingDir . DIRECTORY_SEPARATOR . $this->config->vendor_dir
                                    . DIRECTORY_SEPARATOR . $package->config->name . DIRECTORY_SEPARATOR . $path;
 
                     $finder->files()->in($source_path);
@@ -186,7 +186,7 @@ class Mover
             $replaceWith = $this->config->dep_directory . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->name
+            $packageVendorPath = DIRECTORY_SEPARATOR . $this->config->vendor_dir . DIRECTORY_SEPARATOR . $package->config->name
                                  . DIRECTORY_SEPARATOR . $path;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($packageVendorPath, '', $targetFile);
@@ -195,7 +195,7 @@ class Mover
             $replaceWith = $this->config->classmap_directory . DIRECTORY_SEPARATOR . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->name
+            $packageVendorPath = DIRECTORY_SEPARATOR . $this->config->vendor_dir . DIRECTORY_SEPARATOR . $package->config->name
                                  . DIRECTORY_SEPARATOR;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
@@ -219,7 +219,7 @@ class Mover
     protected function deletePackageVendorDirectories(): void
     {
         foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
+            $packageDir = $this->config->vendor_dir . DIRECTORY_SEPARATOR . $movedPackage;
             if (!is_dir($packageDir) || is_link($packageDir)) {
                 continue;
             }
