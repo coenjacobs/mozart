@@ -201,6 +201,10 @@ class Mover
             $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
         }
 
+        if ($this->filesystem->has($targetFile) && $this->config->skip_duplicates) {
+            return $targetFile;
+        }
+
         $this->filesystem->copy(
             str_replace($this->workingDir, '', $file->getPathname()),
             $targetFile
