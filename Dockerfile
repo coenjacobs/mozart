@@ -1,6 +1,6 @@
-FROM composer:2.0.8
+FROM composer:2.7.7
 
-FROM php:8.0.1-cli-alpine AS base
+FROM php:8.3.9-cli-alpine AS base
 
 FROM base as builder
 RUN apk update && apk add git
