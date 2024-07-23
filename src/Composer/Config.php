@@ -18,7 +18,7 @@ class Config
     public static function loadFromFile(string $filePath): Config
     {
         $fileContents = file_get_contents($filePath);
-        $config = ( ! $fileContents ) ? $config = array() : json_decode( $fileContents );
+        $config = ( ! $fileContents ) ? $config = array() : json_decode($fileContents);
         return new self((array)$config);
     }
 

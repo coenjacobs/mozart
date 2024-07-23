@@ -218,7 +218,8 @@ class Replacer
                         $this->replaceParentClassesInDirectory($directory);
                     }
                 } else {
-                    $directory = $this->workingDir . $this->config->get('classmap_directory') . $parent->config->get('name');
+                    $directory = $this->workingDir .
+                        $this->config->get('classmap_directory') . $parent->config->get('name');
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replaceInDirectory($autoloader, $directory);

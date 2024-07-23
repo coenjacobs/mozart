@@ -71,7 +71,8 @@ class Compose extends Command
         }
 
         $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = is_array($this->config->get('excluded_packages')) ? $this->config->get('excluded_packages') : [];
+        $excludedPackagesNames = is_array($this->config->get('excluded_packages')) ?
+            $this->config->get('excluded_packages') : [];
         $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
         $packages = array_values($packagesToMoveByName);
 
