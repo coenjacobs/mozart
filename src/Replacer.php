@@ -11,6 +11,7 @@ use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\Filesystem;
+use CoenJacobs\Mozart\Composer\Config;
 use Symfony\Component\Finder\Finder;
 
 class Replacer
@@ -21,7 +22,7 @@ class Replacer
     /** @var string */
     protected $targetDir;
 
-    /** @var \stdClass */
+    /** @var Config */
     protected $config;
 
     /** @var array */
@@ -30,11 +31,11 @@ class Replacer
     /** @var Filesystem */
     protected $filesystem;
 
-    public function __construct($workingDir, $config)
+    public function __construct($workingDir, Config $config)
     {
-        $this->workingDir = $workingDir;
-        $this->targetDir = $config->dep_directory;
         $this->config = $config;
+        $this->workingDir = $workingDir;
+        $this->targetDir = $this->config->get('dep_directory');
 
         $adapter = new LocalFilesystemAdapter(
             $this->workingDir
@@ -72,10 +73,10 @@ class Replacer
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->dep_namespace;
+            $replacer->dep_namespace = $this->config->get('dep_namespace');
         } else {
             $replacer = new ClassmapReplacer();
-            $replacer->classmap_prefix = $this->config->classmap_prefix;
+            $replacer->classmap_prefix = $this->config->get('classmap_prefix');
         }
 
         $replacer->setAutoloader($autoloader);
@@ -103,8 +104,8 @@ class Replacer
             $this->replaceInDirectory($autoloader, $source_path);
         } elseif ($autoloader instanceof Classmap) {
             $finder = new Finder();
-            $source_path = $this->workingDir . $this->config->classmap_directory . DIRECTORY_SEPARATOR
-                           . $package->config->name;
+            $source_path = $this->workingDir . $this->config->get('classmap_directory') . DIRECTORY_SEPARATOR
+                           . $package->config->get('name');
             $finder->files()->in($source_path);
 
             foreach ($finder as $foundFile) {
@@ -207,7 +208,7 @@ class Replacer
             foreach ($package->autoloaders as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
                     $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                    $directory = $this->workingDir . $this->config->dep_directory . $namespace
+                    $directory = $this->workingDir . $this->config->get('dep_directory') . $namespace
                                  . DIRECTORY_SEPARATOR;
 
                     if ($autoloader instanceof NamespaceAutoloader) {
@@ -217,7 +218,8 @@ class Replacer
                         $this->replaceParentClassesInDirectory($directory);
                     }
                 } else {
-                    $directory = $this->workingDir . $this->config->classmap_directory . $parent->config->name;
+                    $directory = $this->workingDir .
+                        $this->config->get('classmap_directory') . $parent->config->get('name');
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replaceInDirectory($autoloader, $directory);

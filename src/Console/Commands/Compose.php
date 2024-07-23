@@ -5,6 +5,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
+use CoenJacobs\Mozart\Composer\Config;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,7 +21,7 @@ class Compose extends Command
     /** @var string */
     private $workingDir;
 
-    /** @var */
+    /** @var Config */
     private $config;
 
     /**
@@ -59,19 +60,19 @@ class Compose extends Command
         }
         $config = $composer->extra->mozart;
 
-        $config->dep_namespace = preg_replace("/\\\{2,}$/", "\\", "$config->dep_namespace\\");
-
-        $this->config = $config;
+        $this->config = new Config((array)$config);
+        $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
 
         $require = array();
-        if (isset($config->packages) && is_array($config->packages)) {
-            $require = $config->packages;
+        if (is_array($this->config->get('packages'))) {
+            $require = $this->config->get('packages');
         } elseif (isset($composer->require) && is_object($composer->require)) {
             $require = array_keys(get_object_vars($composer->require));
         }
 
         $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = isset($config->excluded_packages) ? $config->excluded_packages : [];
+        $excludedPackagesNames = is_array($this->config->get('excluded_packages')) ?
+            $this->config->get('excluded_packages') : [];
         $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
         $packages = array_values($packagesToMoveByName);
 
@@ -79,14 +80,19 @@ class Compose extends Command
             $package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
         }
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
+        $this->mover = new Mover($workingDir, $this->config);
+        $this->replacer = new Replacer($workingDir, $this->config);
+
+        $require = $this->config->get('packages');
+        $require = (is_array($require)) ? array_keys($require) : array();
+
+        $packages = $this->findPackages($require);
 
         $this->mover->deleteTargetDirs($packages);
         $this->movePackages($packages);
         $this->replacePackages($packages);
         $this->replaceParentInTree($packages);
-        $this->replacer->replaceParentClassesInDirectory($this->config->classmap_directory);
+        $this->replacer->replaceParentClassesInDirectory($this->config->get('classmap_directory'));
 
         return 0;
     }
@@ -174,18 +180,21 @@ class Compose extends Command
             }
 
             $autoloaders = null;
-            if (isset($this->config->override_autoload) && isset($this->config->override_autoload->$package_slug)) {
-                $autoloaders = $this->config->override_autoload->$package_slug;
+            $override_autoload = $this->config->get('override_autoload');
+            if ($override_autoload !== false && isset($override_autoload->$package_slug)) {
+                $autoloaders = $override_autoload->$package_slug;
             }
 
-            $package = new Package($packageDir, $autoloaders);
+            $config = Config::loadFromFile($packageDir . 'composer.json');
+
+            $package = new Package($packageDir, $config, $autoloaders);
             $package->findAutoloaders();
 
-            $config = json_decode(file_get_contents($packageDir . 'composer.json'));
-
             $dependencies = [];
-            if (isset($config->require)) {
-                $dependencies = array_keys((array)$config->require);
+            $require = $config->get('require');
+
+            if ($require !== false) {
+                $dependencies = array_keys((array)$require);
             }
 
             $package->dependencies = $this->findPackages($dependencies);
