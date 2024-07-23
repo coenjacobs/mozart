@@ -1,0 +1,6 @@
+{
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "builder",
+    "workspaceFolder": "/mozart/",
+    "shutdownAction": "stopCompose"
+}

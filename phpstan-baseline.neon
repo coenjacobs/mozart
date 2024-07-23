@@ -1,0 +1,211 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Autoloader\\:\\:getSearchNamespace\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Autoloader.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Autoloader\\:\\:processConfig\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Autoloader.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Autoloader\\:\\:processConfig\\(\\) has parameter \\$autoloadConfig with no type specified\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Autoloader.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Classmap\\:\\:processConfig\\(\\) has parameter \\$autoloadConfig with no type specified\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Classmap.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Classmap\\:\\:\\$files type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Classmap.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Classmap\\:\\:\\$paths type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Composer/Autoload/Classmap.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\NamespaceAutoloader\\:\\:processConfig\\(\\) has parameter \\$autoloadConfig with no type specified\\.$#"
+			count: 1
+			path: src/Composer/Autoload/NamespaceAutoloader.php
+
+		-
+			message: "#^PHPDoc tag @var has invalid value \\(\\)\\: Unexpected token \"\\*/\", expected type at offset 9$#"
+			count: 1
+			path: src/Composer/Package.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Composer/Package.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Composer\\\\Package\\:\\:\\$config has no type specified\\.$#"
+			count: 1
+			path: src/Composer/Package.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Composer\\\\Package\\:\\:\\$dependencies type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Composer/Package.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$dep_namespace\\.$#"
+			count: 2
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:getAllDependenciesOfPackage\\(\\) has parameter \\$dependencies with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:getAllDependenciesOfPackage\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:movePackage\\(\\) has parameter \\$package with no type specified\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:movePackages\\(\\) has parameter \\$packages with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:replacePackage\\(\\) has parameter \\$package with no type specified\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:replacePackages\\(\\) has parameter \\$packages with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:replaceParentInTree\\(\\) has parameter \\$packages with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^PHPDoc tag @var has invalid value \\(\\)\\: Unexpected token \"\\*/\", expected type at offset 9$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
+			count: 2
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:\\$config has no type specified\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Console\\\\Commands\\\\Compose\\:\\:\\$workingDir \\(string\\) does not accept string\\|false\\.$#"
+			count: 1
+			path: src/Console/Commands/Compose.php
+
+		-
+			message: "#^Access to an undefined property CoenJacobs\\\\Mozart\\\\Composer\\\\Autoload\\\\Autoloader\\:\\:\\$namespace\\.$#"
+			count: 1
+			path: src/Mover.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Mover\\:\\:__construct\\(\\) has parameter \\$config with no type specified\\.$#"
+			count: 1
+			path: src/Mover.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Mover\\:\\:__construct\\(\\) has parameter \\$workingDir with no type specified\\.$#"
+			count: 1
+			path: src/Mover.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Mover\\:\\:\\$movedPackages type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Mover.php
+
+		-
+			message: "#^Anonymous function has an unused use \\$contents\\.$#"
+			count: 1
+			path: src/Replace/ClassmapReplacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\ClassmapReplacer\\:\\:replace\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: src/Replace/ClassmapReplacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\ClassmapReplacer\\:\\:saveReplacedClass\\(\\) has parameter \\$classname with no type specified\\.$#"
+			count: 1
+			path: src/Replace/ClassmapReplacer.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			count: 1
+			path: src/Replace/ClassmapReplacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\NamespaceReplacer\\:\\:replace\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: src/Replace/NamespaceReplacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\Replacer\\:\\:replace\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/Replace/Replacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\Replacer\\:\\:replace\\(\\) has parameter \\$contents with no type specified\\.$#"
+			count: 1
+			path: src/Replace/Replacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replace\\\\Replacer\\:\\:setAutoloader\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/Replace/Replacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replacer\\:\\:__construct\\(\\) has parameter \\$config with no type specified\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replacer\\:\\:__construct\\(\\) has parameter \\$workingDir with no type specified\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Method CoenJacobs\\\\Mozart\\\\Replacer\\:\\:replaceInFile\\(\\) has parameter \\$targetFile with no type specified\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Parameter \\#2 \\$contents of method League\\\\Flysystem\\\\Filesystem\\:\\:put\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function preg_replace_callback expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Property CoenJacobs\\\\Mozart\\\\Replacer\\:\\:\\$replacedClasses type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Replacer.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between false and non\\-falsy\\-string will always evaluate to false\\.$#"
+			count: 2
+			path: src/Replacer.php
