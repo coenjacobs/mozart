@@ -29,9 +29,9 @@ class Package
      */
     public function __construct($path, Config $config = null, $overrideAutoload = null)
     {
-        $this->path   = $path;
+        $this->path = $path;
 
-        if (isset($config)) {
+        if (empty($config)) {
             $config = Config::loadFromFile($this->path . '/composer.json');
         }
         $this->config = $config;
@@ -73,7 +73,7 @@ class Package
         }
     }
 
-    public function setConfig(Config $config)
+    public function setConfig(Config $config): void
     {
         $this->config = $config;
     }

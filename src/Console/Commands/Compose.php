@@ -60,18 +60,18 @@ class Compose extends Command
         }
         $config = $composer->extra->mozart;
 
-        $this->config = new Config($config);
-        $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", "$config->get('dep_namespace')\\"));
+        $this->config = new Config((array)$config);
+        $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
 
         $require = array();
-        if (isset($config->packages) && is_array($config->packages)) {
-            $require = $config->packages;
+        if (is_array($this->config->get('packages'))) {
+            $require = $this->config->get('packages');
         } elseif (isset($composer->require) && is_object($composer->require)) {
             $require = array_keys(get_object_vars($composer->require));
         }
 
         $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = isset($config->excluded_packages) ? $config->excluded_packages : [];
+        $excludedPackagesNames = is_array($this->config->get('excluded_packages')) ? $this->config->get('excluded_packages') : [];
         $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
         $packages = array_values($packagesToMoveByName);
 
@@ -79,13 +79,11 @@ class Compose extends Command
             $package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
         }
 
-        $this->mover = new Mover($workingDir, $config);
-        $this->replacer = new Replacer($workingDir, $config);
+        $this->mover = new Mover($workingDir, $this->config);
+        $this->replacer = new Replacer($workingDir, $this->config);
 
-        $require = $config->get('packages');
-        if ($require !== false) {
-            $require = array_keys(get_object_vars($this->config->get('require')));
-        }
+        $require = $this->config->get('packages');
+        $require = (is_array($require)) ? array_keys($require) : array();
 
         $packages = $this->findPackages($require);
 

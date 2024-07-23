@@ -4,28 +4,29 @@ namespace CoenJacobs\Mozart\Composer;
 
 class Config
 {
-    /** @var array */
+    /** @var array<mixed> */
     private $data;
 
     /**
-     * @param array $data
+     * @param array<mixed> $data
      */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
-    public static function loadFromFile($filePath)
+    public static function loadFromFile(string $filePath): Config
     {
-        $config = json_decode(file_get_contents($filePath));
-        return new self($config);
+        $fileContents = file_get_contents($filePath);
+        $config = ( ! $fileContents ) ? $config = array() : json_decode( $fileContents );
+        return new self((array)$config);
     }
 
     /**
      * @param string $key
      * @return bool|mixed
      */
-    public function get($key)
+    public function get(string $key)
     {
         if (isset($this->data[ $key ])) {
             return $this->data[ $key ];
@@ -38,7 +39,7 @@ class Config
      * @param string $key
      * @param mixed $data
      */
-    public function set($key, $data)
+    public function set($key, $data): void
     {
         $this->data[$key] = $data;
     }
