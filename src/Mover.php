@@ -8,7 +8,7 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use CoenJacobs\Mozart\Composer\Package;
-use League\Flysystem\Adapter\Local;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -36,7 +36,12 @@ class Mover
         $this->targetDir = $config->dep_directory;
         $this->config = $config;
 
-        $this->filesystem = new Filesystem(new Local($this->workingDir));
+        $adapter = new LocalFilesystemAdapter(
+            $this->workingDir
+        );
+
+        // The FilesystemOperator
+        $this->filesystem = new Filesystem($adapter);
     }
 
     /**
@@ -48,9 +53,9 @@ class Mover
      */
     public function deleteTargetDirs($packages): void
     {
-        $this->filesystem->createDir($this->config->dep_directory);
+        $this->filesystem->createDirectory($this->config->dep_directory);
 
-        $this->filesystem->createDir($this->config->classmap_directory);
+        $this->filesystem->createDirectory($this->config->classmap_directory);
 
         foreach ($packages as $package) {
             $this->deleteDepTargetDirs($package);
@@ -76,12 +81,12 @@ class Mover
                 case Psr4::class:
                     $outputDir = $this->config->dep_directory . $packageAutoloader->namespace;
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
-                    $this->filesystem->deleteDir($outputDir);
+                    $this->filesystem->deleteDirectory($outputDir);
                     break;
                 case Classmap::class:
                     $outputDir = $this->config->classmap_directory . $package->config->name;
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
-                    $this->filesystem->deleteDir($outputDir);
+                    $this->filesystem->deleteDirectory($outputDir);
                     break;
             }
         }
@@ -93,15 +98,15 @@ class Mover
 
     public function deleteEmptyDirs(): void
     {
-        if (count($this->filesystem->listContents($this->config->dep_directory, true)) === 0) {
-            $this->filesystem->deleteDir($this->config->dep_directory);
+        if (count($this->filesystem->listContents($this->config->dep_directory, true)->toArray()) === 0) {
+            $this->filesystem->deleteDirectory($this->config->dep_directory);
         }
 
-        if (count($this->filesystem->listContents($this->config->classmap_directory, true)) === 0) {
-            $this->filesystem->deleteDir($this->config->classmap_directory);
+        if (count($this->filesystem->listContents($this->config->classmap_directory, true)->toArray()) === 0) {
+            $this->filesystem->deleteDirectory($this->config->classmap_directory);
         }
     }
-    
+
     /**
      * @return void
      */
@@ -224,13 +229,13 @@ class Mover
                 continue;
             }
 
-            $this->filesystem->deleteDir($packageDir);
+            $this->filesystem->deleteDirectory($packageDir);
 
             //Delete parent directory too if it became empty
             //(because that package was the only one from that vendor)
             $parentDir = dirname($packageDir);
             if ($this->dirIsEmpty($parentDir)) {
-                $this->filesystem->deleteDir($parentDir);
+                $this->filesystem->deleteDirectory($parentDir);
             }
         }
     }

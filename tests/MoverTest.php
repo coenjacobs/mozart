@@ -5,6 +5,7 @@ use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -61,6 +62,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_creates_absent_dirs(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -80,6 +82,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_is_unpertrubed_by_existing_dirs(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -111,6 +114,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_deletes_subdirs_for_packages_about_to_be_moved(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -137,8 +141,8 @@ class MoverTest extends TestCase
 
         $mover->deleteTargetDirs($packages);
 
-        $this->assertDirectoryNotExists($this->testsWorkingDir . $this->config->dep_directory . 'Pimple');
-        $this->assertDirectoryNotExists($this->testsWorkingDir . $this->config->dep_directory . 'ezyang');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'Pimple');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'ezyang');
     }
 
     /**
@@ -177,6 +181,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_moves_each_file_once_per_namespace()
     {
 

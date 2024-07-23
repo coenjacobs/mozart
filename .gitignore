@@ -3,4 +3,6 @@ vendor/
 
 .DS_Store
 composer.lock
+
+/.phpunit.cache
 .phpunit.result.cache
