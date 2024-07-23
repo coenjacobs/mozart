@@ -8,8 +8,8 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
-use League\Flysystem\Adapter\Local;
-use League\Flysystem\FileNotFoundException;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToReadFile;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -36,7 +36,12 @@ class Replacer
         $this->targetDir = $config->dep_directory;
         $this->config = $config;
 
-        $this->filesystem = new Filesystem(new Local($this->workingDir));
+        $adapter = new LocalFilesystemAdapter(
+            $this->workingDir
+        );
+
+        // The FilesystemOperator
+        $this->filesystem = new Filesystem($adapter);
     }
 
     public function replacePackage(Package $package): void
@@ -57,7 +62,7 @@ class Replacer
         $targetFile = str_replace($this->workingDir, '', $targetFile);
         try {
             $contents = $this->filesystem->read($targetFile);
-        } catch (FileNotFoundException $e) {
+        } catch (UnableToReadFile $e) {
             return;
         }
 
@@ -80,7 +85,7 @@ class Replacer
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
         }
 
-        $this->filesystem->put($targetFile, $contents);
+        $this->filesystem->write($targetFile, $contents);
     }
 
     /**
@@ -136,7 +141,7 @@ class Replacer
             if ('.php' == substr($targetFile, -4, 4)) {
                 try {
                     $contents = $this->filesystem->read($targetFile);
-                } catch (FileNotFoundException $e) {
+                } catch (UnableToReadFile $e) {
                     continue;
                 }
 
@@ -157,7 +162,11 @@ class Replacer
                     );
                 }
 
-                $this->filesystem->put($targetFile, $contents);
+                if (empty($contents)) {
+                    continue;
+                }
+
+                $this->filesystem->write($targetFile, $contents);
             }
         }
     }

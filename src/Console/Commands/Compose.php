@@ -33,7 +33,7 @@ class Compose extends Command
         $this->setHelp('');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
