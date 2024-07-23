@@ -59,6 +59,8 @@ class MoverTest extends TestCase
 
     /**
      * If the specified `dep_directory` or `classmap_directory` are absent, create them.
+     *
+     * @test
      */
     #[Test]
     public function it_creates_absent_dirs(): void
@@ -77,6 +79,8 @@ class MoverTest extends TestCase
 
     /**
      * If the specified `dep_directory` or `classmap_directory` already exists with contents, it is not an issue.
+     *
+     * @test
      */
     #[Test]
     public function it_is_unpertrubed_by_existing_dirs(): void
@@ -107,6 +111,8 @@ class MoverTest extends TestCase
     /**
      * If the specified `dep_directory` or `classmap_directory` contains a subdir we are going to need when moving,
      * delete the subdir. aka:  If subfolders exist for dependencies we are about to manage, delete those subfolders.
+     *
+     * @test
      */
     #[Test]
     public function it_deletes_subdirs_for_packages_about_to_be_moved(): void
@@ -172,6 +178,8 @@ class MoverTest extends TestCase
      *  }
      *
      * @see https://github.com/coenjacobs/mozart/issues/89
+     *
+     * @test
      */
     #[Test]
     public function it_moves_each_file_once_per_namespace()

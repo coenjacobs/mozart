@@ -33,6 +33,8 @@ class ComposeTest extends TestCase
      * When composer.json is absent, instead of failing with:
      * "failed to open stream: No such file or directory"
      * a better message should be written to the OutputInterface.
+     *
+     * @test
      */
     #[Test]
     public function it_fails_gracefully_when_composer_json_absent(): void
@@ -58,6 +60,8 @@ class ComposeTest extends TestCase
      * When json_decode fails, instead of
      * "Trying to get property 'extra' of non-object"
      * a better message should be written to the OutputInterface.
+     *
+     * @test
      */
     #[Test]
     public function it_handles_malformed_json_with_grace(): void
@@ -87,6 +91,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra is absent, instead of
      * "Undefined property: stdClass::$extra"
      * a better message should be written to the OutputInterface.
+     *
+     * @test
      */
     #[Test]
     public function it_handles_absent_extra_config_with_grace(): void
@@ -117,6 +123,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra is not an object, instead of
      * "Trying to get property 'mozart' of non-object"
      * a better message should be written to the OutputInterface.
+     *
+     * @test
      */
     #[Test]
     public function it_handles_malformed_extra_config_with_grace(): void
@@ -146,6 +154,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra->mozart is absent, instead of
      * "Undefined property: stdClass::$mozart"
      * a better message should be written to the OutputInterface.
+     *
+     * @test
      */
     #[Test]
     public function it_handles_absent_mozart_config_with_grace(): void
@@ -177,6 +187,8 @@ class ComposeTest extends TestCase
      * a better message should be written to the OutputInterface.
      *
      * is_object() added.
+     *
+     * @test
      */
     #[Test]
     public function it_handles_malformed_mozart_config__with_grace(): void
