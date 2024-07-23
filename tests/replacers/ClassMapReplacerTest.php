@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ClassMapReplacerTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_replaces_class_declarations(): void
     {
         $contents = 'class Hello_World {';
@@ -16,7 +17,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertEquals('class Mozart_Hello_World {', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_abstract_class_declarations(): void
     {
         $contents = 'abstract class Hello_World {';
@@ -26,7 +27,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertEquals('abstract class Mozart_Hello_World {', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_interface_class_declarations(): void
     {
         $contents = 'interface Hello_World {';
@@ -36,7 +37,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertEquals('interface Mozart_Hello_World {', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_class_declarations_that_extend_other_classes(): void
     {
         $contents = 'class Hello_World extends Bye_World {';
@@ -46,7 +47,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertEquals('class Mozart_Hello_World extends Bye_World {', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_class_declarations_that_implement_interfaces(): void
     {
         $contents = 'class Hello_World implements Bye_World {';
@@ -56,7 +57,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertEquals('class Mozart_Hello_World implements Bye_World {', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_replaced_class_names(): void
     {
         $contents = 'class Hello_World {';
@@ -66,7 +67,7 @@ class ClassMapReplacerTest extends TestCase
         $this->assertArrayHasKey('Hello_World', $replacer->replacedClasses);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_class_declarations_psr2(): void
     {
         $contents = "class Hello_World\n{";
@@ -78,9 +79,8 @@ class ClassMapReplacerTest extends TestCase
 
     /**
      * @see https://github.com/coenjacobs/mozart/issues/81
-     *
-     * @test
      */
+    #[Test]
     public function it_replaces_class(): void
     {
         $contents = "class Hello_World";
@@ -94,9 +94,8 @@ class ClassMapReplacerTest extends TestCase
     /**
      * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
      * @see https://github.com/coenjacobs/mozart/issues/93
-     *
-     * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_namespace_multiline(): void
     {
         $input = "
@@ -113,9 +112,8 @@ class ClassMapReplacerTest extends TestCase
     /**
      * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
      * @see https://github.com/coenjacobs/mozart/issues/93
-     *
-     * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_namespace_singleline(): void
     {
         $input = "namespace Mozart; class Hello_World";
@@ -130,9 +128,8 @@ class ClassMapReplacerTest extends TestCase
      * It's possible to have multiple namespaces inside one file.
      *
      * To have two classes in one file, one in a namespace and the other not, the global namespace needs to be explicit.
-     *
-     * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_named_namespace_but_does_inside_explicit_global_namespace(): void
     {
 

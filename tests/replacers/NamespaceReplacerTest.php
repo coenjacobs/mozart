@@ -4,6 +4,7 @@ declare(strict_types=1);
 use CoenJacobs\Mozart\Composer\Autoload\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class NamespaceReplacerTest extends TestCase
 {
@@ -36,7 +37,7 @@ class NamespaceReplacerTest extends TestCase
         return $replacer;
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_namespace_declarations(): void
     {
         $contents = 'namespace Test\\Test;';
@@ -46,7 +47,7 @@ class NamespaceReplacerTest extends TestCase
     }
 
 
-    /** @test */
+    #[Test]
     public function it_doesnt_replaces_namespace_inside_namespace(): void
     {
         $replacer = self::createReplacer('Test');
@@ -57,7 +58,7 @@ class NamespaceReplacerTest extends TestCase
         $this->assertEquals("namespace My\\Mozart\\Prefix\\Test\\Something;\n\nuse My\\Mozart\\Prefix\\Test\\Test;", $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_replaces_partial_namespace_declarations(): void
     {
         $contents = 'namespace Test\\Test\\Another;';
@@ -66,7 +67,7 @@ class NamespaceReplacerTest extends TestCase
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Test\\Another;', $contents);
     }
 
-	/** @test */
+	#[Test]
     public function it_doesnt_prefix_already_prefixed_namespace(): void
     {
         $replacer = self::createReplacer('Test\\Another');
@@ -77,7 +78,7 @@ class NamespaceReplacerTest extends TestCase
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Another;', $contents);
     }
 
-    /** @test */
+    #[Test]
     public function it_doesnt_double_replace_namespaces_that_also_exist_inside_another_namespace(): void
     {
         $chickenReplacer = self::createReplacer('Chicken');
@@ -107,9 +108,8 @@ class NamespaceReplacerTest extends TestCase
 
     /**
      * @see https://github.com/coenjacobs/mozart/issues/75
-     *
-     * @test
      */
+    #[Test]
     public function it_replaces_namespace_use_as_declarations(): void
     {
 
