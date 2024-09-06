@@ -4,6 +4,9 @@ namespace CoenJacobs\Mozart\Composer\Autoload;
 
 interface Autoloader
 {
-    public function processConfig($autoloadConfig);
-    public function getSearchNamespace();
+    /**
+     * @param mixed $autoloadConfig
+     */
+    public function processConfig($autoloadConfig): void;
+    public function getSearchNamespace(): string;
 }

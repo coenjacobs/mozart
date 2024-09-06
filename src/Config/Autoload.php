@@ -7,6 +7,7 @@ use stdClass;
 
 class Autoload
 {
+    /** @var array<Autoloader> */
     public array $autoloaders = [];
 
     public function setupAutoloaders(stdClass $autoloadData): void
@@ -42,6 +43,9 @@ class Autoload
         $this->setAutoloaders($autoloaders);
     }
 
+    /**
+     * @param array<Autoloader> $autoloaders
+     */
     public function setAutoloaders(array $autoloaders): void
     {
         foreach ($autoloaders as $autoloader) {

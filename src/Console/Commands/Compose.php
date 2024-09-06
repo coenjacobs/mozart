@@ -54,21 +54,26 @@ class Compose extends Command
             return 1;
         }
 
-        // var_dump($composerConfig); die();
-
-        if (! $composerConfig->isValidMozartConfig()) {
+        if (! $composerConfig->isValidMozartConfig() || empty($composerConfig->getExtra())) {
             $output->write('Mozart config not readable in composer.json at extra->mozart');
             return 1;
         }
 
-        $this->config = $composerConfig->getExtra()->getMozart();
+        $mozartConfig = $composerConfig->getExtra()->getMozart();
+
+        if (empty($mozartConfig)) {
+            $output->write('Mozart config not readable in composer.json at extra->mozart');
+            return 1;
+        }
+
+        $this->config = $mozartConfig;
         $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
 
         $require = array();
         if (is_array($this->config->get('packages'))) {
             $require = $this->config->get('packages');
-        } elseif (isset($composer->require) && is_object($composer->require)) {
-            $require = array_keys(get_object_vars($composer->require));
+        } else {
+            $require = $composerConfig->require;
         }
 
         $packagesByName = $this->findPackages($require);
@@ -132,7 +137,7 @@ class Compose extends Command
     public function movePackage(Package $package): void
     {
         if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
+            foreach ($package->getDependencies() as $dependency) {
                 $this->movePackage($dependency);
             }
         }
@@ -148,7 +153,7 @@ class Compose extends Command
     public function replacePackage(Package $package): void
     {
         if (! empty($package->dependencies)) {
-            foreach ($package->dependencies as $dependency) {
+            foreach ($package->getDependencies() as $dependency) {
                 $this->replacePackage($dependency);
             }
         }

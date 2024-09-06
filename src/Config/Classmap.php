@@ -6,16 +6,16 @@ use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 
 class Classmap implements Autoloader
 {
-    /** @var array */
+    /** @var string[] */
     public $files = [];
 
-    /** @var array */
+    /** @var string[] */
     public $paths = [];
 
     /**
-     * @return void
+     * @inheritdoc
      */
-    public function processConfig($autoloadConfig)
+    public function processConfig($autoloadConfig): void
     {
         foreach ($autoloadConfig as $value) {
             if ('.php' == substr($value, -4, 4)) {
@@ -28,10 +28,8 @@ class Classmap implements Autoloader
 
     /**
      * @throws \Exception
-     *
-     * @return void
      */
-    public function getSearchNamespace()
+    public function getSearchNamespace(): string
     {
         throw new \Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
     }

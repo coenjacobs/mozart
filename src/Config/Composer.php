@@ -9,12 +9,14 @@ class Composer
     use ReadsConfig, ConfigAccessor;
 
     public string $name;
-    public array $require = [];
+
+    /** @var string[] */
+    public array $require;
 
     public ?Autoload $autoload = null;
     public ?Extra $extra = null;
 
-    public function setAutoload(stdClass $data)
+    public function setAutoload(stdClass $data): void
     {
         $autoload = new Autoload();
         $autoload->setupAutoloaders($data);

@@ -60,6 +60,9 @@ class Package
         return $this->config->autoload->getAutoloaders();
     }
 
+    /**
+     * @return array<Package>
+     */
     public function getDependencies(): array
     {
         return $this->requirePackages;
@@ -70,6 +73,9 @@ class Package
         array_push($this->requirePackages, $package);
     }
 
+    /**
+     * @param array<Package> $packages
+     */
     public function registerRequirePackages(array $packages): void
     {
         foreach ($packages as $package) {

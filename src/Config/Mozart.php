@@ -18,18 +18,23 @@ class Mozart
     /** @var string[] */
     public array $packages = [];
 
-    /** @var string[]> */
+    /** @var string[] */
     public array $excluded_packages = [];
 
     public OverrideAutoload $override_autoload;
-
     public bool $delete_vendor_directories;
 
+    /**
+     * @param string[] $packages
+     */
     public function setPackages(array $packages): void
     {
         $this->packages = $packages;
     }
 
+    /**
+     * @param string[] $excluded_packages
+     */
     public function setExcludedPackages(array $excluded_packages): void
     {
         $this->excluded_packages = $excluded_packages;
@@ -53,7 +58,7 @@ class Mozart
         return true;
     }
 
-    public function isExcludedPackage(Package $package)
+    public function isExcludedPackage(Package $package): bool
     {
         return in_array($package->getName(), $this->excluded_packages);
     }

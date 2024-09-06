@@ -12,7 +12,7 @@ abstract class NamespaceAutoloader implements Autoloader
      *
      * e.g. src/
      *
-     * @var string[]
+     * @var array<string>
      */
     public $paths = [];
 
@@ -23,7 +23,7 @@ abstract class NamespaceAutoloader implements Autoloader
      *
      * @return void
      */
-    public function processConfig($autoloadConfig)
+    public function processConfig($autoloadConfig): void
     {
         if (is_array($autoloadConfig)) {
             foreach ($autoloadConfig as $path) {
@@ -34,18 +34,12 @@ abstract class NamespaceAutoloader implements Autoloader
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getSearchNamespace()
+    public function getSearchNamespace(): string
     {
         return $this->namespace;
     }
 
-    /**
-     * @return string
-     */
-    public function getNamespacePath()
+    public function getNamespacePath(): string
     {
         return '';
     }

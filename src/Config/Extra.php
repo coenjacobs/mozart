@@ -2,13 +2,11 @@
 
 namespace CoenJacobs\Mozart\Config;
 
-use stdClass;
-
 class Extra
 {
     public ?Mozart $mozart = null;
 
-    public function getMozart()
+    public function getMozart(): ?Mozart
     {
         return $this->mozart;
     }

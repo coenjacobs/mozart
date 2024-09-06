@@ -6,18 +6,12 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 
 class Psr4 extends NamespaceAutoloader
 {
-    /**
-     * @return string
-     */
-    public function getSearchNamespace()
+    public function getSearchNamespace(): string
     {
         return trim($this->namespace, '\\');
     }
 
-    /**
-     * @return string
-     */
-    public function getNamespacePath()
+    public function getNamespacePath(): string
     {
         return str_replace('\\', DIRECTORY_SEPARATOR, $this->namespace);
     }
