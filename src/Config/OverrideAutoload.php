@@ -5,6 +5,9 @@ namespace CoenJacobs\Mozart\Config;
 use ArrayObject;
 use stdClass;
 
+/**
+ * @extends ArrayObject<string,mixed>
+ */
 class OverrideAutoload extends ArrayObject
 {
     public function __construct(stdClass $objects)
