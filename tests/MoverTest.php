@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Composer\Config;
+use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class MoverTest extends TestCase
 {
-
     /**
      * A temporary directory for creating and deleting files for these tests.
      *
@@ -23,7 +22,7 @@ class MoverTest extends TestCase
     /**
      * composer->extra->mozart settings
      *
-     * @var Config
+     * @var Mozart
      */
     protected $config;
 
@@ -55,7 +54,7 @@ class MoverTest extends TestCase
             ),
         );
 
-        $this->config = new Config( $configArgs );
+        $this->config = Mozart::loadFromString( json_encode($configArgs) );
     }
 
     /**
@@ -135,8 +134,12 @@ class MoverTest extends TestCase
             $testDummyComposerContents = json_encode(new stdClass());
 
             file_put_contents($testDummyComposerPath, $testDummyComposerContents);
-            $parsedPackage = new Package($testDummyComposerDir, $this->config, $this->config->get('override_autoload')[$packageString]);
-            $parsedPackage->findAutoloaders();
+
+            $overrideAutoload = $this->config->get('override_autoload');
+            if ( ! empty( $overrideAutoload ) ) {
+                $overrideAutoload = $overrideAutoload->getByKey( $packageString );
+            }
+            $parsedPackage = new Package($testDummyComposerDir, null, $overrideAutoload );
             $packages[] = $parsedPackage;
         }
 

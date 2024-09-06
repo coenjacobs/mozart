@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Composer\Autoload\Psr0;
+use CoenJacobs\Mozart\Config\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
