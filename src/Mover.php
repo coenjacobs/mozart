@@ -3,14 +3,14 @@
 namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
-use CoenJacobs\Mozart\Composer\Autoload\Psr0;
-use CoenJacobs\Mozart\Composer\Autoload\Psr4;
 use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\Classmap;
+use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Psr0;
+use CoenJacobs\Mozart\Config\Psr4;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\Filesystem;
-use CoenJacobs\Mozart\Composer\Config;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -22,16 +22,16 @@ class Mover
     /** @var string */
     protected $targetDir;
 
-    /** @var Config */
+    /** @var Mozart */
     protected $config;
 
     /** @var Filesystem */
     protected $filesystem;
 
-    /** @var array */
+    /** @var array<string> */
     protected $movedPackages = [];
 
-    public function __construct($workingDir, Config $config)
+    public function __construct(string $workingDir, Mozart $config)
     {
         $this->config = $config;
         $this->workingDir = $workingDir;
@@ -66,14 +66,10 @@ class Mover
      * Delete the directories about to be used for packages earmarked for Mozart namespacing.
      *
      * @visibility private to allow recursion through packages and subpackages.
-     *
-     * @param Package $package
-     *
-     * @return void
      */
-    private function deleteDepTargetDirs($package): void
+    private function deleteDepTargetDirs(Package $package): void
     {
-        foreach ($package->autoloaders as $packageAutoloader) {
+        foreach ($package->getAutoloaders() as $packageAutoloader) {
             $autoloaderType = get_class($packageAutoloader);
 
             switch ($autoloaderType) {
@@ -91,7 +87,7 @@ class Mover
             }
         }
 
-        foreach ($package->dependencies as $subPackage) {
+        foreach ($package->getDependencies() as $subPackage) {
             $this->deleteDepTargetDirs($subPackage);
         }
     }
@@ -116,7 +112,7 @@ class Mover
             return;
         }
 
-        foreach ($package->autoloaders as $autoloader) {
+        foreach ($package->getAutoloaders() as $autoloader) {
             if ($autoloader instanceof NamespaceAutoloader) {
                 $finder = new Finder();
 

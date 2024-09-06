@@ -3,6 +3,8 @@
 namespace CoenJacobs\Mozart\Composer;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
+use CoenJacobs\Mozart\Config\Autoload;
+use CoenJacobs\Mozart\Config\Composer;
 use stdClass;
 
 class Package
@@ -10,14 +12,11 @@ class Package
     /** @var string */
     public $path = '';
 
-    /** @var Config */
+    /** @var Composer */
     public $config;
 
-    /** @var Autoloader[] */
-    public $autoloaders = [];
-
-    /** @var array */
-    public $dependencies = [];
+    /** @var Package[] */
+    public $requirePackages = [];
 
     /**
      * Create a PHP object to represent a composer package.
@@ -27,54 +26,54 @@ class Package
      * @param stdClass $overrideAutoload Optional configuration to replace the package's own autoload definition with
      *                                    another which Mozart can use.
      */
-    public function __construct($path, Config $config = null, $overrideAutoload = null)
+    public function __construct($path, Composer $config = null, $overrideAutoload = null)
     {
         $this->path = $path;
 
         if (empty($config)) {
-            $config = Config::loadFromFile($this->path . '/composer.json');
+            $config = Composer::loadFromFile($this->path . '/composer.json');
         }
+
         $this->config = $config;
 
         if (isset($overrideAutoload)) {
-            $this->config->set('autoload', $overrideAutoload);
+            $autoload = new Autoload();
+            $autoload->setupAutoloaders($overrideAutoload);
+            $this->config->set('autoload', $autoload);
         }
+    }
+
+    public function getName(): string
+    {
+        return $this->config->name;
     }
 
     /**
-     * @return void
+     * @return Autoloader[]
      */
-    public function findAutoloaders()
+    public function getAutoloaders(): array
     {
-        $namespace_autoloaders = array(
-            'psr-0'    => 'CoenJacobs\Mozart\Composer\Autoload\Psr0',
-            'psr-4'    => 'CoenJacobs\Mozart\Composer\Autoload\Psr4',
-            'classmap' => 'CoenJacobs\Mozart\Composer\Autoload\Classmap',
-        );
-
-        $autoload = $this->config->get('autoload');
-
-        if ($autoload === false) {
-            return;
+        if (empty($this->config->autoload)) {
+            return array();
         }
 
-        foreach ($namespace_autoloaders as $key => $value) {
-            if (! isset($autoload->$key)) {
-                continue;
-            }
-
-            $autoloadConfig = (array)$autoload->$key;
-
-            /** @var Autoloader $autoloader */
-            $autoloader = new $value();
-            $autoloader->processConfig($autoloadConfig);
-
-            array_push($this->autoloaders, $autoloader);
-        }
+        return $this->config->autoload->getAutoloaders();
     }
 
-    public function setConfig(Config $config): void
+    public function getDependencies(): array
     {
-        $this->config = $config;
+        return $this->requirePackages;
+    }
+
+    public function registerRequirePackage(Package $package): void
+    {
+        array_push($this->requirePackages, $package);
+    }
+
+    public function registerRequirePackages(array $packages): void
+    {
+        foreach ($packages as $package) {
+            $this->registerRequirePackage($package);
+        }
     }
 }

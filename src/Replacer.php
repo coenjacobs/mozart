@@ -3,7 +3,7 @@
 namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
+use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
@@ -11,7 +11,7 @@ use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\Filesystem;
-use CoenJacobs\Mozart\Composer\Config;
+use CoenJacobs\Mozart\Config\Mozart;
 use Symfony\Component\Finder\Finder;
 
 class Replacer
@@ -22,7 +22,7 @@ class Replacer
     /** @var string */
     protected $targetDir;
 
-    /** @var Config */
+    /** @var Mozart */
     protected $config;
 
     /** @var array */
@@ -31,7 +31,7 @@ class Replacer
     /** @var Filesystem */
     protected $filesystem;
 
-    public function __construct($workingDir, Config $config)
+    public function __construct(string $workingDir, Mozart $config)
     {
         $this->config = $config;
         $this->workingDir = $workingDir;
@@ -47,7 +47,7 @@ class Replacer
 
     public function replacePackage(Package $package): void
     {
-        foreach ($package->autoloaders as $autoloader) {
+        foreach ($package->getAutoloaders() as $autoloader) {
             $this->replacePackageByAutoloader($package, $autoloader);
         }
     }
@@ -58,7 +58,7 @@ class Replacer
      *
      * @return void
      */
-    public function replaceInFile($targetFile, Autoloader $autoloader): void
+    public function replaceInFile(string $targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
         try {
@@ -67,7 +67,7 @@ class Replacer
             return;
         }
 
-        if (empty($contents) || false === $contents) {
+        if (!$contents) {
             return;
         }
 
@@ -146,7 +146,7 @@ class Replacer
                     continue;
                 }
 
-                if (empty($contents) || false === $contents) {
+                if (!$contents) {
                     continue;
                 }
 
@@ -204,8 +204,8 @@ class Replacer
      */
     public function replaceParentPackage(Package $package, Package $parent): void
     {
-        foreach ($parent->autoloaders as $parentAutoloader) {
-            foreach ($package->autoloaders as $autoloader) {
+        foreach ($parent->getAutoloaders() as $parentAutoloader) {
+            foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
                     $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
                     $directory = $this->workingDir . $this->config->get('dep_directory') . $namespace

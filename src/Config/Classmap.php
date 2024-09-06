@@ -1,6 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart\Composer\Autoload;
+namespace CoenJacobs\Mozart\Config;
+
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 
 class Classmap implements Autoloader
 {

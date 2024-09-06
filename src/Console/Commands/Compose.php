@@ -2,10 +2,12 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
+use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Composer;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
-use CoenJacobs\Mozart\Composer\Config;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,13 +23,13 @@ class Compose extends Command
     /** @var string */
     private $workingDir;
 
-    /** @var Config */
+    /** @var Mozart */
     private $config;
 
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('compose');
         $this->setDescription('Composes all dependencies as a package inside a WordPress plugin.');
@@ -37,30 +39,29 @@ class Compose extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $workingDir = getcwd();
+
+        if (! $workingDir) {
+            throw new Exception('Could not determine working directory.');
+        }
+
         $this->workingDir = $workingDir;
 
         $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
-        if (!file_exists($composerFile)) {
-            $output->write('No composer.json found at current directory: ' . $workingDir);
+        try {
+            $composerConfig = Composer::loadFromFile($composerFile);
+        } catch (Exception $e) {
+            $output->write('Unable to read the composer.json file');
             return 1;
         }
 
-        $composer = json_decode(file_get_contents($composerFile));
-        // If the json was malformed.
-        if (!is_object($composer)) {
-            $output->write('Unable to parse composer.json read at: ' . $workingDir);
-            return 1;
-        }
+        // var_dump($composerConfig); die();
 
-        // if `extra` is missing or not an object or if it does not have a `mozart` key which is an object.
-        if (!isset($composer->extra) || !is_object($composer->extra)
-            || !isset($composer->extra->mozart) || !is_object($composer->extra->mozart)) {
+        if (! $composerConfig->isValidMozartConfig()) {
             $output->write('Mozart config not readable in composer.json at extra->mozart');
             return 1;
         }
-        $config = $composer->extra->mozart;
 
-        $this->config = new Config((array)$config);
+        $this->config = $composerConfig->getExtra()->getMozart();
         $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
 
         $require = array();
@@ -76,15 +77,11 @@ class Compose extends Command
         $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
         $packages = array_values($packagesToMoveByName);
 
-        foreach ($packages as $package) {
-            $package->dependencies = array_diff_key($package->dependencies, array_flip($excludedPackagesNames));
-        }
-
         $this->mover = new Mover($workingDir, $this->config);
         $this->replacer = new Replacer($workingDir, $this->config);
 
         $require = $this->config->get('packages');
-        $require = (is_array($require)) ? array_keys($require) : array();
+        $require = (is_array($require)) ? array_values($require) : array();
 
         $packages = $this->findPackages($require);
 
@@ -132,7 +129,7 @@ class Compose extends Command
      *
      * @return void
      */
-    public function movePackage($package): void
+    public function movePackage(Package $package): void
     {
         if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
@@ -148,7 +145,7 @@ class Compose extends Command
      *
      * @return void
      */
-    public function replacePackage($package): void
+    public function replacePackage(Package $package): void
     {
         if (! empty($package->dependencies)) {
             foreach ($package->dependencies as $dependency) {
@@ -185,19 +182,15 @@ class Compose extends Command
                 $autoloaders = $override_autoload->$package_slug;
             }
 
-            $config = Config::loadFromFile($packageDir . 'composer.json');
+            $package = new Package($packageDir, null, $autoloaders);
 
-            $package = new Package($packageDir, $config, $autoloaders);
-            $package->findAutoloaders();
-
-            $dependencies = [];
-            $require = $config->get('require');
-
-            if ($require !== false) {
-                $dependencies = array_keys((array)$require);
+            if ($this->config->isExcludedPackage($package)) {
+                continue;
             }
 
-            $package->dependencies = $this->findPackages($dependencies);
+            $dependencies = $package->getDependencies();
+
+            $package->registerRequirePackages($this->findPackages($dependencies));
             $packages[$package_slug] = $package;
         }
 
@@ -212,16 +205,21 @@ class Compose extends Command
      */
     private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
     {
-        if (empty($package->dependencies)) {
+        if ($this->config->isExcludedPackage($package)) {
+            return $dependencies;
+            ;
+        }
+
+        if (empty($package->getDependencies())) {
             return $dependencies;
         }
 
         /** @var Package $dependency */
-        foreach ($package->dependencies as $dependency) {
+        foreach ($package->getDependencies() as $dependency) {
             $dependencies[] = $dependency;
         }
 
-        foreach ($package->dependencies as $dependency) {
+        foreach ($package->getDependencies() as $dependency) {
             $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
         }
 
@@ -242,7 +240,7 @@ class Compose extends Command
                 $this->replacer->replaceParentPackage($dependency, $package);
             }
 
-            $this->replaceParentInTree($package->dependencies);
+            $this->replaceParentInTree($package->getDependencies());
         }
     }
 }

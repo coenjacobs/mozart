@@ -25,9 +25,12 @@ abstract class NamespaceAutoloader implements Autoloader
      */
     public function processConfig($autoloadConfig)
     {
-        foreach ($autoloadConfig as $key => $value) {
-            $this->namespace = $key;
-            array_push($this->paths, $value);
+        if (is_array($autoloadConfig)) {
+            foreach ($autoloadConfig as $path) {
+                array_push($this->paths, $path);
+            }
+        } else {
+            array_push($this->paths, $autoloadConfig);
         }
     }
 
