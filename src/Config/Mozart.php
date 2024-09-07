@@ -62,4 +62,13 @@ class Mozart
     {
         return in_array($package->getName(), $this->excluded_packages);
     }
+
+    /**
+     * Returns the configured dependency directory, with an appended directory
+     * separator, if one isn't at the end of the configured string yet.
+     */
+    public function getDepDirectory(): string
+    {
+        return rtrim($this->dep_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+    }
 }

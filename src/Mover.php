@@ -35,7 +35,7 @@ class Mover
     {
         $this->config = $config;
         $this->workingDir = $workingDir;
-        $this->targetDir = $this->config->get('dep_directory');
+        $this->targetDir = $this->config->getDepDirectory();
 
         $adapter = new LocalFilesystemAdapter(
             $this->workingDir
@@ -54,7 +54,7 @@ class Mover
      */
     public function deleteTargetDirs($packages): void
     {
-        $this->filesystem->createDirectory($this->config->get('dep_directory'));
+        $this->filesystem->createDirectory($this->config->getDepDirectory());
         $this->filesystem->createDirectory($this->config->get('classmap_directory'));
 
         foreach ($packages as $package) {
@@ -75,7 +75,7 @@ class Mover
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
-                    $outputDir = $this->config->get('dep_directory') . $packageAutoloader->namespace;
+                    $outputDir = $this->config->getDepDirectory() . $packageAutoloader->namespace;
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
                     $this->filesystem->deleteDirectory($outputDir);
                     break;
@@ -94,8 +94,8 @@ class Mover
 
     public function deleteEmptyDirs(): void
     {
-        if (count($this->filesystem->listContents($this->config->get('dep_directory'), true)->toArray()) === 0) {
-            $this->filesystem->deleteDirectory($this->config->get('dep_directory'));
+        if (count($this->filesystem->listContents($this->config->getDepDirectory(), true)->toArray()) === 0) {
+            $this->filesystem->deleteDirectory($this->config->getDepDirectory());
         }
 
         if (count($this->filesystem->listContents($this->config->get('classmap_directory'), true)->toArray()) === 0) {
@@ -184,7 +184,7 @@ class Mover
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
-            $replaceWith = $this->config->get('dep_directory') . $namespacePath;
+            $replaceWith = $this->config->getDepDirectory() . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
             $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->get('name')

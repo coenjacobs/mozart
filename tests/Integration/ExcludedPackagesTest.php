@@ -24,7 +24,7 @@ class ExcludedPackagesTest extends TestCase {
      * @test
      */
     #[Test]
-    public function it_excludes_handling_specified_packages(): void
+    public function it_excludes_moving_specified_packages(): void
     {
         copy(__DIR__ . '/excluded-packages.json', $this->testsWorkingDir . '/composer.json');
 
@@ -40,7 +40,10 @@ class ExcludedPackagesTest extends TestCase {
         $result = $mozartCompose->run($inputInterfaceMock, $outputInterfaceMock);
         $this->assertEquals(0, $result);
         $this->assertDirectoryDoesNotExist($this->testsWorkingDir . '/vendor/pimple/pimple');
+        $this->assertDirectoryExists($this->testsWorkingDir . '/src/dependencies/Pimple');
+
         $this->assertDirectoryExists($this->testsWorkingDir . '/vendor/psr/container');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . '/src/dependencies/Psr');
     }
 
     public function tearDown(): void

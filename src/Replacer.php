@@ -35,7 +35,7 @@ class Replacer
     {
         $this->config = $config;
         $this->workingDir = $workingDir;
-        $this->targetDir = $this->config->get('dep_directory');
+        $this->targetDir = $this->config->getDepDirectory();
 
         $adapter = new LocalFilesystemAdapter(
             $this->workingDir
@@ -208,7 +208,7 @@ class Replacer
             foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
                     $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                    $directory = $this->workingDir . $this->config->get('dep_directory') . $namespace
+                    $directory = $this->workingDir . $this->config->getDepDirectory() . $namespace
                                  . DIRECTORY_SEPARATOR;
 
                     if ($autoloader instanceof NamespaceAutoloader) {

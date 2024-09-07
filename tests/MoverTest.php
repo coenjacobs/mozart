@@ -72,7 +72,7 @@ class MoverTest extends TestCase
         $mover->deleteTargetDirs($packages);
 
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
-                                      . $this->config->get('dep_directory')));
+                                      . $this->config->getDepDirectory()));
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
                                       . $this->config->get('classmap_directory')));
     }
@@ -87,14 +87,14 @@ class MoverTest extends TestCase
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
 
-        if (!file_exists($this->testsWorkingDir . $this->config->get('dep_directory'))) {
-            mkdir($this->testsWorkingDir . $this->config->get('dep_directory'));
+        if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
+            mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
         }
         if (!file_exists($this->testsWorkingDir . $this->config->get('classmap_directory'))) {
             mkdir($this->testsWorkingDir . $this->config->get('classmap_directory'));
         }
 
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->get('dep_directory'));
+        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getDepDirectory());
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->get('classmap_directory'));
 
         $packages = array();
@@ -119,10 +119,10 @@ class MoverTest extends TestCase
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
 
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('dep_directory'));
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory());
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('classmap_directory'));
 
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('dep_directory') . 'Pimple');
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory() . 'Pimple');
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('classmap_directory') . 'ezyang');
 
         $packages = array();
@@ -145,8 +145,8 @@ class MoverTest extends TestCase
 
         $mover->deleteTargetDirs($packages);
 
-        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->get('dep_directory') . 'Pimple');
-        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->get('dep_directory') . 'ezyang');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'Pimple');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'ezyang');
     }
 
     /**
