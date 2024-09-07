@@ -94,7 +94,7 @@ class Compose extends Command
         $this->movePackages($packages);
         $this->replacePackages($packages);
         $this->replaceParentInTree($packages);
-        $this->replacer->replaceParentClassesInDirectory($this->config->get('classmap_directory'));
+        $this->replacer->replaceParentClassesInDirectory($this->config->getClassmapDirectory());
 
         return 0;
     }

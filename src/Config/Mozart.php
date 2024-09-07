@@ -71,4 +71,9 @@ class Mozart
     {
         return rtrim($this->dep_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
     }
+
+    public function getClassmapDirectory(): string
+    {
+        return rtrim($this->classmap_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+    }
 }

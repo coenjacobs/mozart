@@ -55,7 +55,7 @@ class Mover
     public function deleteTargetDirs($packages): void
     {
         $this->filesystem->createDirectory($this->config->getDepDirectory());
-        $this->filesystem->createDirectory($this->config->get('classmap_directory'));
+        $this->filesystem->createDirectory($this->config->getClassmapDirectory());
 
         foreach ($packages as $package) {
             $this->deleteDepTargetDirs($package);
@@ -80,7 +80,7 @@ class Mover
                     $this->filesystem->deleteDirectory($outputDir);
                     break;
                 case Classmap::class:
-                    $outputDir = $this->config->get('classmap_directory') . $package->config->get('name');
+                    $outputDir = $this->config->getClassmapDirectory() . $package->config->get('name');
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
                     $this->filesystem->deleteDirectory($outputDir);
                     break;
@@ -98,8 +98,8 @@ class Mover
             $this->filesystem->deleteDirectory($this->config->getDepDirectory());
         }
 
-        if (count($this->filesystem->listContents($this->config->get('classmap_directory'), true)->toArray()) === 0) {
-            $this->filesystem->deleteDirectory($this->config->get('classmap_directory'));
+        if (count($this->filesystem->listContents($this->config->getClassmapDirectory(), true)->toArray()) === 0) {
+            $this->filesystem->deleteDirectory($this->config->getClassmapDirectory());
         }
     }
 
@@ -193,7 +193,7 @@ class Mover
             $targetFile = str_replace($packageVendorPath, '', $targetFile);
         } else {
             $namespacePath = $package->config->get('name');
-            $replaceWith = $this->config->get('classmap_directory') . DIRECTORY_SEPARATOR . $namespacePath;
+            $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
             $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->get('name')

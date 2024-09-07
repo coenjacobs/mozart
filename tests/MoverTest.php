@@ -74,7 +74,7 @@ class MoverTest extends TestCase
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
                                       . $this->config->getDepDirectory()));
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
-                                      . $this->config->get('classmap_directory')));
+                                      . $this->config->getClassmapDirectory()));
     }
 
     /**
@@ -90,12 +90,12 @@ class MoverTest extends TestCase
         if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
             mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
         }
-        if (!file_exists($this->testsWorkingDir . $this->config->get('classmap_directory'))) {
-            mkdir($this->testsWorkingDir . $this->config->get('classmap_directory'));
+        if (!file_exists($this->testsWorkingDir . $this->config->getClassmapDirectory())) {
+            mkdir($this->testsWorkingDir . $this->config->getClassmapDirectory());
         }
 
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getDepDirectory());
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->get('classmap_directory'));
+        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getClassmapDirectory());
 
         $packages = array();
 
@@ -120,10 +120,10 @@ class MoverTest extends TestCase
         $mover = new Mover($this->testsWorkingDir, $this->config);
 
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory());
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('classmap_directory'));
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory());
 
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory() . 'Pimple');
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->get('classmap_directory') . 'ezyang');
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory() . 'ezyang');
 
         $packages = array();
         foreach ($this->config->get('packages') as $packageString) {
