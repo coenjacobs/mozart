@@ -39,18 +39,20 @@
         "symfony/finder": "^5.4"
     },
     "scripts": {
-        "lint": [
+        "test": [
+            "@test:lint",
+            "@test:phpunit",
+            "@test:phpstan"
+        ],
+        "test:lint": [
             "composer validate",
             "phpcs"
         ],
-        "analysis": [
-            "@analysis:phpstan"
+        "test:phpunit": [
+            "./vendor/bin/phpunit"
         ],
-        "analysis:phpstan": [
+        "test:phpstan": [
             "./vendor/bin/phpstan --memory-limit=2G"
-        ],
-        "test": [
-            "phpunit"
         ]
     }
 }
