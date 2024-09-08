@@ -29,4 +29,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run analysis
-        run: docker compose run --rm builder composer test:analysis
+        run: docker compose run --rm builder composer test:phpstan
