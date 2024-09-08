@@ -9,60 +9,24 @@ on:
       - master
 
 jobs:
-  tests:
+  linting:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php: ['8.0', '8.1', '8.2', '8.3']
-    name: PHP ${{ matrix.php }} tests
+    name: Linting
     steps:
       - uses: actions/checkout@v3
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-      - name: Debugging
-        run: |
-          php --version
-          php -m
-          composer --version
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-suggest --no-progress
-      - name: Run tests
-        run: vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer
+      - name: Run linting
+        run: docker compose run --rm builder composer test:lint
+  testing:
+    runs-on: ubuntu-latest
+    name: Testing
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run testing
+        run: docker compose run --rm builder composer test:phpunit
   analysis:
     runs-on: ubuntu-latest
-    name: Analysis of code
+    name: Analysis
     steps:
       - uses: actions/checkout@v3
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-      - name: Debugging
-        run: |
-          php --version
-          php -m
-          composer --version
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-suggest --no-progress
-      - name: Run validate
-        run: composer run analysis
-  lint:
-    runs-on: ubuntu-latest
-    name: Lint all project files
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-      - name: Debugging
-        run: |
-          php --version
-          php -m
-          composer --version
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-suggest --no-progress
-      - name: Run validate
-        run: composer run lint
+      - name: Run analysis
+        run: docker compose run --rm builder composer test:analysis
