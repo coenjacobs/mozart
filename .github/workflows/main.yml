@@ -9,63 +9,24 @@ on:
       - master
 
 jobs:
-  install_dependencies:
-    runs-on: ubuntu-latest
-    name: Install dependencies
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: docker compose run --rm builder composer install
-      - name: Cache installed dependencies
-        id: cache-composer-dependencies
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ./vendor/
-            ./composer.lock
-          key: ${{ runner.os }}-build-composer-dependencies-${{ github.sha }}
   linting:
-    needs: install_dependencies
     runs-on: ubuntu-latest
     name: Linting
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache/restore@v4
-        name: Restore cached dependencies
-        with:
-          path: |
-            ./vendor/
-            ./composer.lock
-          key: ${{ runner.os }}-build-composer-dependencies-${{ github.sha }}
       - name: Run linting
-        run: docker compose run --rm builder composer test:lint
+        run: docker compose run --rm actions-tester composer test:lint
   testing:
-    needs: install_dependencies
     runs-on: ubuntu-latest
     name: Testing
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache/restore@v4
-        name: Restore cached dependencies
-        with:
-          path: |
-            ./vendor/
-            ./composer.lock
-          key: ${{ runner.os }}-build-composer-dependencies-${{ github.sha }}
       - name: Run testing
-        run: docker compose run --rm builder composer test:phpunit
+        run: docker compose run --rm actions-tester composer test:phpunit
   analysis:
-    needs: install_dependencies
     runs-on: ubuntu-latest
     name: Analysis
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache/restore@v4
-        name: Restore cached dependencies
-        with:
-          path: |
-            ./vendor/
-            ./composer.lock
-          key: ${{ runner.os }}-build-composer-dependencies-${{ github.sha }}
       - name: Run analysis
-        run: docker compose run --rm builder composer test:phpstan
+        run: docker compose run --rm actions-tester composer test:phpstan
