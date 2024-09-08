@@ -4,7 +4,7 @@ FROM php:8.3.9-cli-alpine AS base
 FROM base as builder
 RUN apk update && apk add git
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-COPY ./composer.json /mozart/
+COPY ./ /mozart/
 WORKDIR /mozart/
 RUN composer install
 
