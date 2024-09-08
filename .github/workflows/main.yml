@@ -9,7 +9,21 @@ on:
       - master
 
 jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v4
+        with:
+          context: "{{defaultContext}}"
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   linting:
+    needs: docker_build
     runs-on: ubuntu-latest
     name: Linting
     steps:
@@ -17,6 +31,7 @@ jobs:
       - name: Run linting
         run: docker compose run --rm actions-tester composer test:lint
   testing:
+    needs: docker_build
     runs-on: ubuntu-latest
     name: Testing
     steps:
@@ -24,6 +39,7 @@ jobs:
       - name: Run testing
         run: docker compose run --rm actions-tester composer test:phpunit
   analysis:
+    needs: docker_build
     runs-on: ubuntu-latest
     name: Analysis
     steps:
