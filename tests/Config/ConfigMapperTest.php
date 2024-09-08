@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Config\Composer;
+use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\PackageFactory;
 use PHPUnit\Framework\TestCase;
 
 class ConfigMapperTest extends TestCase
@@ -14,9 +15,9 @@ class ConfigMapperTest extends TestCase
     #[Test]
     public function it_creates_a_valid_config_object_based_on_composer_file()
     {
-        $config = Composer::loadFromFile(__DIR__ . '/config-mapper-test.json');
-        $this->assertInstanceOf(Composer::class, $config);
-        $this->assertInstanceOf(Mozart::class, $config->getExtra()->getMozart());
-        $this->assertCount(4, $config->autoload->getAutoloaders());
+        $package = PackageFactory::createPackage(__DIR__ . '/config-mapper-test.json');
+        $this->assertInstanceOf(Package::class, $package);
+        $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
+        $this->assertCount(4, $package->autoload->getAutoloaders());
     }
 }

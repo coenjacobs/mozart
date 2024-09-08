@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Config\Mozart;
-use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\PackageFactory;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
 use PHPUnit\Framework\TestCase;
@@ -117,8 +117,6 @@ class MoverTest extends TestCase
     #[Test]
     public function it_deletes_subdirs_for_packages_about_to_be_moved(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
-
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory());
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory());
 
@@ -139,10 +137,11 @@ class MoverTest extends TestCase
             if ( ! empty( $overrideAutoload ) ) {
                 $overrideAutoload = $overrideAutoload->getByKey( $packageString );
             }
-            $parsedPackage = new Package($testDummyComposerDir, null, $overrideAutoload );
+            $parsedPackage = PackageFactory::createPackage($testDummyComposerPath, $overrideAutoload);
             $packages[] = $parsedPackage;
         }
 
+        $mover = new Mover($this->testsWorkingDir, $this->config);
         $mover->deleteTargetDirs($packages);
 
         $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'Pimple');

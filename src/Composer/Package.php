@@ -4,19 +4,28 @@ namespace CoenJacobs\Mozart\Composer;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Autoload;
-use CoenJacobs\Mozart\Config\Composer;
+use CoenJacobs\Mozart\Config\ConfigAccessor;
+use CoenJacobs\Mozart\Config\Extra;
+use CoenJacobs\Mozart\Config\ReadsConfig;
 use stdClass;
 
 class Package
 {
+    use ReadsConfig, ConfigAccessor;
+
     /** @var string */
     public $path = '';
 
-    /** @var Composer */
-    public $config;
-
     /** @var Package[] */
     public $requirePackages = [];
+
+    public string $name;
+
+    /** @var string[] */
+    public array $require;
+
+    public ?Autoload $autoload = null;
+    public ?Extra $extra = null;
 
     /**
      * Create a PHP object to represent a composer package.
@@ -26,26 +35,45 @@ class Package
      * @param stdClass $overrideAutoload Optional configuration to replace the package's own autoload definition with
      *                                    another which Mozart can use.
      */
-    public function __construct($path, Composer $config = null, $overrideAutoload = null)
+    public function __construct($path, $overrideAutoload = null)
     {
         $this->path = $path;
-
-        if (empty($config)) {
-            $config = Composer::loadFromFile($this->path . '/composer.json');
-        }
-
-        $this->config = $config;
 
         if (isset($overrideAutoload)) {
             $autoload = new Autoload();
             $autoload->setupAutoloaders($overrideAutoload);
-            $this->config->set('autoload', $autoload);
+            $this->set('autoload', $autoload);
         }
+    }
+
+    public function setAutoload(stdClass $data): void
+    {
+        $autoload = new Autoload();
+        $autoload->setupAutoloaders($data);
+        $this->autoload = $autoload;
+    }
+
+    public function getExtra(): ?Extra
+    {
+        return $this->extra;
+    }
+
+    public function isValidMozartConfig(): bool
+    {
+        if (empty($this->getExtra())) {
+            return false;
+        }
+
+        if (empty($this->getExtra()->getMozart())) {
+            return false;
+        }
+
+        return $this->getExtra()->getMozart()->isValidMozartConfig();
     }
 
     public function getName(): string
     {
-        return $this->config->name;
+        return $this->name;
     }
 
     /**
@@ -53,15 +81,15 @@ class Package
      */
     public function getAutoloaders(): array
     {
-        if (empty($this->config->autoload)) {
+        if (empty($this->autoload)) {
             return array();
         }
 
-        return $this->config->autoload->getAutoloaders();
+        return $this->autoload->getAutoloaders();
     }
 
     /**
-     * @return array<Package>
+     * @return Package[]
      */
     public function getDependencies(): array
     {
@@ -74,7 +102,7 @@ class Package
     }
 
     /**
-     * @param array<Package> $packages
+     * @param Package[] $packages
      */
     public function registerRequirePackages(array $packages): void
     {

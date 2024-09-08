@@ -80,7 +80,7 @@ class Mover
                     $this->filesystem->deleteDirectory($outputDir);
                     break;
                 case Classmap::class:
-                    $outputDir = $this->config->getClassmapDirectory() . $package->config->get('name');
+                    $outputDir = $this->config->getClassmapDirectory() . $package->get('name');
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
                     $this->filesystem->deleteDirectory($outputDir);
                     break;
@@ -108,7 +108,7 @@ class Mover
      */
     public function movePackage(Package $package)
     {
-        if (in_array($package->config->get('name'), $this->movedPackages)) {
+        if (in_array($package->get('name'), $this->movedPackages)) {
             return;
         }
 
@@ -118,7 +118,7 @@ class Mover
 
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-                                   . $package->config->get('name') . DIRECTORY_SEPARATOR . $path;
+                                   . $package->get('name') . DIRECTORY_SEPARATOR . $path;
 
                     $source_path = str_replace('/', DIRECTORY_SEPARATOR, $source_path);
 
@@ -135,7 +135,7 @@ class Mover
 
                 foreach ($autoloader->files as $file) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->config->get('name');
+                                   . DIRECTORY_SEPARATOR . $package->get('name');
                     $finder->files()->name($file)->in($source_path);
 
                     foreach ($finder as $foundFile) {
@@ -148,7 +148,7 @@ class Mover
 
                 foreach ($autoloader->paths as $path) {
                     $source_path = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->config->get('name') . DIRECTORY_SEPARATOR . $path;
+                                   . DIRECTORY_SEPARATOR . $package->get('name') . DIRECTORY_SEPARATOR . $path;
 
                     $finder->files()->in($source_path);
 
@@ -163,8 +163,8 @@ class Mover
                 }
             }
 
-            if (!in_array($package->config->get('name'), $this->movedPackages)) {
-                $this->movedPackages[] = $package->config->get('name');
+            if (!in_array($package->get('name'), $this->movedPackages)) {
+                $this->movedPackages[] = $package->get('name');
             }
         }
 
@@ -187,16 +187,16 @@ class Mover
             $replaceWith = $this->config->getDepDirectory() . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->get('name')
+            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->get('name')
                                  . DIRECTORY_SEPARATOR . $path;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($packageVendorPath, '', $targetFile);
         } else {
-            $namespacePath = $package->config->get('name');
+            $namespacePath = $package->get('name');
             $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
             $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
 
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->config->get('name')
+            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->get('name')
                                  . DIRECTORY_SEPARATOR;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);

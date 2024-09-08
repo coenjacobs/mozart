@@ -5,6 +5,7 @@ namespace CoenJacobs\Mozart\Console\Commands;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Composer;
 use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\PackageFactory;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
 use Exception;
@@ -48,32 +49,32 @@ class Compose extends Command
 
         $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         try {
-            $composerConfig = Composer::loadFromFile($composerFile);
+            $package = PackageFactory::createPackage($composerFile);
         } catch (Exception $e) {
             $output->write('Unable to read the composer.json file');
             return 1;
         }
 
-        if (! $composerConfig->isValidMozartConfig() || empty($composerConfig->getExtra())) {
+        if (! $package->isValidMozartConfig() || empty($package->getExtra())) {
             $output->write('Mozart config not readable in composer.json at extra->mozart');
             return 1;
         }
 
-        $mozartConfig = $composerConfig->getExtra()->getMozart();
+        $config = $package->getExtra()->getMozart();
 
-        if (empty($mozartConfig)) {
+        if (empty($config)) {
             $output->write('Mozart config not readable in composer.json at extra->mozart');
             return 1;
         }
 
-        $this->config = $mozartConfig;
+        $this->config = $config;
         $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
 
         $require = array();
         if (is_array($this->config->get('packages'))) {
             $require = $this->config->get('packages');
         } else {
-            $require = $composerConfig->require;
+            $require = $package->require;
         }
 
         $packagesByName = $this->findPackages($require);
@@ -100,9 +101,7 @@ class Compose extends Command
     }
 
     /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
+     * @param Package[] $packages
      *
      * @return void
      */
@@ -116,9 +115,7 @@ class Compose extends Command
     }
 
     /**
-     * @param $workingDir
-     * @param $config
-     * @param array $packages
+     * @param Package[] $packages
      *
      * @return void
      */
@@ -187,7 +184,7 @@ class Compose extends Command
                 $autoloaders = $override_autoload->$package_slug;
             }
 
-            $package = new Package($packageDir, null, $autoloaders);
+            $package = PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders);
 
             if ($this->config->isExcludedPackage($package)) {
                 continue;
@@ -204,8 +201,8 @@ class Compose extends Command
 
     /**
      * Get an array containing all the dependencies and dependencies
-     * @param Package $package
-     * @param array   $dependencies
+     * @param Package   $package
+     * @param Package[] $dependencies
      * @return array
      */
     private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
@@ -219,7 +216,6 @@ class Compose extends Command
             return $dependencies;
         }
 
-        /** @var Package $dependency */
         foreach ($package->getDependencies() as $dependency) {
             $dependencies[] = $dependency;
         }
@@ -232,15 +228,13 @@ class Compose extends Command
     }
 
     /**
-     * @param array $packages
+     * @param Package[] $packages
      */
     private function replaceParentInTree(array $packages): void
     {
-        /** @var Package $package */
         foreach ($packages as $package) {
             $dependencies = $this->getAllDependenciesOfPackage($package);
 
-            /** @var Package $dependency */
             foreach ($dependencies as $dependency) {
                 $this->replacer->replaceParentPackage($dependency, $package);
             }
