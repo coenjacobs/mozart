@@ -14,6 +14,8 @@ jobs:
     name: Linting
     steps:
       - uses: actions/checkout@v3
+      - name: Setup dependencies
+        run: docker compose run --rm builder composer install
       - name: Run linting
         run: docker compose run --rm builder composer test:lint
   testing:
@@ -21,6 +23,8 @@ jobs:
     name: Testing
     steps:
       - uses: actions/checkout@v3
+      - name: Setup dependencies
+        run: docker compose run --rm builder composer install
       - name: Run testing
         run: docker compose run --rm builder composer test:phpunit
   analysis:
@@ -28,5 +32,7 @@ jobs:
     name: Analysis
     steps:
       - uses: actions/checkout@v3
+      - name: Setup dependencies
+        run: docker compose run --rm builder composer install
       - name: Run analysis
         run: docker compose run --rm builder composer test:phpstan
