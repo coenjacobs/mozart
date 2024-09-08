@@ -46,7 +46,7 @@
         ],
         "test:lint": [
             "composer validate",
-            "phpcs"
+            "./vendor/bin/phpcs"
         ],
         "test:phpunit": [
             "./vendor/bin/phpunit"
