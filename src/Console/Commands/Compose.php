@@ -67,7 +67,11 @@ class Compose extends Command
         }
 
         $this->config = $config;
-        $this->config->set('dep_namespace', preg_replace("/\\\{2,}$/", "\\", $this->config->get('dep_namespace')."\\"));
+        $this->config->set('dep_namespace', preg_replace(
+            "/\\\{2,}$/",
+            "\\",
+            $this->config->getDependencyNamespace()."\\"
+        ));
 
         $require = array();
         if (is_array($this->config->get('packages'))) {
@@ -77,8 +81,7 @@ class Compose extends Command
         }
 
         $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = is_array($this->config->get('excluded_packages')) ?
-            $this->config->get('excluded_packages') : [];
+        $excludedPackagesNames = $this->config->getExcludedPackages();
         $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
         $packages = array_values($packagesToMoveByName);
 
@@ -178,7 +181,7 @@ class Compose extends Command
             }
 
             $autoloaders = null;
-            $override_autoload = $this->config->get('override_autoload');
+            $override_autoload = $this->config->getOverrideAutoload();
             if ($override_autoload !== false && isset($override_autoload->$package_slug)) {
                 $autoloaders = $override_autoload->$package_slug;
             }

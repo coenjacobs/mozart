@@ -73,10 +73,10 @@ class Replacer
 
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->get('dep_namespace');
+            $replacer->dep_namespace = $this->config->getDependencyNamespace();
         } else {
             $replacer = new ClassmapReplacer();
-            $replacer->classmap_prefix = $this->config->get('classmap_prefix');
+            $replacer->classmap_prefix = $this->config->getClassmapPrefix();
         }
 
         $replacer->setAutoloader($autoloader);

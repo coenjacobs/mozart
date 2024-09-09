@@ -60,7 +60,7 @@ class Mozart
 
     public function isExcludedPackage(Package $package): bool
     {
-        return in_array($package->getName(), $this->excluded_packages);
+        return in_array($package->getName(), $this->getExcludedPackages());
     }
 
     /**
@@ -75,5 +75,33 @@ class Mozart
     public function getClassmapDirectory(): string
     {
         return rtrim($this->classmap_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+    }
+
+    public function getDeleteVendorDirectories(): bool
+    {
+        return $this->delete_vendor_directories;
+    }
+
+    public function getDependencyNamespace(): string
+    {
+        return $this->dep_namespace;
+    }
+
+    public function getClassmapPrefix(): string
+    {
+        return $this->classmap_prefix;
+    }
+
+    public function getOverrideAutoload(): OverrideAutoload
+    {
+        return $this->override_autoload;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getExcludedPackages(): array
+    {
+        return $this->excluded_packages;
     }
 }

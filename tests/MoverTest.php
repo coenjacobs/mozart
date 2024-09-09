@@ -133,7 +133,7 @@ class MoverTest extends TestCase
 
             file_put_contents($testDummyComposerPath, $testDummyComposerContents);
 
-            $overrideAutoload = $this->config->get('override_autoload');
+            $overrideAutoload = $this->config->getOverrideAutoload();
             if ( ! empty( $overrideAutoload ) ) {
                 $overrideAutoload = $overrideAutoload->getByKey( $packageString );
             }

@@ -168,7 +168,7 @@ class Mover
             }
         }
 
-        if ($this->config->get('delete_vendor_directories')) {
+        if ($this->config->getDeleteVendorDirectories()) {
             $this->deletePackageVendorDirectories();
         }
     }
