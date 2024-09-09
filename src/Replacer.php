@@ -104,7 +104,7 @@ class Replacer
             $this->replaceInDirectory($autoloader, $source_path);
         } elseif ($autoloader instanceof Classmap) {
             $finder = new Finder();
-            $source_path = $this->workingDir . $this->config->getClassmapDirectory() . $package->get('name');
+            $source_path = $this->workingDir . $this->config->getClassmapDirectory() . $package->getName();
             $finder->files()->in($source_path);
 
             foreach ($finder as $foundFile) {
@@ -218,7 +218,7 @@ class Replacer
                     }
                 } else {
                     $directory = $this->workingDir .
-                        $this->config->getClassmapDirectory() . $parent->get('name');
+                        $this->config->getClassmapDirectory() . $parent->getName();
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replaceInDirectory($autoloader, $directory);
