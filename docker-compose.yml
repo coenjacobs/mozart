@@ -8,3 +8,14 @@ services:
     volumes:
       - .:/mozart/
     command: /bin/sh -c "while sleep 1000; do :; done"
+  actions-tester:
+    # This service is technically the same as the builder service, only this one
+    # has no volume mounted to the working directory. This causes the files to
+    # be used (for example installed dependencies) that are created _inside_ the
+    # container to be used, rather than having to set them up in the working
+    # directory, during GitHub Actions for example.
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: /bin/sh -c "while sleep 1000; do :; done"

@@ -21,7 +21,8 @@
     },
     "config": {
         "allow-plugins": {
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "platform": {
             "php": "8.0"
@@ -36,21 +37,25 @@
         "phpstan/extension-installer": "^1.4",
         "league/flysystem": "^2.5",
         "symfony/console": "^5.4",
-        "symfony/finder": "^5.4"
+        "symfony/finder": "^5.4",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/php-compatibility": "dev-develop"
     },
     "scripts": {
-        "lint": [
-            "composer validate",
-            "phpcs"
-        ],
-        "analysis": [
-            "@analysis:phpstan"
-        ],
-        "analysis:phpstan": [
-            "./vendor/bin/phpstan --memory-limit=2G"
-        ],
         "test": [
-            "phpunit"
+            "@test:lint",
+            "@test:phpunit",
+            "@test:phpstan"
+        ],
+        "test:lint": [
+            "composer validate",
+            "./vendor/bin/phpcs  --standard=phpcs.xml.dist"
+        ],
+        "test:phpunit": [
+            "./vendor/bin/phpunit -c phpunit.xml.dist"
+        ],
+        "test:phpstan": [
+            "./vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=2G"
         ]
     }
 }
