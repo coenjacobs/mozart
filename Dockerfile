@@ -10,7 +10,7 @@ RUN apk add --no-cache $PHPIZE_DEPS \
 COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 COPY ./docker/php/error_reporting.ini /usr/local/etc/php/conf.d/error_reporting.ini
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-COPY ./composer.json /mozart/
+COPY ./ /mozart/
 WORKDIR /mozart/
 RUN composer install
 
