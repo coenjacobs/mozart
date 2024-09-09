@@ -43,7 +43,13 @@ trait ReadsConfig
     {
         $mapper = new JsonMapper();
         $mapper->bEnforceMapType = false;
-        return $mapper->map($config, self::class);
+        $object = $mapper->map($config, self::class);
+
+        if (! $object instanceof self) {
+            throw new Exception('Could not read config from provided array.');
+        }
+
+        return $object;
     }
 
     public static function loadFromString(string $config): self
@@ -52,6 +58,12 @@ trait ReadsConfig
 
         $mapper = new JsonMapper();
         $mapper->bEnforceMapType = false;
-        return $mapper->map($config, self::class);
+        $object = $mapper->map($config, self::class);
+
+        if (! $object instanceof self) {
+            throw new Exception('Could not read config from provided array.');
+        }
+
+        return $object;
     }
 }
