@@ -73,23 +73,13 @@ class Compose extends Command
             $this->config->getDependencyNamespace()."\\"
         ));
 
-        $require = array();
-        if (is_array($this->config->get('packages'))) {
-            $require = $this->config->get('packages');
-        } else {
-            $require = $package->require;
+        $require = $this->config->getPackages();
+        if (empty($require)) {
+            $require = $package->getPackages();
         }
-
-        $packagesByName = $this->findPackages($require);
-        $excludedPackagesNames = $this->config->getExcludedPackages();
-        $packagesToMoveByName = array_diff_key($packagesByName, array_flip($excludedPackagesNames));
-        $packages = array_values($packagesToMoveByName);
 
         $this->mover = new Mover($workingDir, $this->config);
         $this->replacer = new Replacer($workingDir, $this->config);
-
-        $require = $this->config->get('packages');
-        $require = (is_array($require)) ? array_values($require) : array();
 
         $packages = $this->findPackages($require);
 
@@ -135,6 +125,10 @@ class Compose extends Command
      */
     public function movePackage(Package $package): void
     {
+        if ($this->config->isExcludedPackage($package)) {
+            return;
+        }
+
         if (! empty($package->dependencies)) {
             foreach ($package->getDependencies() as $dependency) {
                 $this->movePackage($dependency);
@@ -151,6 +145,10 @@ class Compose extends Command
      */
     public function replacePackage(Package $package): void
     {
+        if ($this->config->isExcludedPackage($package)) {
+            return;
+        }
+
         if (! empty($package->dependencies)) {
             foreach ($package->getDependencies() as $dependency) {
                 $this->replacePackage($dependency);

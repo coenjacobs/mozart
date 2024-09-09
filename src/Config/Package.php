@@ -89,6 +89,14 @@ class Package
     }
 
     /**
+     * @return string[]
+     */
+    public function getPackages(): array
+    {
+        return $this->require;
+    }
+
+    /**
      * @return Package[]
      */
     public function getDependencies(): array

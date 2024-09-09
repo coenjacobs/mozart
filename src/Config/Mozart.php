@@ -25,6 +25,14 @@ class Mozart
     public bool $delete_vendor_directories;
 
     /**
+     * @return string[]
+     */
+    public function getPackages(): array
+    {
+        return $this->packages;
+    }
+
+    /**
      * @param string[] $packages
      */
     public function setPackages(array $packages): void

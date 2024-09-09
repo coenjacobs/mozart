@@ -124,7 +124,7 @@ class MoverTest extends TestCase
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory() . 'ezyang');
 
         $packages = array();
-        foreach ($this->config->get('packages') as $packageString) {
+        foreach ($this->config->getPackages() as $packageString) {
             $testDummyComposerDir = $this->testsWorkingDir  . DIRECTORY_SEPARATOR . 'vendor'
                                     . DIRECTORY_SEPARATOR . $packageString;
             @mkdir($testDummyComposerDir, 0777, true);
