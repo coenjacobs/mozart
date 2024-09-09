@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart\Config;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
+use Exception;
 
 class Classmap implements Autoloader
 {
@@ -27,10 +28,10 @@ class Classmap implements Autoloader
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function getSearchNamespace(): string
     {
-        throw new \Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
+        throw new Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
     }
 }

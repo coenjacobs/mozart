@@ -49,8 +49,6 @@ class Mover
      * Create the required `dep_directory` and `classmap_directory` and delete targetDirs of packages about to be moved.
      *
      * @param Package[] $packages The packages that, in the next step, will be moved.
-     *
-     * @return void
      */
     public function deleteTargetDirs($packages): void
     {
@@ -103,10 +101,7 @@ class Mover
         }
     }
 
-    /**
-     * @return void
-     */
-    public function movePackage(Package $package)
+    public function movePackage(Package $package): void
     {
         if (in_array($package->getName(), $this->movedPackages)) {
             return;
@@ -173,14 +168,7 @@ class Mover
         }
     }
 
-    /**
-     * @param Package $package
-     * @param Autoloader $autoloader
-     * @param SplFileInfo $file
-     * @param string $path
-     * @return string
-     */
-    public function moveFile(Package $package, $autoloader, $file, $path = '')
+    public function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): string
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $namespacePath = $autoloader->getNamespacePath();
@@ -214,8 +202,6 @@ class Mover
      * Deletes all the packages that are moved from the /vendor/ directory to
      * prevent packages that are prefixed/namespaced from being used or
      * influencing the output of the code. They just need to be gone.
-     *
-     * @return void
      */
     protected function deletePackageVendorDirectories(): void
     {

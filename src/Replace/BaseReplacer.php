@@ -11,9 +11,8 @@ abstract class BaseReplacer implements Replacer
 
     /**
      * @param Autoloader $autoloader
-     * @return void
      */
-    public function setAutoloader(Autoloader $autoloader)
+    public function setAutoloader(Autoloader $autoloader): void
     {
         $this->autoloader = $autoloader;
     }

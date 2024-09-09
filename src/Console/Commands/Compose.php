@@ -26,9 +26,6 @@ class Compose extends Command
     /** @var Mozart */
     private $config;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this->setName('compose');
@@ -89,8 +86,6 @@ class Compose extends Command
 
     /**
      * @param Package[] $packages
-     *
-     * @return void
      */
     protected function movePackages($packages): void
     {
@@ -103,8 +98,6 @@ class Compose extends Command
 
     /**
      * @param Package[] $packages
-     *
-     * @return void
      */
     protected function replacePackages($packages): void
     {
@@ -115,8 +108,6 @@ class Compose extends Command
 
     /**
      * Move all the packages over, one by one, starting on the deepest level of dependencies.
-     *
-     * @return void
      */
     public function movePackage(Package $package): void
     {
@@ -135,8 +126,6 @@ class Compose extends Command
 
     /**
      * Replace contents of all the packages, one by one, starting on the deepest level of dependencies.
-     *
-     * @return void
      */
     public function replacePackage(Package $package): void
     {
@@ -198,13 +187,12 @@ class Compose extends Command
      * Get an array containing all the dependencies and dependencies
      * @param Package   $package
      * @param Package[] $dependencies
-     * @return array
+     * @return Package[]
      */
     private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
     {
         if ($this->config->isExcludedPackage($package)) {
             return $dependencies;
-            ;
         }
 
         if (empty($package->getDependencies())) {

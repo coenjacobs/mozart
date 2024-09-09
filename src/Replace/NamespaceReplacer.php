@@ -14,10 +14,8 @@ class NamespaceReplacer extends BaseReplacer
     /**
      * @param string $contents The text to make replacements in.
      * @param null $file Only used in ClassmapReplacer (for recording which files were changed).
-     *
-     * @return string The updated text.
      */
-    public function replace($contents, $file = null)
+    public function replace($contents, $file = null): string
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->dep_namespace, '/');

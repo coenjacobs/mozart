@@ -20,11 +20,6 @@ class NamespaceReplacerTest extends TestCase
 
     /**
      * Creates a NamespaceReplacer, given a namespace and a prefix.
-     *
-     * @param string $namespace
-     * @param string $prefix
-     *
-     * @return Psr0
      */
     protected static function createReplacer(string $namespace, string $prefix = self::PREFIX) : NamespaceReplacer
     {

@@ -52,12 +52,6 @@ class Replacer
         }
     }
 
-    /**
-     * @param $targetFile
-     * @param $autoloader
-     *
-     * @return void
-     */
     public function replaceInFile(string $targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
@@ -89,13 +83,7 @@ class Replacer
         $this->filesystem->write($targetFile, $contents);
     }
 
-    /**
-     * @param Package $package
-     * @param $autoloader
-     *
-     * @return void
-     */
-    public function replacePackageByAutoloader(Package $package, Composer\Autoload\Autoloader $autoloader): void
+    public function replacePackageByAutoloader(Package $package, Autoloader $autoloader): void
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $source_path = $this->workingDir . $this->targetDir
@@ -117,12 +105,6 @@ class Replacer
         }
     }
 
-    /**
-     * @param $autoloader
-     * @param $directory
-     *
-     * @return void
-     */
     public function replaceParentClassesInDirectory(string $directory): void
     {
         if (count($this->replacedClasses)===0) {
@@ -171,12 +153,6 @@ class Replacer
         }
     }
 
-    /**
-     * @param $autoloader
-     * @param $directory
-     *
-     * @return void
-     */
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
         $finder = new Finder();
@@ -195,11 +171,6 @@ class Replacer
      * Replace everything in parent package, based on the dependency package.
      * This is done to ensure that package A (which requires package B), is also
      * updated with the replacements being made in package B.
-     *
-     * @param Package $package
-     * @param Package $parent
-     *
-     * @return void
      */
     public function replaceParentPackage(Package $package, Package $parent): void
     {
