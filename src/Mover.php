@@ -4,9 +4,9 @@ namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
-use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr0;
 use CoenJacobs\Mozart\Config\Psr4;
 use League\Flysystem\Local\LocalFilesystemAdapter;

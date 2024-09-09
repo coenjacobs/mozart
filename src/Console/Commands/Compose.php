@@ -3,8 +3,7 @@
 namespace CoenJacobs\Mozart\Console\Commands;
 
 use CoenJacobs\Mozart\Config\Mozart;
-use CoenJacobs\Mozart\Config\Composer;
-use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\PackageFactory;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;

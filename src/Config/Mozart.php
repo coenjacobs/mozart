@@ -2,9 +2,9 @@
 
 namespace CoenJacobs\Mozart\Config;
 
-use CoenJacobs\Mozart\Composer\Package;
 use stdClass;
 use CoenJacobs\Mozart\Config\OverrideAutoload;
+use CoenJacobs\Mozart\Config\Package;
 
 class Mozart
 {

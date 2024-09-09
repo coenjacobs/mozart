@@ -2,7 +2,7 @@
 
 namespace CoenJacobs\Mozart\Config;
 
-use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\Package;
 use stdClass;
 
 class PackageFactory

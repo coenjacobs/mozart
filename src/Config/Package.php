@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Composer;
+namespace CoenJacobs\Mozart\Config;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Autoload;

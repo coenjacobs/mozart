@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\PackageFactory;
 use PHPUnit\Framework\TestCase;
 
