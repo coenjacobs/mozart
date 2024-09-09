@@ -36,7 +36,7 @@ class Compose extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $workingDir = getcwd();
-        $this->workingDir = $workingDir;
+        $this->workingDir = DIRECTORY_SEPARATOR;
 
         $composerFile = $workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         if (!file_exists($composerFile)) {
