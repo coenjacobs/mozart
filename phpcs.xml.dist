@@ -5,7 +5,7 @@
     <rule ref="PSR2"/>
 
     <rule ref="PHPCompatibility"/>
-    <config name="testVersion" value="8.0-"/>
+    <config name="testVersion" value="8.0-8.3"/>
 
     <file>./src</file>
 </ruleset>
