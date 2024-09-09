@@ -40,9 +40,7 @@ class Package
         $this->path = $path;
 
         if (isset($overrideAutoload)) {
-            $autoload = new Autoload();
-            $autoload->setupAutoloaders($overrideAutoload);
-            $this->set('autoload', $autoload);
+            $this->setAutoload($overrideAutoload);
         }
     }
 

@@ -67,11 +67,6 @@ class Compose extends Command
         }
 
         $this->config = $config;
-        $this->config->set('dep_namespace', preg_replace(
-            "/\\\{2,}$/",
-            "\\",
-            $this->config->getDependencyNamespace()."\\"
-        ));
 
         $require = $this->config->getPackages();
         if (empty($require)) {

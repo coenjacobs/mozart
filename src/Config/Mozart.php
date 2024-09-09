@@ -5,6 +5,7 @@ namespace CoenJacobs\Mozart\Config;
 use stdClass;
 use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
+use Exception;
 
 class Mozart
 {
@@ -92,7 +93,13 @@ class Mozart
 
     public function getDependencyNamespace(): string
     {
-        return $this->dep_namespace;
+        $namespace = preg_replace("/\\\{2,}$/", "\\", $this->dep_namespace."\\");
+
+        if (empty($namespace)) {
+            throw new Exception('Could not get target dependency namespace');
+        }
+
+        return $namespace;
     }
 
     public function getClassmapPrefix(): string
