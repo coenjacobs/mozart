@@ -11,7 +11,7 @@ use stdClass;
 
 class Package
 {
-    use ReadsConfig, ConfigAccessor;
+    use ReadsConfig;
 
     /** @var string */
     public $path = '';

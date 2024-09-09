@@ -9,7 +9,7 @@ use Exception;
 
 class Mozart
 {
-    use ReadsConfig, ConfigAccessor;
+    use ReadsConfig;
 
     public string $dep_namespace;
     public string $dep_directory;
