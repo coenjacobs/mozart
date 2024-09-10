@@ -5,6 +5,7 @@ use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -36,7 +37,7 @@ class MoverTest extends TestCase
         if (!file_exists($this->testsWorkingDir)) {
             mkdir($this->testsWorkingDir);
         }
-        
+
         $config = new class() {
         };
         $config->dep_directory = "/dep_directory/";
@@ -61,6 +62,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_creates_absent_dirs(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -80,6 +82,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_is_unpertrubed_by_existing_dirs(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -93,7 +96,7 @@ class MoverTest extends TestCase
 
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->dep_directory);
         $this->assertDirectoryExists($this->testsWorkingDir . $this->config->classmap_directory);
-  
+
         $packages = array();
 
         ob_start();
@@ -111,6 +114,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_deletes_subdirs_for_packages_about_to_be_moved(): void
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
@@ -118,7 +122,6 @@ class MoverTest extends TestCase
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory);
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory);
 
-        // TODO: Create the subdirs that should be deleted.
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory . 'Pimple');
         mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory . 'ezyang');
 
@@ -138,8 +141,8 @@ class MoverTest extends TestCase
 
         $mover->deleteTargetDirs($packages);
 
-        $this->assertDirectoryNotExists($this->testsWorkingDir . $this->config->dep_directory . 'Pimple');
-        $this->assertDirectoryNotExists($this->testsWorkingDir . $this->config->dep_directory . 'ezyang');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'Pimple');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'ezyang');
     }
 
     /**
@@ -178,6 +181,7 @@ class MoverTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_moves_each_file_once_per_namespace()
     {
 
@@ -186,7 +190,7 @@ class MoverTest extends TestCase
 
         chdir($this->testsWorkingDir);
 
-        exec('composer install');
+        exec('composer update');
 
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
@@ -209,7 +213,7 @@ class MoverTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        
+
         $dir = $this->testsWorkingDir;
 
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);

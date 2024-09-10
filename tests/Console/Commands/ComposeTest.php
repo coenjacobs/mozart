@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -35,6 +36,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_fails_gracefully_when_composer_json_absent(): void
     {
 
@@ -44,7 +46,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
              ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -61,6 +63,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_handles_malformed_json_with_grace(): void
     {
 
@@ -74,7 +77,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -91,6 +94,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_handles_absent_extra_config_with_grace(): void
     {
 
@@ -104,7 +108,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -122,6 +126,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_handles_malformed_extra_config_with_grace(): void
     {
 
@@ -135,7 +140,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -152,6 +157,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_handles_absent_mozart_config_with_grace(): void
     {
 
@@ -165,7 +171,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();
@@ -184,6 +190,7 @@ class ComposeTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_handles_malformed_mozart_config__with_grace(): void
     {
 
@@ -197,7 +204,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock->expects($this->exactly(1))
                             ->method('write');
 
-        $compose = new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
+        new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
             {
                 parent::__construct();

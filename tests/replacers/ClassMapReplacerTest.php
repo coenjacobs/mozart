@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ClassMapReplacerTest extends TestCase
 {
     /** @test */
+    #[Test]
     public function it_replaces_class_declarations(): void
     {
         $contents = 'class Hello_World {';
@@ -17,6 +19,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_replaces_abstract_class_declarations(): void
     {
         $contents = 'abstract class Hello_World {';
@@ -27,6 +30,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_replaces_interface_class_declarations(): void
     {
         $contents = 'interface Hello_World {';
@@ -37,6 +41,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_replaces_class_declarations_that_extend_other_classes(): void
     {
         $contents = 'class Hello_World extends Bye_World {';
@@ -47,6 +52,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_replaces_class_declarations_that_implement_interfaces(): void
     {
         $contents = 'class Hello_World implements Bye_World {';
@@ -57,6 +63,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_stores_replaced_class_names(): void
     {
         $contents = 'class Hello_World {';
@@ -67,6 +74,7 @@ class ClassMapReplacerTest extends TestCase
     }
 
     /** @test */
+    #[Test]
     public function it_replaces_class_declarations_psr2(): void
     {
         $contents = "class Hello_World\n{";
@@ -81,6 +89,7 @@ class ClassMapReplacerTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_replaces_class(): void
     {
         $contents = "class Hello_World";
@@ -97,6 +106,7 @@ class ClassMapReplacerTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_namespace_multiline(): void
     {
         $input = "
@@ -116,6 +126,7 @@ class ClassMapReplacerTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_namespace_singleline(): void
     {
         $input = "namespace Mozart; class Hello_World";
@@ -133,6 +144,7 @@ class ClassMapReplacerTest extends TestCase
      *
      * @test
      */
+    #[Test]
     public function it_does_not_replace_inside_named_namespace_but_does_inside_explicit_global_namespace(): void
     {
 

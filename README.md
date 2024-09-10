@@ -1,7 +1,7 @@
-# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
+# Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Total Downloads](https://poser.pugx.org/coenjacobs/mozart/downloads)](//packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
 Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
 
-This package requires PHP 7.3 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
+This package requires PHP 8.0 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
 
 **Warning:** This package is very experimental and breaking changes are very likely until version 1.0.0 is tagged. Use with caution, always wear a helmet when using this in production environments.
 
@@ -42,7 +42,7 @@ php mozart.phar compose
 To install Mozart and its dependencies, without conflicting with the dependencies of your project, it is recommended that you install Mozart as a global package, if you choose to install Mozart via Composer.
 
 #### Global package
-Using the `global` command when installing Mozart, it will be installed as a system wide package: 
+Using the `global` command when installing Mozart, it will be installed as a system wide package:
 
 ```
 composer global require coenjacobs/mozart
@@ -82,7 +82,7 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "packages": [
             "pimple/pimple"
         ],
-        "exclude_packages": [
+        "excluded_packages": [
             "psr/container"
         ],
         "override_autoload": {
@@ -110,10 +110,10 @@ The following configuration is optional:
 
 - `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
 - `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
-- `exclude_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
+- `excluded_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
 
-After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. 
+After Composer has loaded the packages as defined in your `composer.json` file, you can now run `mozart compose` and Mozart will bundle your packages according to the above configuration. It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet.
 
 ## Scripts
 Mozart is designed to install and be forgotten about. Using Composer scripts, the Mozart script can be run as soon as Composer either installs a new package, or updates an already installed one. This ensures that the packages you want to bundle, are always bundled in the latest installed version, automatically. These scripts also offer you the possibility to script dumping the autoloader, after Mozart is finished running:

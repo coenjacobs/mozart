@@ -2,8 +2,6 @@
 
 namespace CoenJacobs\Mozart\Console\Commands;
 
-use CoenJacobs\Mozart\Composer\Autoload\Classmap;
-use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Composer\Package;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\Replacer;
@@ -35,7 +33,7 @@ class Compose extends Command
         $this->setHelp('');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $workingDir = getcwd();
         $this->workingDir = $workingDir;
@@ -162,8 +160,6 @@ class Compose extends Command
      * @param ((int|string)|mixed)[] $slugs
      *
      * @return Package[]
-     *
-     * @psalm-return array<array-key, Package>
      */
     private function findPackages(array $slugs): array
     {
