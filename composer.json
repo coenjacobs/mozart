@@ -1,10 +1,10 @@
 {
-    "name": "coenjacobs/mozart",
+    "name": "dkjensen/mozart",
     "description": "Composes all dependencies as a package inside a WordPress plugin",
     "authors": [
         {
-            "name": "Coen Jacobs",
-            "email": "coenjacobs@gmail.com"
+            "name": "David Jensen",
+            "email": "david@dkjensen.com"
         }
     ],
     "bin": ["bin/mozart"],
