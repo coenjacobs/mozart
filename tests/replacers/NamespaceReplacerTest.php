@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Composer\Autoload\Psr0;
+use CoenJacobs\Mozart\Config\Psr0;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,11 +20,6 @@ class NamespaceReplacerTest extends TestCase
 
     /**
      * Creates a NamespaceReplacer, given a namespace and a prefix.
-     *
-     * @param string $namespace
-     * @param string $prefix
-     *
-     * @return Psr0
      */
     protected static function createReplacer(string $namespace, string $prefix = self::PREFIX) : NamespaceReplacer
     {

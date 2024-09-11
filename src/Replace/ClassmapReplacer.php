@@ -17,8 +17,6 @@ class ClassmapReplacer extends BaseReplacer
 
     /**
      * @param false|string $contents
-     *
-     * @return string
      */
     public function replace($contents): string
     {
@@ -29,16 +27,16 @@ class ClassmapReplacer extends BaseReplacer
         return preg_replace_callback(
             "
 			/													# Start the pattern
-						namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*?(?=namespace|$) 
-																# Look for a preceeding namespace declaration, up until 
+						namespace\s+[a-zA-Z0-9_\x7f-\xff\\\\]+[;{\s\n]{1}.*?(?=namespace|$)
+																# Look for a preceeding namespace declaration, up until
 																# a potential second namespace declaration
-						|										# if found, match that much before repeating the search 
+						|										# if found, match that much before repeating the search
 																# on the remainder of the string
 						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
-						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first 
+						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first
 																# non-classname-valid character
 						\s?										# Allow a space after
-						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends, 
+						(?:{|extends|implements|\n)				# Class declaration can be followed by {, extends,
 																# implements, or a new line
 			/sx", //                                            # dot matches newline, ignore whitespace in regex.
             function ($matches) use ($contents) {

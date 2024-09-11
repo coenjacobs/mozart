@@ -39,7 +39,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_fails_gracefully_when_composer_json_absent(): void
     {
-
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
@@ -66,7 +65,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_handles_malformed_json_with_grace(): void
     {
-
         $badComposerJson = '{ "name": "coenjacobs/mozart", }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
@@ -97,7 +95,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_handles_absent_extra_config_with_grace(): void
     {
-
         $badComposerJson = '{ "name": "coenjacobs/mozart" }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
@@ -129,7 +126,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_handles_malformed_extra_config_with_grace(): void
     {
-
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": [] }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
@@ -160,7 +156,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_handles_absent_mozart_config_with_grace(): void
     {
-
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "moozart": {} } }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);
@@ -193,7 +188,6 @@ class ComposeTest extends TestCase
     #[Test]
     public function it_handles_malformed_mozart_config__with_grace(): void
     {
-
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "mozart": [] } }';
 
         file_put_contents(__DIR__ . '/composer.json', $badComposerJson);

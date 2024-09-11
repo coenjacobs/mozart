@@ -1,14 +1,20 @@
 FROM composer:2.7.7
 FROM php:8.3.9-cli-alpine AS base
 
-FROM base as builder
+FROM base AS builder
 RUN apk update && apk add git
+RUN apk add --update linux-headers
+RUN apk add --no-cache $PHPIZE_DEPS \
+    && pecl install xdebug-3.3.2 \
+    && docker-php-ext-enable xdebug
+COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+COPY ./docker/php/error_reporting.ini /usr/local/etc/php/conf.d/error_reporting.ini
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 COPY ./ /mozart/
 WORKDIR /mozart/
 RUN composer install
 
-FROM builder as packager
+FROM builder AS packager
 RUN rm -rf vendor
 RUN composer install --no-dev -o
 

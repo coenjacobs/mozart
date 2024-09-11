@@ -1,0 +1,30 @@
+{
+    "require": {
+    },
+    "autoload": {
+        "psr-0": {
+            "Mozart\\RandomDir\\": "old_files/",
+            "Mozart\\Multiples\\": [ "another_dir", "more_dirs" ]
+        },
+        "psr-4": {
+            "Mozart\\TestProject\\": "src/",
+            "Mozart\\MultipleDirs\\": [ "packages/test/src/", "packages/more/src/" ]
+        }
+    },
+    "extra": {
+      "mozart": {
+        "dep_namespace": "Mozart\\TestProject\\Dependencies",
+        "dep_directory": "/src/dependencies",
+        "classmap_directory": "/classes/",
+        "classmap_prefix": "MozartDependency_",
+        "packages": [
+            "pimple/pimple"
+        ],
+        "excluded_packages": [
+        ],
+        "override_autoload": {
+        },
+        "delete_vendor_directories": true
+      }
+    }
+  }

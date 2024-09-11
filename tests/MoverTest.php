@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Composer\Package;
+use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
 use PHPUnit\Framework\TestCase;
@@ -11,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class MoverTest extends TestCase
 {
-
     /**
      * A temporary directory for creating and deleting files for these tests.
      *
@@ -22,7 +22,7 @@ class MoverTest extends TestCase
     /**
      * composer->extra->mozart settings
      *
-     * @var stdClass
+     * @var Mozart
      */
     protected $config;
 
@@ -38,23 +38,23 @@ class MoverTest extends TestCase
             mkdir($this->testsWorkingDir);
         }
 
-        $config = new class() {
-        };
-        $config->dep_directory = "/dep_directory/";
-        $config->classmap_directory = "/classmap_directory/";
-        $config->packages = array(
-                "pimple/pimple",
-                "ezyang/htmlpurifier"
-            );
-
         $pimpleAutoload = json_decode("{ \"psr-0\" : { \"Pimple\" : [ \"src/\" ]  } }");
         $htmlpurifierAutoload = json_decode("{ \"classmap\" : { \"Pimple\" => [ \"library/\" ]  } }");
 
-        $config->override_autoload = array();
-        $config->override_autoload["pimple/pimple"] = $pimpleAutoload;
-        $config->override_autoload["ezyang/htmlpurifier"] = $htmlpurifierAutoload;
+        $configArgs = array(
+            'dep_directory' => "/dep_directory/",
+            'classmap_directory' => "/classmap_directory/",
+            'packages' => array(
+                "pimple/pimple",
+                "ezyang/htmlpurifier",
+            ),
+            'override_autoload' => array(
+                'pimple/pimple' => $pimpleAutoload,
+                'ezyang/htmlpurifier' => $htmlpurifierAutoload,
+            ),
+        );
 
-        $this->config = $config;
+        $this->config = Mozart::loadFromString( json_encode($configArgs) );
     }
 
     /**
@@ -72,9 +72,9 @@ class MoverTest extends TestCase
         $mover->deleteTargetDirs($packages);
 
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
-                                      . $this->config->dep_directory));
+                                      . $this->config->getDepDirectory()));
         $this->assertTrue(file_exists($this->testsWorkingDir . DIRECTORY_SEPARATOR
-                                      . $this->config->classmap_directory));
+                                      . $this->config->getClassmapDirectory()));
     }
 
     /**
@@ -87,15 +87,15 @@ class MoverTest extends TestCase
     {
         $mover = new Mover($this->testsWorkingDir, $this->config);
 
-        if (!file_exists($this->testsWorkingDir . $this->config->dep_directory)) {
-            mkdir($this->testsWorkingDir . $this->config->dep_directory);
+        if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
+            mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
         }
-        if (!file_exists($this->testsWorkingDir . $this->config->classmap_directory)) {
-            mkdir($this->testsWorkingDir . $this->config->classmap_directory);
+        if (!file_exists($this->testsWorkingDir . $this->config->getClassmapDirectory())) {
+            mkdir($this->testsWorkingDir . $this->config->getClassmapDirectory());
         }
 
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->dep_directory);
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->classmap_directory);
+        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getDepDirectory());
+        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getClassmapDirectory());
 
         $packages = array();
 
@@ -117,16 +117,14 @@ class MoverTest extends TestCase
     #[Test]
     public function it_deletes_subdirs_for_packages_about_to_be_moved(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory());
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory());
 
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory);
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory);
-
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->dep_directory . 'Pimple');
-        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->classmap_directory . 'ezyang');
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getDepDirectory() . 'Pimple');
+        mkdir($this->testsWorkingDir  . DIRECTORY_SEPARATOR . $this->config->getClassmapDirectory() . 'ezyang');
 
         $packages = array();
-        foreach ($this->config->packages as $packageString) {
+        foreach ($this->config->getPackages() as $packageString) {
             $testDummyComposerDir = $this->testsWorkingDir  . DIRECTORY_SEPARATOR . 'vendor'
                                     . DIRECTORY_SEPARATOR . $packageString;
             @mkdir($testDummyComposerDir, 0777, true);
@@ -134,15 +132,20 @@ class MoverTest extends TestCase
             $testDummyComposerContents = json_encode(new stdClass());
 
             file_put_contents($testDummyComposerPath, $testDummyComposerContents);
-            $parsedPackage = new Package($testDummyComposerDir, $this->config->override_autoload[$packageString]);
-            $parsedPackage->findAutoloaders();
+
+            $overrideAutoload = $this->config->getOverrideAutoload();
+            if ( ! empty( $overrideAutoload ) ) {
+                $overrideAutoload = $overrideAutoload->getByKey( $packageString );
+            }
+            $parsedPackage = PackageFactory::createPackage($testDummyComposerPath, $overrideAutoload);
             $packages[] = $parsedPackage;
         }
 
+        $mover = new Mover($this->testsWorkingDir, $this->config);
         $mover->deleteTargetDirs($packages);
 
-        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'Pimple');
-        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->dep_directory . 'ezyang');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'Pimple');
+        $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'ezyang');
     }
 
     /**
