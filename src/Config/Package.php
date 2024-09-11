@@ -6,6 +6,8 @@ use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Autoload;
 use CoenJacobs\Mozart\Config\Extra;
 use CoenJacobs\Mozart\Config\ReadsConfig;
+use CoenJacobs\Mozart\PackageFinder;
+use Exception;
 use stdClass;
 
 class Package
@@ -13,12 +15,12 @@ class Package
     use ReadsConfig;
 
     /** @var Package[] */
-    public $requirePackages = [];
+    public $dependencies = [];
 
     public string $name;
 
     /** @var string[] */
-    public array $require;
+    public array $require = [];
 
     public ?Autoload $autoload = null;
     public ?Extra $extra = null;
@@ -68,9 +70,9 @@ class Package
     /**
      * @return string[]
      */
-    public function getPackages(): array
+    public function getRequire(): array
     {
-        return $this->require;
+        return array_keys($this->require);
     }
 
     /**
@@ -78,21 +80,38 @@ class Package
      */
     public function getDependencies(): array
     {
-        return $this->requirePackages;
+        return $this->dependencies;
     }
 
-    public function registerRequirePackage(Package $package): void
+    public function loadDependencies(): void
     {
-        array_push($this->requirePackages, $package);
+        $finder = PackageFinder::instance();
+        if ($this->isValidMozartConfig() && !empty($this->getExtra())) {
+            $mozart = $this->getExtra()->getMozart();
+
+            if (empty($mozart)) {
+                throw new Exception("Couldn't load dependencies because config not set.");
+            }
+            $finder->setConfig($mozart);
+        }
+
+        $dependencies = $finder->getPackagesBySlugs($this->getRequire());
+
+        $this->registerDependencies($dependencies);
+    }
+
+    public function registerDependency(Package $package): void
+    {
+        array_push($this->dependencies, $package);
     }
 
     /**
      * @param Package[] $packages
      */
-    public function registerRequirePackages(array $packages): void
+    public function registerDependencies(array $packages): void
     {
         foreach ($packages as $package) {
-            $this->registerRequirePackage($package);
+            $this->registerDependency($package);
         }
     }
 }

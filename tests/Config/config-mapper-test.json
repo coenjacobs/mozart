@@ -1,6 +1,5 @@
 {
     "require": {
-      "pimple/pimple": "^3.5"
     },
     "autoload": {
         "psr-0": {

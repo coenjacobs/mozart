@@ -25,6 +25,8 @@ class Mozart
     public OverrideAutoload $override_autoload;
     public bool $delete_vendor_directories;
 
+    public string $workingDir = '';
+
     /**
      * @return string[]
      */
@@ -118,5 +120,15 @@ class Mozart
     public function getExcludedPackages(): array
     {
         return $this->excluded_packages;
+    }
+
+    public function setWorkingDir(string $workingDir): void
+    {
+        $this->workingDir = $workingDir;
+    }
+
+    public function getWorkingDir(): string
+    {
+        return $this->workingDir;
     }
 }

@@ -45,6 +45,17 @@ class Replacer
         $this->filesystem = new Filesystem($adapter);
     }
 
+    /**
+     * @param Package[] $packages
+     */
+    public function replacePackages($packages): void
+    {
+        foreach ($packages as $package) {
+            $this->replacePackages($package->getDependencies());
+            $this->replacePackage($package);
+        }
+    }
+
     public function replacePackage(Package $package): void
     {
         foreach ($package->getAutoloaders() as $autoloader) {
@@ -85,10 +96,13 @@ class Replacer
 
     public function replacePackageByAutoloader(Package $package, Autoloader $autoloader): void
     {
+        if ($this->config->isExcludedPackage($package)) {
+            return;
+        }
+
         if ($autoloader instanceof NamespaceAutoloader) {
             $source_path = $this->workingDir . $this->targetDir
-                           . str_replace('\\', DIRECTORY_SEPARATOR, $autoloader->namespace)
-                           . DIRECTORY_SEPARATOR;
+                           . str_replace('\\', DIRECTORY_SEPARATOR, $autoloader->getNamespace());
             $this->replaceInDirectory($autoloader, $source_path);
         } elseif ($autoloader instanceof Classmap) {
             $finder = new Finder();
@@ -174,6 +188,10 @@ class Replacer
      */
     public function replaceParentPackage(Package $package, Package $parent): void
     {
+        if ($this->config->isExcludedPackage($package)) {
+            return;
+        }
+
         foreach ($parent->getAutoloaders() as $parentAutoloader) {
             foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
@@ -199,6 +217,49 @@ class Replacer
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Get an array containing all the dependencies and dependencies
+     * @param Package   $package
+     * @param Package[] $dependencies
+     * @return Package[]
+     */
+    private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
+    {
+        if (empty($package->getDependencies())) {
+            return $dependencies;
+        }
+
+        foreach ($package->getDependencies() as $dependency) {
+            $dependencies[] = $dependency;
+        }
+
+        foreach ($package->getDependencies() as $dependency) {
+            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
+        }
+
+        return $dependencies;
+    }
+
+    /**
+     * @param Package[] $packages
+     */
+    public function replaceParentInTree(array $packages): void
+    {
+        foreach ($packages as $package) {
+            if ($this->config->isExcludedPackage($package)) {
+                continue;
+            }
+
+            $dependencies = $this->getAllDependenciesOfPackage($package);
+
+            foreach ($dependencies as $dependency) {
+                $this->replaceParentPackage($dependency, $package);
+            }
+
+            $this->replaceParentInTree($package->getDependencies());
         }
     }
 }

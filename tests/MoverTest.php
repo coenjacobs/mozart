@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Config\Mozart;
-use CoenJacobs\Mozart\Config\PackageFactory;
+use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
 use PHPUnit\Framework\TestCase;

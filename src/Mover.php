@@ -101,9 +101,26 @@ class Mover
         }
     }
 
+    /**
+     * @param Package[] $packages
+     */
+    public function movePackages($packages): void
+    {
+        foreach ($packages as $package) {
+            $this->movePackages($package->getDependencies());
+            $this->movePackage($package);
+        }
+
+        $this->deleteEmptyDirs();
+    }
+
     public function movePackage(Package $package): void
     {
         if (in_array($package->getName(), $this->movedPackages)) {
+            return;
+        }
+
+        if ($this->config->isExcludedPackage($package)) {
             return;
         }
 

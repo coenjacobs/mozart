@@ -32,9 +32,14 @@ abstract class NamespaceAutoloader implements Autoloader
         }
     }
 
+    public function getNamespace(): string
+    {
+        return rtrim($this->namespace, '\\') . '\\';
+    }
+
     public function getSearchNamespace(): string
     {
-        return $this->namespace;
+        return rtrim($this->namespace, '\\');
     }
 
     public function getNamespacePath(): string
