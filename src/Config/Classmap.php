@@ -21,9 +21,10 @@ class Classmap implements Autoloader
         foreach ($autoloadConfig as $value) {
             if ('.php' == substr($value, -4, 4)) {
                 array_push($this->files, $value);
-            } else {
-                array_push($this->paths, $value);
+                continue;
             }
+
+            array_push($this->paths, $value);
         }
     }
 

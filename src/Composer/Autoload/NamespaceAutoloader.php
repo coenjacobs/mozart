@@ -27,9 +27,10 @@ abstract class NamespaceAutoloader implements Autoloader
             foreach ($autoloadConfig as $path) {
                 array_push($this->paths, $path);
             }
-        } else {
-            array_push($this->paths, $autoloadConfig);
+
+            return;
         }
+        array_push($this->paths, $autoloadConfig);
     }
 
     public function getNamespace(): string
