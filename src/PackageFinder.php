@@ -48,9 +48,9 @@ class PackageFinder
         }
 
         $autoloaders = null;
-        $override_autoload = $this->config->getOverrideAutoload();
-        if ($override_autoload !== false && isset($override_autoload->$slug)) {
-            $autoloaders = $override_autoload->$slug;
+        $overrideAutoload = $this->config->getOverrideAutoload();
+        if ($overrideAutoload !== false && isset($overrideAutoload->$slug)) {
+            $autoloaders = $overrideAutoload->$slug;
         }
 
         $package = PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders);

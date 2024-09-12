@@ -11,7 +11,7 @@ class NamespaceReplacer extends BaseReplacer
      *
      * @var string "My\Mozart\Prefix".
      */
-    public $dep_namespace = '';
+    public $depNamespace = '';
 
     /**
      * @param string $contents The text to make replacements in.
@@ -20,7 +20,7 @@ class NamespaceReplacer extends BaseReplacer
     public function replace(string $contents, string $file = null): string
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
-        $dependencyNamespace = preg_quote($this->dep_namespace, '/');
+        $dependencyNamespace = preg_quote($this->depNamespace, '/');
 
         $replaced = preg_replace_callback(
             "
@@ -35,7 +35,7 @@ class NamespaceReplacer extends BaseReplacer
                 )                            # End the namespace matcher
             /Ux",
             function ($matches) {
-                return $matches[1] . $this->dep_namespace . $matches[2];
+                return $matches[1] . $this->depNamespace . $matches[2];
             },
             $contents
         );

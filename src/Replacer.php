@@ -78,13 +78,13 @@ class Replacer
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->getDependencyNamespace();
+            $replacer->depNamespace = $this->config->getDependencyNamespace();
             $replacer->setAutoloader($autoloader);
             return $replacer;
         }
 
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = $this->config->getClassmapPrefix();
+        $replacer->classmapPrefix = $this->config->getClassmapPrefix();
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
