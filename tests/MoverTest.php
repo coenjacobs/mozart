@@ -138,6 +138,7 @@ class MoverTest extends TestCase
                 $overrideAutoload = $overrideAutoload->getByKey( $packageString );
             }
             $parsedPackage = PackageFactory::createPackage($testDummyComposerPath, $overrideAutoload);
+            $parsedPackage->loadDependencies();
             $packages[] = $parsedPackage;
         }
 

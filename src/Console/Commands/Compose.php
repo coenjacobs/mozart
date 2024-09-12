@@ -48,7 +48,7 @@ class Compose extends Command
 
         $composerFile = $this->workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         try {
-            $package = PackageFactory::createPackage($composerFile, null, false);
+            $package = PackageFactory::createPackage($composerFile);
         } catch (Exception $e) {
             $output->write('Unable to read the composer.json file');
             return 1;

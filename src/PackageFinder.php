@@ -53,7 +53,9 @@ class PackageFinder
             $autoloaders = $override_autoload->$slug;
         }
 
-        return PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders, true);
+        $package = PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders);
+        $package->loadDependencies();
+        return $package;
     }
 
     /**

@@ -10,11 +10,8 @@ class PackageFactory
     /** @var array <string,Package> */
     public static array $cache = [];
 
-    public static function createPackage(
-        string $path,
-        stdClass $overrideAutoload = null,
-        bool $loadDependencies = true
-    ): Package {
+    public static function createPackage(string $path, stdClass $overrideAutoload = null): Package
+    {
         if (isset(self::$cache[$path])) {
             return self::$cache[$path];
         }
@@ -23,10 +20,6 @@ class PackageFactory
 
         if (! empty($overrideAutoload)) {
             $package->setAutoload($overrideAutoload);
-        }
-
-        if ($loadDependencies) {
-            $package->loadDependencies();
         }
 
         self::$cache[$path] = $package;

@@ -16,6 +16,7 @@ class ConfigMapperTest extends TestCase
     public function it_creates_a_valid_config_object_based_on_composer_file()
     {
         $package = PackageFactory::createPackage(__DIR__ . '/config-mapper-test.json');
+        $package->loadDependencies();
         $this->assertInstanceOf(Package::class, $package);
         $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
         $this->assertCount(4, $package->autoload->getAutoloaders());
