@@ -40,7 +40,8 @@
         "symfony/console": "^5.4",
         "symfony/finder": "^5.4",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "phpcompatibility/php-compatibility": "dev-develop"
+        "phpcompatibility/php-compatibility": "dev-develop",
+        "phpmd/phpmd": "^2.15"
     },
     "scripts": {
         "test": [
