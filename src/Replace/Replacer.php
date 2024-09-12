@@ -6,6 +6,6 @@ use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 
 interface Replacer
 {
-    public function setAutoloader(Autoloader $autoloader);
-    public function replace($contents);
+    public function setAutoloader(Autoloader $autoloader): void;
+    public function replace(string $contents): string;
 }

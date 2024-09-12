@@ -22,7 +22,14 @@ class Compose extends Command
 
     public function __construct()
     {
-        $this->workingDir = getcwd();
+        $workingDir = getcwd();
+
+        if (! $workingDir) {
+            throw new Exception('Unable to determine the working directory.');
+        }
+
+        $this->workingDir = $workingDir;
+
         parent::__construct();
     }
 

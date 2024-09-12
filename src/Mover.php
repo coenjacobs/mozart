@@ -73,7 +73,7 @@ class Mover
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
-                    $outputDir = $this->config->getDepDirectory() . $packageAutoloader->namespace;
+                    $outputDir = $this->config->getDepDirectory() . $packageAutoloader->getSearchNamespace();
                     $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
                     $this->filesystem->deleteDirectory($outputDir);
                     break;

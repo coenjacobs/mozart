@@ -9,6 +9,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
+use Exception;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\Filesystem;
@@ -25,7 +26,7 @@ class Replacer
     /** @var Mozart */
     protected $config;
 
-    /** @var array */
+    /** @var array<string,string> */
     protected $replacedClasses = [];
 
     /** @var Filesystem */
@@ -48,7 +49,7 @@ class Replacer
     /**
      * @param Package[] $packages
      */
-    public function replacePackages($packages): void
+    public function replacePackages(array $packages): void
     {
         foreach ($packages as $package) {
             $this->replacePackages($package->getDependencies());
@@ -141,10 +142,6 @@ class Replacer
                     continue;
                 }
 
-                if (!$contents) {
-                    continue;
-                }
-
                 foreach ($replacedClasses as $original => $replacement) {
                     $contents = preg_replace_callback(
                         '/(.*)([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
@@ -156,10 +153,10 @@ class Replacer
                         },
                         $contents
                     );
-                }
 
-                if (empty($contents)) {
-                    continue;
+                    if (empty($contents)) {
+                        throw new Exception('Failed to replace parent classes in directory.');
+                    }
                 }
 
                 $this->filesystem->write($targetFile, $contents);

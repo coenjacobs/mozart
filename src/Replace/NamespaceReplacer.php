@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Replace;
 
+use Exception;
+
 class NamespaceReplacer extends BaseReplacer
 {
     /**
@@ -15,12 +17,12 @@ class NamespaceReplacer extends BaseReplacer
      * @param string $contents The text to make replacements in.
      * @param null $file Only used in ClassmapReplacer (for recording which files were changed).
      */
-    public function replace($contents, $file = null): string
+    public function replace(string $contents, string $file = null): string
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->dep_namespace, '/');
 
-        return preg_replace_callback(
+        $replaced = preg_replace_callback(
             "
             /                                # Start the pattern
               ([^a-zA-Z0-9_\x7f-\xff])       # Match the non-class character before the namespace
@@ -37,5 +39,11 @@ class NamespaceReplacer extends BaseReplacer
             },
             $contents
         );
+
+        if (empty($replaced)) {
+            throw new Exception('Failed to replace contents of the file.');
+        }
+
+        return $replaced;
     }
 }
