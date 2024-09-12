@@ -9,11 +9,8 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\NamespaceReplacer;
+use CoenJacobs\Mozart\Replace\Replacer as ReplacerInterface;
 use Exception;
-use League\Flysystem\Local\LocalFilesystemAdapter;
-use League\Flysystem\UnableToReadFile;
-use League\Flysystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 class Replacer
 {
@@ -29,21 +26,15 @@ class Replacer
     /** @var array<string,string> */
     protected $replacedClasses = [];
 
-    /** @var Filesystem */
-    protected $filesystem;
+    /** @var FilesHandler */
+    protected $files;
 
     public function __construct(string $workingDir, Mozart $config)
     {
         $this->workingDir = $workingDir;
         $this->config     = $config;
         $this->targetDir  = $this->config->getDepDirectory();
-
-        $adapter = new LocalFilesystemAdapter(
-            $this->workingDir
-        );
-
-        // The FilesystemOperator
-        $this->filesystem = new Filesystem($adapter);
+        $this->files      = new FilesHandler($config);
     }
 
     /**
@@ -67,32 +58,35 @@ class Replacer
     public function replaceInFile(string $targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->workingDir, '', $targetFile);
-        try {
-            $contents = $this->filesystem->read($targetFile);
-        } catch (UnableToReadFile $e) {
-            return;
-        }
+        $contents = $this->files->readFile($targetFile);
 
         if (!$contents) {
             return;
         }
 
-        if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new NamespaceReplacer();
-            $replacer->dep_namespace = $this->config->getDependencyNamespace();
-        } else {
-            $replacer = new ClassmapReplacer();
-            $replacer->classmap_prefix = $this->config->getClassmapPrefix();
-        }
-
-        $replacer->setAutoloader($autoloader);
+        $replacer = $this->getReplacerByAutoloader($autoloader);
         $contents = $replacer->replace($contents);
 
         if ($replacer instanceof ClassmapReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
         }
 
-        $this->filesystem->write($targetFile, $contents);
+        $this->files->writeFile($targetFile, $contents);
+    }
+
+    public function getReplacerByAutoloader(Autoloader $autoloader): ReplacerInterface
+    {
+        if ($autoloader instanceof NamespaceAutoloader) {
+            $replacer = new NamespaceReplacer();
+            $replacer->dep_namespace = $this->config->getDependencyNamespace();
+            $replacer->setAutoloader($autoloader);
+            return $replacer;
+        }
+
+        $replacer = new ClassmapReplacer();
+        $replacer->classmap_prefix = $this->config->getClassmapPrefix();
+        $replacer->setAutoloader($autoloader);
+        return $replacer;
     }
 
     public function replacePackageByAutoloader(Package $package, Autoloader $autoloader): void
@@ -102,15 +96,14 @@ class Replacer
         }
 
         if ($autoloader instanceof NamespaceAutoloader) {
-            $source_path = $this->workingDir . $this->targetDir
+            $sourcePath = $this->workingDir . $this->targetDir
                            . str_replace('\\', DIRECTORY_SEPARATOR, $autoloader->getNamespace());
-            $this->replaceInDirectory($autoloader, $source_path);
+            $this->replaceInDirectory($autoloader, $sourcePath);
         } elseif ($autoloader instanceof Classmap) {
-            $finder = new Finder();
-            $source_path = $this->workingDir . $this->config->getClassmapDirectory() . $package->getName();
-            $finder->files()->in($source_path);
+            $sourcePath = $this->workingDir . $this->config->getClassmapDirectory() . $package->getName();
+            $files = $this->files->getFilesFromPath($sourcePath);
 
-            foreach ($finder as $foundFile) {
+            foreach ($files as $foundFile) {
                 $targetFile = $foundFile->getRealPath();
 
                 if ('.php' == substr($targetFile, -4, 4)) {
@@ -127,26 +120,21 @@ class Replacer
         }
 
         $directory = trim($directory, '//');
-        $finder = new Finder();
-        $finder->files()->in($directory);
+        $files = $this->files->getFilesFromPath($directory);
 
         $replacedClasses = $this->replacedClasses;
 
-        foreach ($finder as $file) {
+        foreach ($files as $file) {
             $targetFile = $file->getPathName();
 
             if ('.php' == substr($targetFile, -4, 4)) {
-                try {
-                    $contents = $this->filesystem->read($targetFile);
-                } catch (UnableToReadFile $e) {
-                    continue;
-                }
+                $contents = $this->files->readFile($targetFile);
 
                 foreach ($replacedClasses as $original => $replacement) {
                     $contents = preg_replace_callback(
                         '/(.*)([^a-zA-Z0-9_\x7f-\xff])'. $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
                         function ($matches) use ($replacement) {
-                            if (preg_match('/(include|require)/', $matches[0], $output_array)) {
+                            if (preg_match('/(include|require)/', $matches[0])) {
                                 return $matches[0];
                             }
                             return $matches[1] . $matches[2] . $replacement . $matches[3];
@@ -159,17 +147,16 @@ class Replacer
                     }
                 }
 
-                $this->filesystem->write($targetFile, $contents);
+                $this->files->writeFile($targetFile, $contents);
             }
         }
     }
 
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
-        $finder = new Finder();
-        $finder->files()->in($directory);
+        $files = $this->files->getFilesFromPath($directory);
 
-        foreach ($finder as $file) {
+        foreach ($files as $file) {
             $targetFile = $file->getPathName();
 
             if ('.php' == substr($targetFile, -4, 4)) {
@@ -198,21 +185,24 @@ class Replacer
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replaceInDirectory($autoloader, $directory);
-                    } else {
-                        $directory = str_replace($this->workingDir, '', $directory);
-                        $this->replaceParentClassesInDirectory($directory);
+                        return;
                     }
-                } else {
-                    $directory = $this->workingDir .
-                        $this->config->getClassmapDirectory() . $parent->getName();
 
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $this->replaceInDirectory($autoloader, $directory);
-                    } else {
-                        $directory = str_replace($this->workingDir, '', $directory);
-                        $this->replaceParentClassesInDirectory($directory);
-                    }
+                    $directory = str_replace($this->workingDir, '', $directory);
+                    $this->replaceParentClassesInDirectory($directory);
+                    return;
                 }
+
+                $directory = $this->workingDir .
+                $this->config->getClassmapDirectory() . $parent->getName();
+
+                if ($autoloader instanceof NamespaceAutoloader) {
+                    $this->replaceInDirectory($autoloader, $directory);
+                    return;
+                }
+
+                $directory = str_replace($this->workingDir, '', $directory);
+                $this->replaceParentClassesInDirectory($directory);
             }
         }
     }
