@@ -47,4 +47,30 @@ class FilesHandler
         $finder = new Finder();
         return $finder->files()->in($path)->getIterator();
     }
+
+    public function getFile(string $path, string $fileName): Iterator
+    {
+        $finder = new Finder();
+        return $finder->files()->name($fileName)->in($path)->getIterator();
+    }
+
+    public function createDirectory(string $path): void
+    {
+        $this->filesystem->createDirectory($path);
+    }
+
+    public function deleteDirectory(string $path): void
+    {
+        $this->filesystem->deleteDirectory($path);
+    }
+
+    public function isDirectoryEmpty(string $path): bool
+    {
+        return count($this->filesystem->listContents($path, true)->toArray()) === 0;
+    }
+
+    public function copyFile(string $origin, string $destination): void
+    {
+        $this->filesystem->copy($origin, $destination);
+    }
 }

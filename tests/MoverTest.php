@@ -55,6 +55,7 @@ class MoverTest extends TestCase
         );
 
         $this->config = Mozart::loadFromString( json_encode($configArgs) );
+        $this->config->setWorkingDir($this->testsWorkingDir);
     }
 
     /**
