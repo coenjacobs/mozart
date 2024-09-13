@@ -180,23 +180,28 @@ class Mover
                                  . DIRECTORY_SEPARATOR . $path;
             $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
             $targetFile = str_replace($packageVendorPath, '', $targetFile);
-        } else {
-            $namespacePath = $package->getName();
-            $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
-            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
-
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
-                                 . DIRECTORY_SEPARATOR;
-            $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-            $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
+            $this->copyFile($file, $targetFile);
+            return $targetFile;
         }
 
+        $namespacePath = $package->getName();
+        $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
+        $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
+
+        $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
+                                . DIRECTORY_SEPARATOR;
+        $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
+        $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
+        $this->copyFile($file, $targetFile);
+        return $targetFile;
+    }
+
+    protected function copyFile(SplFileInfo $file, string $targetFile): void
+    {
         $this->files->copyFile(
             str_replace($this->workingDir, '', $file->getPathname()),
             $targetFile
         );
-
-        return $targetFile;
     }
 
     /**
