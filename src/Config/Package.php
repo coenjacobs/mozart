@@ -83,9 +83,8 @@ class Package
         return $this->dependencies;
     }
 
-    public function loadDependencies(): void
+    public function loadDependencies(PackageFinder $finder): void
     {
-        $finder = PackageFinder::instance();
         if ($this->isValidMozartConfig() && !empty($this->getExtra())) {
             $mozart = $this->getExtra()->getMozart();
 

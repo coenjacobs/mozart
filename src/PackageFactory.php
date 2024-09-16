@@ -8,21 +8,22 @@ use stdClass;
 class PackageFactory
 {
     /** @var array <string,Package> */
-    public static array $cache = [];
+    public array $cache = [];
 
-    public static function createPackage(string $path, stdClass $overrideAutoload = null): Package
+    public function createPackage(string $path, stdClass $overrideAutoload = null): Package
     {
-        if (isset(self::$cache[$path])) {
-            return self::$cache[$path];
+        if (isset($this->cache[$path])) {
+            return $this->cache[$path];
         }
 
-        $package = Package::loadFromFile($path);
+        $package = new Package();
+        $package = $package->loadFromFile($path);
 
         if (! empty($overrideAutoload)) {
             $package->setAutoload($overrideAutoload);
         }
 
-        self::$cache[$path] = $package;
+        $this->cache[$path] = $package;
         return $package;
     }
 }

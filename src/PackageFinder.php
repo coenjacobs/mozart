@@ -9,16 +9,11 @@ use Exception;
 class PackageFinder
 {
     private ?Mozart $config;
+    public PackageFactory $factory;
 
-    public static function instance(): self
+    public function __construct()
     {
-        static $instance;
-
-        if (! is_object($instance) || ! $instance instanceof self) {
-            $instance = new self();
-        }
-
-        return $instance;
+        $this->factory = new PackageFactory();
     }
 
     public function setConfig(Mozart $config): void
@@ -53,8 +48,8 @@ class PackageFinder
             $autoloaders = $overrideAutoload->$slug;
         }
 
-        $package = PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders);
-        $package->loadDependencies();
+        $package = $this->factory->createPackage($packageDir . 'composer.json', $autoloaders);
+        $package->loadDependencies($this);
         return $package;
     }
 

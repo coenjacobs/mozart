@@ -17,7 +17,6 @@ class Compose extends Command
     private Mover $mover;
     private Replacer $replacer;
     private Mozart $config;
-    private PackageFinder $finder;
     private string $workingDir;
 
     public function __construct()
@@ -48,7 +47,8 @@ class Compose extends Command
 
         $composerFile = $this->workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         try {
-            $package = PackageFactory::createPackage($composerFile);
+            $factory = new PackageFactory();
+            $package = $factory->createPackage($composerFile);
         } catch (Exception $e) {
             $output->write('Unable to read the composer.json file');
             return 1;
@@ -74,13 +74,13 @@ class Compose extends Command
             $require = $package->getRequire();
         }
 
-        $this->finder = PackageFinder::instance();
-        $this->finder->setConfig($this->config);
+        $finder = new PackageFinder();
+        $finder->setConfig($this->config);
 
-        $package->loadDependencies();
+        $package->loadDependencies($finder);
 
-        $packages = $this->finder->getPackagesBySlugs($require);
-        $packages = $this->finder->findPackages($packages);
+        $packages = $finder->getPackagesBySlugs($require);
+        $packages = $finder->findPackages($packages);
 
         $this->mover = new Mover($this->workingDir, $this->config);
         $this->replacer = new Replacer($this->workingDir, $this->config);
