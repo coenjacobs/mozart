@@ -163,27 +163,39 @@ class Mover
                 $this->movedPackages[] = $package->getName();
             }
         }
-
-        if ($this->config->getDeleteVendorDirectories()) {
-            $this->deletePackageVendorDirectories();
-        }
     }
 
     public function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): string
     {
         if ($autoloader instanceof NamespaceAutoloader) {
-            $namespacePath = $autoloader->getNamespacePath();
-            $replaceWith = $this->config->getDepDirectory() . $namespacePath;
-            $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
-
-            $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
-                                 . DIRECTORY_SEPARATOR . $path;
-            $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-            $targetFile = str_replace($packageVendorPath, '', $targetFile);
+            $targetFile = $this->getNamespaceTargetFile($package, $autoloader, $file, $path);
             $this->copyFile($file, $targetFile);
             return $targetFile;
         }
 
+        $targetFile = $this->getClassmapTargetFile($package, $file);
+        $this->copyFile($file, $targetFile);
+        return $targetFile;
+    }
+
+    private function getNamespaceTargetFile(
+        Package $package,
+        NamespaceAutoloader $autoloader,
+        SplFileInfo $file,
+        string $path
+    ): string {
+        $namespacePath = $autoloader->getNamespacePath();
+        $replaceWith = $this->config->getDepDirectory() . $namespacePath;
+        $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
+
+        $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
+                                . DIRECTORY_SEPARATOR . $path;
+        $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
+        return str_replace($packageVendorPath, '', $targetFile);
+    }
+
+    private function getClassmapTargetFile(Package $package, SplFileInfo $file): string
+    {
         $namespacePath = $package->getName();
         $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
         $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
@@ -191,9 +203,7 @@ class Mover
         $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
                                 . DIRECTORY_SEPARATOR;
         $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-        $targetFile = str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
-        $this->copyFile($file, $targetFile);
-        return $targetFile;
+        return str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
     }
 
     protected function copyFile(SplFileInfo $file, string $targetFile): void
@@ -209,7 +219,7 @@ class Mover
      * prevent packages that are prefixed/namespaced from being used or
      * influencing the output of the code. They just need to be gone.
      */
-    protected function deletePackageVendorDirectories(): void
+    public function deletePackageVendorDirectories(): void
     {
         foreach ($this->movedPackages as $movedPackage) {
             $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
