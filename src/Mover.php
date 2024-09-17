@@ -106,53 +106,20 @@ class Mover
 
     public function movePackage(Package $package): void
     {
-        if (in_array($package->getName(), $this->movedPackages)) {
-            return;
-        }
-
-        if ($this->config->isExcludedPackage($package)) {
+        if (!$this->shouldPackageBeMoved($package)) {
             return;
         }
 
         foreach ($package->getAutoloaders() as $autoloader) {
             if ($autoloader instanceof NamespaceAutoloader) {
                 foreach ($autoloader->paths as $path) {
-                    $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-                                   . $package->getName() . DIRECTORY_SEPARATOR . $path;
-
-                    $sourcePath = str_replace('/', DIRECTORY_SEPARATOR, $sourcePath);
-
-
-                    $files = $this->files->getFilesFromPath($sourcePath);
-                    foreach ($files as $file) {
+                    $filesToMove = $this->getNamespaceFilesToMove($package, $path);
+                    foreach ($filesToMove as $file) {
                         $this->moveFile($package, $autoloader, $file, $path);
                     }
                 }
             } elseif ($autoloader instanceof Classmap) {
-                $filesToMove = array();
-
-                foreach ($autoloader->files as $file) {
-                    $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->getName();
-
-                    $files = $this->files->getFile($sourcePath, $file);
-
-                    foreach ($files as $foundFile) {
-                        $filePath = $foundFile->getRealPath();
-                        $filesToMove[ $filePath ] = $foundFile;
-                    }
-                }
-
-                foreach ($autoloader->paths as $path) {
-                    $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                                   . DIRECTORY_SEPARATOR . $package->getName() . DIRECTORY_SEPARATOR . $path;
-
-                    $files = $this->files->getFilesFromPath($sourcePath);
-                    foreach ($files as $foundFile) {
-                        $filePath = $foundFile->getRealPath();
-                        $filesToMove[ $filePath ] = $foundFile;
-                    }
-                }
+                $filesToMove = $this->getClassmapFilesToMove($autoloader, $package);
 
                 foreach ($filesToMove as $foundFile) {
                     $this->moveFile($package, $autoloader, $foundFile);
@@ -163,6 +130,74 @@ class Mover
                 $this->movedPackages[] = $package->getName();
             }
         }
+    }
+
+    private function shouldPackageBeMoved(Package $package): bool
+    {
+        if (in_array($package->getName(), $this->movedPackages)) {
+            return false;
+        }
+
+        if ($this->config->isExcludedPackage($package)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array<string,SplFileInfo>
+     */
+    private function getNamespaceFilesToMove(Package $package, string $path): array
+    {
+        $filesToMove = array();
+
+        $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
+                        . $package->getName() . DIRECTORY_SEPARATOR . $path;
+
+        $sourcePath = str_replace('/', DIRECTORY_SEPARATOR, $sourcePath);
+
+        $files = $this->files->getFilesFromPath($sourcePath);
+
+        foreach ($files as $foundFile) {
+            $filePath = $foundFile->getRealPath();
+            $filesToMove[ $filePath ] = $foundFile;
+        }
+
+        return $filesToMove;
+    }
+
+    /**
+     * @return array<string,SplFileInfo>
+     */
+    private function getClassmapFilesToMove(Classmap $autoloader, Package $package): array
+    {
+        $filesToMove = array();
+
+        foreach ($autoloader->files as $file) {
+            $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                            . DIRECTORY_SEPARATOR . $package->getName();
+
+            $files = $this->files->getFile($sourcePath, $file);
+
+            foreach ($files as $foundFile) {
+                $filePath = $foundFile->getRealPath();
+                $filesToMove[ $filePath ] = $foundFile;
+            }
+        }
+
+        foreach ($autoloader->paths as $path) {
+            $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
+                            . DIRECTORY_SEPARATOR . $package->getName() . DIRECTORY_SEPARATOR . $path;
+
+            $files = $this->files->getFilesFromPath($sourcePath);
+            foreach ($files as $foundFile) {
+                $filePath = $foundFile->getRealPath();
+                $filesToMove[ $filePath ] = $foundFile;
+            }
+        }
+
+        return $filesToMove;
     }
 
     public function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): string
