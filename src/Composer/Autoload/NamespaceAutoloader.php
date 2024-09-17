@@ -2,7 +2,7 @@
 
 namespace CoenJacobs\Mozart\Composer\Autoload;
 
-abstract class NamespaceAutoloader implements Autoloader
+abstract class NamespaceAutoloader extends AbstractAutoloader
 {
     /** @var string */
     public $namespace = '';

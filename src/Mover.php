@@ -16,9 +16,6 @@ class Mover
     /** @var string */
     protected $workingDir;
 
-    /** @var string */
-    protected $targetDir;
-
     /** @var Mozart */
     protected $config;
 
@@ -29,9 +26,8 @@ class Mover
 
     public function __construct(string $workingDir, Mozart $config)
     {
-        $this->config = $config;
         $this->workingDir = $workingDir;
-        $this->targetDir = $this->config->getDepDirectory();
+        $this->config = $config;
         $this->files = new FilesHandler($config);
     }
 
@@ -57,30 +53,40 @@ class Mover
      */
     private function deleteDepTargetDirs(Package $package): void
     {
-        foreach ($package->getAutoloaders() as $packageAutoloader) {
-            $autoloaderType = get_class($packageAutoloader);
+        foreach ($package->getAutoloaders() as $autoloader) {
+            $autoloaderType = get_class($autoloader);
+            $outputDir = '';
 
             switch ($autoloaderType) {
                 case Psr0::class:
                 case Psr4::class:
-                    $outputDir = $this->config->getDepDirectory() . $packageAutoloader->getSearchNamespace();
-                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
-                    $this->files->deleteDirectory($outputDir);
+                    $outputDir = $autoloader->getOutputDir(
+                        $this->config->getDepDirectory(),
+                        $autoloader->getSearchNamespace()
+                    );
                     break;
                 case Classmap::class:
-                    $outputDir = $this->config->getClassmapDirectory() . $package->getName();
-                    $outputDir = str_replace('\\', DIRECTORY_SEPARATOR, $outputDir);
-                    $this->files->deleteDirectory($outputDir);
+                    $outputDir = $autoloader->getOutputDir(
+                        $this->config->getClassmapDirectory(),
+                        $package->getName()
+                    );
                     break;
             }
+
+            if (empty($outputDir)) {
+                continue;
+            }
+
+            $this->files->deleteDirectory($outputDir);
         }
+
 
         foreach ($package->getDependencies() as $subPackage) {
             $this->deleteDepTargetDirs($subPackage);
         }
     }
 
-    public function deleteEmptyDirs(): void
+    private function deleteEmptyDirs(): void
     {
         if ($this->files->isDirectoryEmpty($this->config->getDepDirectory())) {
             $this->files->deleteDirectory($this->config->getDepDirectory());
@@ -104,7 +110,7 @@ class Mover
         $this->deleteEmptyDirs();
     }
 
-    public function movePackage(Package $package): void
+    private function movePackage(Package $package): void
     {
         if (!$this->shouldPackageBeMoved($package)) {
             return;
@@ -200,17 +206,16 @@ class Mover
         return $filesToMove;
     }
 
-    public function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): string
+    private function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): void
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $targetFile = $this->getNamespaceTargetFile($package, $autoloader, $file, $path);
             $this->copyFile($file, $targetFile);
-            return $targetFile;
+            return;
         }
 
         $targetFile = $this->getClassmapTargetFile($package, $file);
         $this->copyFile($file, $targetFile);
-        return $targetFile;
     }
 
     private function getNamespaceTargetFile(
@@ -241,7 +246,7 @@ class Mover
         return str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
     }
 
-    protected function copyFile(SplFileInfo $file, string $targetFile): void
+    private function copyFile(SplFileInfo $file, string $targetFile): void
     {
         $this->files->copyFile(
             str_replace($this->workingDir, '', $file->getPathname()),

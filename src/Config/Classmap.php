@@ -2,10 +2,10 @@
 
 namespace CoenJacobs\Mozart\Config;
 
-use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
+use CoenJacobs\Mozart\Composer\Autoload\AbstractAutoloader;
 use Exception;
 
-class Classmap implements Autoloader
+class Classmap extends AbstractAutoloader
 {
     /** @var string[] */
     public $files = [];

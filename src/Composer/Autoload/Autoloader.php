@@ -9,4 +9,5 @@ interface Autoloader
      */
     public function processConfig($autoloadConfig): void;
     public function getSearchNamespace(): string;
+    public function getOutputDir(string $basePath, string $autoloadPath): string;
 }
