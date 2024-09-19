@@ -39,6 +39,9 @@ class Compose extends Command
         $this->setHelp('');
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (! $this->workingDir) {
