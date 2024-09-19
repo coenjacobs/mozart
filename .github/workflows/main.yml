@@ -77,3 +77,20 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Run mess detector
         run: docker compose run --rm actions-tester composer test:phpmd
+  doc-check:
+    runs-on: ubuntu-latest
+    name: Documentation check
+    steps:
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v4
+        with:
+          context: "{{defaultContext}}"
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Run doc check
+        run: docker compose run --rm actions-tester composer test:docs
