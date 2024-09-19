@@ -13,7 +13,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World {', $contents);
     }
@@ -24,7 +24,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'abstract class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals('abstract class Mozart_Hello_World {', $contents);
     }
@@ -35,7 +35,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'interface Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals('interface Mozart_Hello_World {', $contents);
     }
@@ -46,7 +46,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World extends Bye_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World extends Bye_World {', $contents);
     }
@@ -57,7 +57,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World implements Bye_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals('class Mozart_Hello_World implements Bye_World {', $contents);
     }
@@ -68,7 +68,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = 'class Hello_World {';
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $replacer->replace($contents);
         $this->assertArrayHasKey('Hello_World', $replacer->replacedClasses);
     }
@@ -79,7 +79,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = "class Hello_World\n{";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals("class Mozart_Hello_World\n{", $contents);
     }
@@ -94,7 +94,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $contents = "class Hello_World";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $contents = $replacer->replace($contents);
         $this->assertEquals("class Mozart_Hello_World", $contents);
     }
@@ -114,7 +114,7 @@ class ClassMapReplacerTest extends TestCase
         class Hello_World
         ";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $result = $replacer->replace($input);
 
         $this->assertEquals($input, $result);
@@ -131,7 +131,7 @@ class ClassMapReplacerTest extends TestCase
     {
         $input = "namespace Mozart; class Hello_World";
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $result = $replacer->replace($input);
 
         $this->assertEquals($input, $result);
@@ -140,7 +140,8 @@ class ClassMapReplacerTest extends TestCase
     /**
      * It's possible to have multiple namespaces inside one file.
      *
-     * To have two classes in one file, one in a namespace and the other not, the global namespace needs to be explicit.
+     * To have two classes in one file, one in a namespace and the other not,
+     * the global namespace needs to be explicit.
      *
      * @test
      */
@@ -158,7 +159,7 @@ class ClassMapReplacerTest extends TestCase
 		";
 
         $replacer = new ClassmapReplacer();
-        $replacer->classmap_prefix = 'Mozart_';
+        $replacer->classmapPrefix = 'Mozart_';
         $result = $replacer->replace($input);
 
         $this->assertStringNotContainsString('Mozart_A_Class', $result);

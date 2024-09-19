@@ -24,10 +24,11 @@ class NamespaceReplacerTest extends TestCase
     protected static function createReplacer(string $namespace, string $prefix = self::PREFIX) : NamespaceReplacer
     {
         $autoloader = new Psr0;
-        $autoloader->namespace = $namespace;
+        $autoloader->setNamespace($namespace);
+
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
-        $replacer->dep_namespace = $prefix;
+        $replacer->depNamespace = $prefix;
 
         return $replacer;
     }
@@ -83,8 +84,10 @@ class NamespaceReplacerTest extends TestCase
         $chickenReplacer = self::createReplacer('Chicken');
         $eggReplacer = self::createReplacer('Egg');
 
-        // This is a tricky situation. We are referencing Chicken\Egg,
-        // but Egg *also* exists as a separate top level class.
+        /**
+         * This is a tricky situation. We are referencing Chicken\Egg,but Egg
+         * *also* exists as a separate top level class.
+         */
         $contents = 'use Chicken\\Egg;';
         $expected = 'use My\\Mozart\\Prefix\\Chicken\\Egg;';
 

@@ -10,7 +10,13 @@ class Autoload
     /** @var array<Autoloader> */
     public array $autoloaders = [];
 
-    public function setupAutoloaders(stdClass $autoloadData): void
+    /**
+     * Loads the autoloaders provided in the loaded composer.json file, which is
+     * then passed to this method as a stdClass. It registers each autoloader,
+     * which are then used to access the paths to read and replace contents of
+     * files that these autoloaders allow access to.
+     */
+    public function setupAutoloaders(stdClass $autoloadData, Package $package): void
     {
         $autoloaders = [];
 
@@ -18,8 +24,9 @@ class Autoload
             $psr4Autoloaders = (array) $autoloadData->{'psr-4'};
             foreach ($psr4Autoloaders as $key => $value) {
                 $autoloader = new Psr4();
-                $autoloader->namespace = $key;
+                $autoloader->setNamespace($key);
                 $autoloader->processConfig($value);
+                $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;
             }
         }
@@ -28,8 +35,9 @@ class Autoload
             $psr0Autoloaders = (array) $autoloadData->{'psr-0'};
             foreach ($psr0Autoloaders as $key => $value) {
                 $autoloader = new Psr0();
-                $autoloader->namespace = $key;
+                $autoloader->setNamespace($key);
                 $autoloader->processConfig($value);
+                $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;
             }
         }
@@ -37,6 +45,7 @@ class Autoload
         if (isset($autoloadData->classmap)) {
             $autoloader = new Classmap();
             $autoloader->processConfig($autoloadData->classmap);
+            $autoloader->setPackage($package);
             $autoloaders[] = $autoloader;
         }
 

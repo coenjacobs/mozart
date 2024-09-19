@@ -18,9 +18,8 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * Before each test ensure the current working directory is this one.
-     *
-     * Record the previous PHPUnit cwd to restore after.
+     * Before each test ensure the current working directory is this one. Record
+     * the previous PHPUnit cwd to restore after.
      */
     public function setUp(): void
     {
@@ -30,9 +29,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json is absent, instead of failing with:
-     * "failed to open stream: No such file or directory"
-     * a better message should be written to the OutputInterface.
+     * When composer.json is absent, instead of failing with: "failed to open
+     * stream: No such file or directory" a better message should be written to
+     * the OutputInterface.
      *
      * @test
      */
@@ -56,9 +55,8 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When json_decode fails, instead of
-     * "Trying to get property 'extra' of non-object"
-     * a better message should be written to the OutputInterface.
+     * When json_decode fails, instead of "Trying to get property 'extra' of
+     * non-object" a better message should be written to the OutputInterface.
      *
      * @test
      */
@@ -86,9 +84,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra is absent, instead of
-     * "Undefined property: stdClass::$extra"
-     * a better message should be written to the OutputInterface.
+     * When composer.json->extra is absent, instead of "Undefined property:
+     * stdClass::$extra" a better message should be written to the
+     * OutputInterface.
      *
      * @test
      */
@@ -117,9 +115,9 @@ class ComposeTest extends TestCase
 
 
     /**
-     * When composer.json->extra is not an object, instead of
-     * "Trying to get property 'mozart' of non-object"
-     * a better message should be written to the OutputInterface.
+     * When composer.json->extra is not an object, instead of "Trying to get
+     * property 'mozart' of non-object" a better message should be written to
+     * the OutputInterface.
      *
      * @test
      */
@@ -147,9 +145,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra->mozart is absent, instead of
-     * "Undefined property: stdClass::$mozart"
-     * a better message should be written to the OutputInterface.
+     * When composer.json->extra->mozart is absent, instead of "Undefined
+     * property: stdClass::$mozart" a better message should be written to the
+     * OutputInterface.
      *
      * @test
      */
@@ -177,11 +175,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra->mozart is malformed, instead of
-     * "Undefined property: stdClass::$mozart"
-     * a better message should be written to the OutputInterface.
-     *
-     * is_object() added.
+     * When composer.json->extra->mozart is malformed, instead of "Undefined
+     * property: stdClass::$mozart" a better message should be written to the
+     * OutputInterface.
      *
      * @test
      */

@@ -17,14 +17,7 @@ class Compose extends Command
     private Mover $mover;
     private Replacer $replacer;
     private Mozart $config;
-    private PackageFinder $finder;
     private string $workingDir;
-
-    public function __construct()
-    {
-        $this->workingDir = getcwd();
-        parent::__construct();
-    }
 
     protected function configure(): void
     {
@@ -33,15 +26,23 @@ class Compose extends Command
         $this->setHelp('');
     }
 
+    /**
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (! $this->workingDir) {
-            throw new Exception('Could not determine working directory.');
+        $workingDir = getcwd();
+
+        if (! $workingDir) {
+            throw new Exception('Unable to determine the working directory.');
         }
 
-        $composerFile = $this->workingDir . DIRECTORY_SEPARATOR. 'composer.json';
+        $this->workingDir = $workingDir;
+
+        $composerFile = $this->workingDir . DIRECTORY_SEPARATOR . 'composer.json';
         try {
-            $package = PackageFactory::createPackage($composerFile, null, false);
+            $factory = new PackageFactory();
+            $package = $factory->createPackage($composerFile);
         } catch (Exception $e) {
             $output->write('Unable to read the composer.json file');
             return 1;
@@ -67,22 +68,24 @@ class Compose extends Command
             $require = $package->getRequire();
         }
 
-        $this->finder = PackageFinder::instance();
-        $this->finder->setConfig($this->config);
+        $finder = new PackageFinder();
+        $finder->setConfig($this->config);
 
-        $package->loadDependencies();
+        $package->loadDependencies($finder);
+        $packages = $finder->findPackages($package->getDependencies());
 
-        $packages = $this->finder->getPackagesBySlugs($require);
-        $packages = $this->finder->findPackages($packages);
-
-        $this->mover = new Mover($this->workingDir, $this->config);
-        $this->replacer = new Replacer($this->workingDir, $this->config);
+        $this->mover = new Mover($this->config);
+        $this->replacer = new Replacer($this->config);
 
         $this->mover->deleteTargetDirs($packages);
         $this->mover->movePackages($packages);
         $this->replacer->replacePackages($packages);
         $this->replacer->replaceParentInTree($packages);
         $this->replacer->replaceParentClassesInDirectory($this->config->getClassmapDirectory());
+
+        if ($this->config->getDeleteVendorDirectories()) {
+            $this->mover->deletePackageVendorDirectories();
+        }
 
         return 0;
     }

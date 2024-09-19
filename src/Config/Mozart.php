@@ -11,21 +11,41 @@ class Mozart
 {
     use ReadsConfig;
 
-    public string $dep_namespace;
-    public string $dep_directory;
-    public string $classmap_directory;
-    public string $classmap_prefix;
+    public string $depNamespace;
+    public string $depDirectory;
+    public string $classmapDir;
+    public string $classmapPrefix;
 
     /** @var string[] */
     public array $packages = [];
 
     /** @var string[] */
-    public array $excluded_packages = [];
+    public array $excludedPackages = [];
 
-    public OverrideAutoload $override_autoload;
-    public bool $delete_vendor_directories;
+    public OverrideAutoload $overrideAutoload;
+    public bool $deleteVendorDir = true;
 
     public string $workingDir = '';
+
+    public function setDepNamespace(string $depNamespace): void
+    {
+        $this->depNamespace = $depNamespace;
+    }
+
+    public function setDepDirectory(string $depDirectory): void
+    {
+        $this->depDirectory = $depDirectory;
+    }
+
+    public function setClassmapDirectory(string $classmapDirectory): void
+    {
+        $this->classmapDir = $classmapDirectory;
+    }
+
+    public function setClassmapPrefix(string $classmapPrefix): void
+    {
+        $this->classmapPrefix = $classmapPrefix;
+    }
 
     /**
      * @return string[]
@@ -44,21 +64,26 @@ class Mozart
     }
 
     /**
-     * @param string[] $excluded_packages
+     * @param string[] $excludedPackages
      */
-    public function setExcludedPackages(array $excluded_packages): void
+    public function setExcludedPackages(array $excludedPackages): void
     {
-        $this->excluded_packages = $excluded_packages;
+        $this->excludedPackages = $excludedPackages;
     }
 
     public function setOverrideAutoload(stdClass $object): void
     {
-        $this->override_autoload = new OverrideAutoload($object);
+        $this->overrideAutoload = new OverrideAutoload($object);
+    }
+
+    public function setDeleteVendorDir(bool $deleteVendorDir): void
+    {
+        $this->deleteVendorDir = $deleteVendorDir;
     }
 
     public function isValidMozartConfig(): bool
     {
-        $required = [ 'dep_namespace', 'dep_directory', 'classmap_directory', 'classmap_prefix' ];
+        $required = [ 'depNamespace', 'depDirectory', 'classmapDir', 'classmapPrefix' ];
 
         foreach ($required as $requiredProp) {
             if (empty($this->$requiredProp)) {
@@ -80,22 +105,22 @@ class Mozart
      */
     public function getDepDirectory(): string
     {
-        return rtrim($this->dep_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->depDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getClassmapDirectory(): string
     {
-        return rtrim($this->classmap_directory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->classmapDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getDeleteVendorDirectories(): bool
     {
-        return $this->delete_vendor_directories;
+        return $this->deleteVendorDir;
     }
 
     public function getDependencyNamespace(): string
     {
-        $namespace = preg_replace("/\\\{2,}$/", "\\", $this->dep_namespace."\\");
+        $namespace = preg_replace("/\\\{2,}$/", "\\", $this->depNamespace . "\\");
 
         if (empty($namespace)) {
             throw new Exception('Could not get target dependency namespace');
@@ -106,12 +131,12 @@ class Mozart
 
     public function getClassmapPrefix(): string
     {
-        return $this->classmap_prefix;
+        return $this->classmapPrefix;
     }
 
     public function getOverrideAutoload(): OverrideAutoload
     {
-        return $this->override_autoload;
+        return $this->overrideAutoload;
     }
 
     /**
@@ -119,7 +144,7 @@ class Mozart
      */
     public function getExcludedPackages(): array
     {
-        return $this->excluded_packages;
+        return $this->excludedPackages;
     }
 
     public function setWorkingDir(string $workingDir): void
@@ -129,6 +154,6 @@ class Mozart
 
     public function getWorkingDir(): string
     {
-        return $this->workingDir;
+        return rtrim($this->workingDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 }

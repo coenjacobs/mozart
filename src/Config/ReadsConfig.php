@@ -8,7 +8,7 @@ use stdClass;
 
 trait ReadsConfig
 {
-    public static function loadFromFile(string $filePath): self
+    public function loadFromFile(string $filePath): self
     {
         $fileContents = file_get_contents($filePath);
 
@@ -16,13 +16,13 @@ trait ReadsConfig
             throw new Exception('Could not read config from provided file.');
         }
 
-        return self::loadFromString($fileContents);
+        return $this->loadFromString($fileContents);
     }
 
     /**
      * @param array<mixed> $config
      */
-    public static function loadFromArray(array $config): self
+    public function loadFromArray(array $config): self
     {
         $encoded = json_encode($config);
 
@@ -36,10 +36,10 @@ trait ReadsConfig
             throw new Exception('Could not read config from provided array.');
         }
 
-        return self::loadFromStdClass($config);
+        return $this->loadFromStdClass($config);
     }
 
-    public static function loadFromStdClass(stdClass $config): self
+    public function loadFromStdClass(stdClass $config): self
     {
         $mapper = new JsonMapper();
         $mapper->bEnforceMapType = false;
@@ -52,7 +52,7 @@ trait ReadsConfig
         return $object;
     }
 
-    public static function loadFromString(string $config): self
+    public function loadFromString(string $config): self
     {
         $config = json_decode($config);
 
