@@ -140,7 +140,8 @@ class ClassMapReplacerTest extends TestCase
     /**
      * It's possible to have multiple namespaces inside one file.
      *
-     * To have two classes in one file, one in a namespace and the other not, the global namespace needs to be explicit.
+     * To have two classes in one file, one in a namespace and the other not,
+     * the global namespace needs to be explicit.
      *
      * @test
      */

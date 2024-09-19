@@ -7,17 +7,11 @@ use Exception;
 class NamespaceReplacer extends BaseReplacer
 {
     /**
-     * The prefix to add to existing namespaces.
-     *
-     * @var string "My\Mozart\Prefix".
+     * The prefix to add to existing namespaces, for example: "My\Mozart\Prefix"
      */
-    public $depNamespace = '';
+    public string $depNamespace = '';
 
-    /**
-     * @param string $contents The text to make replacements in.
-     * @param null $file Only used in ClassmapReplacer (for recording which files were changed).
-     */
-    public function replace(string $contents, string $file = null): string
+    public function replace(string $contents): string
     {
         $searchNamespace = preg_quote($this->autoloader->getSearchNamespace(), '/');
         $dependencyNamespace = preg_quote($this->depNamespace, '/');

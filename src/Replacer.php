@@ -200,7 +200,8 @@ class Replacer
     }
 
     /**
-     * Get an array containing all the dependencies and dependencies
+     * Get an array containing all the dependencies and dependencies.
+     *
      * @param Package   $package
      * @param Package[] $dependencies
      * @return Package[]

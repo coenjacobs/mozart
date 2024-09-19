@@ -1,7 +1,8 @@
 <?php
 /**
- * The purpose of this file is to find and update classnames (and interfaces...) in their declarations.
- * Those replaced are recorded and their uses elsewhere are updated in a later step.
+ * The purpose of this file is to find and update classnames (and interfaces...)
+ * in their declarations. Those replaced are recorded and their uses elsewhere
+ * are updated in a later step.
  */
 
 namespace CoenJacobs\Mozart\Replace;

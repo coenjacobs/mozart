@@ -19,19 +19,6 @@ class Compose extends Command
     private Mozart $config;
     private string $workingDir;
 
-    public function __construct()
-    {
-        $workingDir = getcwd();
-
-        if (! $workingDir) {
-            throw new Exception('Unable to determine the working directory.');
-        }
-
-        $this->workingDir = $workingDir;
-
-        parent::__construct();
-    }
-
     protected function configure(): void
     {
         $this->setName('compose');
@@ -44,9 +31,13 @@ class Compose extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (! $this->workingDir) {
-            throw new Exception('Could not determine working directory.');
+        $workingDir = getcwd();
+
+        if (! $workingDir) {
+            throw new Exception('Unable to determine the working directory.');
         }
+
+        $this->workingDir = $workingDir;
 
         $composerFile = $this->workingDir . DIRECTORY_SEPARATOR. 'composer.json';
         try {

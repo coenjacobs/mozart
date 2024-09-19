@@ -12,9 +12,7 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class Mover
 {
-    /** @var Mozart */
-    protected $config;
-
+    protected Mozart $config;
     protected FilesHandler $files;
 
     /** @var array<string> */
@@ -30,9 +28,11 @@ class Mover
     }
 
     /**
-     * Create the required `dep_directory` and `classmap_directory` and delete targetDirs of packages about to be moved.
+     * Create the required `dep_directory` and `classmap_directory` and delete
+     * targetDirs of packages about to be moved.
      *
-     * @param Package[] $packages The packages that, in the next step, will be moved.
+     * @param Package[] $packages The packages to delete the target directories
+     * for, which will be moved in the next step.
      */
     public function deleteTargetDirs($packages): void
     {
@@ -45,9 +45,8 @@ class Mover
     }
 
     /**
-     * Delete the directories about to be used for packages earmarked for Mozart namespacing.
-     *
-     * @visibility private to allow recursion through packages and subpackages.
+     * Delete the directories about to be used for packages earmarked for Mozart
+     * namespacing.
      */
     private function deleteDepTargetDirs(Package $package): void
     {
@@ -178,8 +177,10 @@ class Mover
 
             $this->files->deleteDirectory($packageDir);
 
-            //Delete parent directory too if it became empty
-            //(because that package was the only one from that vendor)
+            /**
+             * Delete parent directory too if it became empty (because that
+             * package was the only one from that vendor).
+             */
             $parentDir = dirname($packageDir);
             if ($this->files->isDirectoryEmpty($parentDir)) {
                 $this->files->deleteDirectory($parentDir);

@@ -69,11 +69,10 @@ class PackageFinder
     }
 
     /**
-     * Loops through all dependencies and their dependencies and so on...
-     * will eventually return a list of all packages required by the full tree.
+     * Loops through all dependencies and their dependencies and so on... will
+     * eventually return a list of all packages required by the full tree.
      *
      * @param Package[] $packages
-     *
      * @return Package[]
      */
     public function findPackages(array $packages): array

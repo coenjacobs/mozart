@@ -18,7 +18,7 @@ class Autoload
             $psr4Autoloaders = (array) $autoloadData->{'psr-4'};
             foreach ($psr4Autoloaders as $key => $value) {
                 $autoloader = new Psr4();
-                $autoloader->namespace = $key;
+                $autoloader->setNamespace($key);
                 $autoloader->processConfig($value);
                 $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;
@@ -29,7 +29,7 @@ class Autoload
             $psr0Autoloaders = (array) $autoloadData->{'psr-0'};
             foreach ($psr0Autoloaders as $key => $value) {
                 $autoloader = new Psr0();
-                $autoloader->namespace = $key;
+                $autoloader->setNamespace($key);
                 $autoloader->processConfig($value);
                 $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;

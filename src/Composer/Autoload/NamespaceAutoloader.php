@@ -7,24 +7,23 @@ use Symfony\Component\Finder\SplFileInfo;
 
 abstract class NamespaceAutoloader extends AbstractAutoloader
 {
-    /** @var string */
-    public $namespace = '';
+    public string $namespace = '';
 
     /**
-     * The subdir of the vendor/domain/package directory that contains the files for this autoloader type.
+     * The subdir of the vendor/domain/package directory that contains the files
+     * for this autoloader type.  e.g. src/
      *
-     * e.g. src/
-     *
-     * @var array<string>
+     * @var string[]
      */
     public $paths = [];
 
     private FilesHandler $fileHandler;
 
     /**
-     * A package's composer.json config autoload key's value, where $key is `psr-1`|`psr-4`|`classmap`.
+     * A package's composer.json config autoload key's value, where $key is
+     * `psr-0`|`psr-4`|`classmap`.
      *
-     * @param $autoloadConfig
+     * @inheritdoc
      */
     public function processConfig($autoloadConfig): void
     {
@@ -36,6 +35,11 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
             return;
         }
         array_push($this->paths, $autoloadConfig);
+    }
+
+    public function setNamespace(string $namespace): void
+    {
+        $this->namespace = $namespace;
     }
 
     public function getNamespace(): string
