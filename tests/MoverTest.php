@@ -5,6 +5,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\Console\Commands\Compose;
 use CoenJacobs\Mozart\Mover;
+use CoenJacobs\Mozart\PackageFinder;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Console\Input\InputInterface;
@@ -54,7 +55,9 @@ class MoverTest extends TestCase
             ),
         );
 
-        $this->config = Mozart::loadFromString( json_encode($configArgs) );
+        $mozart = new Mozart();
+        $this->config = $mozart->loadFromString( json_encode($configArgs) );
+        $this->config->setWorkingDir($this->testsWorkingDir);
     }
 
     /**
@@ -65,7 +68,7 @@ class MoverTest extends TestCase
     #[Test]
     public function it_creates_absent_dirs(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
 
         $packages = array();
 
@@ -85,7 +88,7 @@ class MoverTest extends TestCase
     #[Test]
     public function it_is_unpertrubed_by_existing_dirs(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
 
         if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
             mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
@@ -137,11 +140,14 @@ class MoverTest extends TestCase
             if ( ! empty( $overrideAutoload ) ) {
                 $overrideAutoload = $overrideAutoload->getByKey( $packageString );
             }
-            $parsedPackage = PackageFactory::createPackage($testDummyComposerPath, $overrideAutoload);
+            $factory = new PackageFactory();
+            $finder = new PackageFinder();
+            $parsedPackage = $factory->createPackage($testDummyComposerPath, $overrideAutoload);
+            $parsedPackage->loadDependencies($finder);
             $packages[] = $parsedPackage;
         }
 
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
         $mover->deleteTargetDirs($packages);
 
         $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'Pimple');

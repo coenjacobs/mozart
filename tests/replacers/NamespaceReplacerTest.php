@@ -27,7 +27,7 @@ class NamespaceReplacerTest extends TestCase
         $autoloader->namespace = $namespace;
         $replacer = new NamespaceReplacer();
         $replacer->setAutoloader($autoloader);
-        $replacer->dep_namespace = $prefix;
+        $replacer->depNamespace = $prefix;
 
         return $replacer;
     }

@@ -9,16 +9,11 @@ use Exception;
 class PackageFinder
 {
     private ?Mozart $config;
+    public PackageFactory $factory;
 
-    public static function instance(): self
+    public function __construct()
     {
-        static $instance;
-
-        if (! is_object($instance) || ! $instance instanceof self) {
-            $instance = new self();
-        }
-
-        return $instance;
+        $this->factory = new PackageFactory();
     }
 
     public function setConfig(Mozart $config): void
@@ -48,12 +43,14 @@ class PackageFinder
         }
 
         $autoloaders = null;
-        $override_autoload = $this->config->getOverrideAutoload();
-        if ($override_autoload !== false && isset($override_autoload->$slug)) {
-            $autoloaders = $override_autoload->$slug;
+        $overrideAutoload = $this->config->getOverrideAutoload();
+        if ($overrideAutoload !== false && isset($overrideAutoload->$slug)) {
+            $autoloaders = $overrideAutoload->$slug;
         }
 
-        return PackageFactory::createPackage($packageDir . 'composer.json', $autoloaders, true);
+        $package = $this->factory->createPackage($packageDir . 'composer.json', $autoloaders);
+        $package->loadDependencies($this);
+        return $package;
     }
 
     /**
@@ -84,8 +81,9 @@ class PackageFinder
         foreach ($packages as $package) {
             $dependencies = $package->getDependencies();
 
-            $package->registerDependencies($this->findPackages($dependencies));
-            $packages[$package->getName()] = $package;
+            if (! empty($dependencies)) {
+                $packages = array_merge($packages, $this->findPackages($dependencies));
+            }
         }
 
         return $packages;
