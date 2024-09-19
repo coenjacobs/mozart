@@ -41,14 +41,16 @@
         "symfony/finder": "^5.4",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/php-compatibility": "dev-develop",
-        "phpmd/phpmd": "^2.15"
+        "phpmd/phpmd": "^2.15",
+        "niels-de-blaauw/php-doc-check": "^0.4.0"
     },
     "scripts": {
         "test": [
             "@test:lint",
             "@test:phpunit",
             "@test:phpstan",
-            "@test:phpmd"
+            "@test:phpmd",
+            "@test:docs"
         ],
         "test:lint": [
             "composer validate",
@@ -62,6 +64,9 @@
         ],
         "test:phpmd": [
             "./vendor/bin/phpmd src ansi phpmd.xml.dist"
+        ],
+        "test:docs": [
+            "./vendor/bin/php-doc-check src"
         ]
     }
 }
