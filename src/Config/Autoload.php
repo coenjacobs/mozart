@@ -10,6 +10,12 @@ class Autoload
     /** @var array<Autoloader> */
     public array $autoloaders = [];
 
+    /**
+     * Loads the autoloaders provided in the loaded composer.json file, which is
+     * then passed to this method as a stdClass. It registers each autoloader,
+     * which are then used to access the paths to read and replace contents of
+     * files that these autoloaders allow access to.
+     */
     public function setupAutoloaders(stdClass $autoloadData, Package $package): void
     {
         $autoloaders = [];

@@ -21,6 +21,12 @@ class PackageFinder
         $this->config = $config;
     }
 
+    /**
+     * Returns a Package object for the package based on the provided slug (in
+     * vendor/package format). The data of the package is loaded if a valid
+     * installed package could be found based on the slug, which is then being
+     * used to read the composer.json file of the package.
+     */
     public function getPackageBySlug(string $slug): ?Package
     {
         /**
@@ -54,6 +60,9 @@ class PackageFinder
     }
 
     /**
+     * Returns Package objects which are loaded based on the provided array of
+     * slugs (in vendor/package format).
+     *
      * @param string[] $slugs
      * @return Package[]
      */

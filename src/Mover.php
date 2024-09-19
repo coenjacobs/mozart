@@ -106,6 +106,11 @@ class Mover
         $this->deleteEmptyDirs();
     }
 
+    /**
+     * Moves each file for each autoloader, for the provided package. Each
+     * package will only be moved once, to prevent duplicates, so the package
+     * name is registered at the end of the method.
+     */
     private function movePackage(Package $package): void
     {
         if (!$this->shouldPackageBeMoved($package)) {
