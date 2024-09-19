@@ -10,7 +10,7 @@ class Autoload
     /** @var array<Autoloader> */
     public array $autoloaders = [];
 
-    public function setupAutoloaders(stdClass $autoloadData): void
+    public function setupAutoloaders(stdClass $autoloadData, Package $package): void
     {
         $autoloaders = [];
 
@@ -20,6 +20,7 @@ class Autoload
                 $autoloader = new Psr4();
                 $autoloader->namespace = $key;
                 $autoloader->processConfig($value);
+                $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;
             }
         }
@@ -30,6 +31,7 @@ class Autoload
                 $autoloader = new Psr0();
                 $autoloader->namespace = $key;
                 $autoloader->processConfig($value);
+                $autoloader->setPackage($package);
                 $autoloaders[] = $autoloader;
             }
         }
@@ -37,6 +39,7 @@ class Autoload
         if (isset($autoloadData->classmap)) {
             $autoloader = new Classmap();
             $autoloader->processConfig($autoloadData->classmap);
+            $autoloader->setPackage($package);
             $autoloaders[] = $autoloader;
         }
 

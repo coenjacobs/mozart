@@ -3,7 +3,6 @@
 namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
-use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
@@ -13,9 +12,6 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class Mover
 {
-    /** @var string */
-    protected $workingDir;
-
     /** @var Mozart */
     protected $config;
 
@@ -24,9 +20,11 @@ class Mover
     /** @var array<string> */
     protected $movedPackages = [];
 
-    public function __construct(string $workingDir, Mozart $config)
+    /** @var array<string> */
+    protected $movedFiles = [];
+
+    public function __construct(Mozart $config)
     {
-        $this->workingDir = $workingDir;
         $this->config = $config;
         $this->files = new FilesHandler($config);
     }
@@ -103,7 +101,6 @@ class Mover
     public function movePackages($packages): void
     {
         foreach ($packages as $package) {
-            $this->movePackages($package->getDependencies());
             $this->movePackage($package);
         }
 
@@ -116,25 +113,20 @@ class Mover
             return;
         }
 
+        /**
+         * @todo: This maybe even warrants its own 'File' class, where stuff
+         * like the SplFileInfo etc can be stored in.
+         */
         foreach ($package->getAutoloaders() as $autoloader) {
-            if ($autoloader instanceof NamespaceAutoloader) {
-                foreach ($autoloader->paths as $path) {
-                    $filesToMove = $this->getNamespaceFilesToMove($package, $path);
-                    foreach ($filesToMove as $file) {
-                        $this->moveFile($package, $autoloader, $file, $path);
-                    }
-                }
-            } elseif ($autoloader instanceof Classmap) {
-                $filesToMove = $this->getClassmapFilesToMove($autoloader, $package);
+            $filesToMove = $autoloader->getFiles($this->files);
 
-                foreach ($filesToMove as $foundFile) {
-                    $this->moveFile($package, $autoloader, $foundFile);
-                }
+            foreach ($filesToMove as $foundFile) {
+                $this->moveFile($autoloader, $foundFile);
             }
+        }
 
-            if (!in_array($package->getName(), $this->movedPackages)) {
-                $this->movedPackages[] = $package->getName();
-            }
+        if (!in_array($package->getName(), $this->movedPackages)) {
+            $this->movedPackages[] = $package->getName();
         }
     }
 
@@ -151,105 +143,22 @@ class Mover
         return true;
     }
 
-    /**
-     * @return array<string,SplFileInfo>
-     */
-    private function getNamespaceFilesToMove(Package $package, string $path): array
+    private function moveFile(Autoloader $autoloader, SplFileInfo $file): void
     {
-        $filesToMove = array();
-
-        $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-                        . $package->getName() . DIRECTORY_SEPARATOR . $path;
-
-        $sourcePath = str_replace('/', DIRECTORY_SEPARATOR, $sourcePath);
-
-        $files = $this->files->getFilesFromPath($sourcePath);
-
-        foreach ($files as $foundFile) {
-            $filePath = $foundFile->getRealPath();
-            $filesToMove[ $filePath ] = $foundFile;
-        }
-
-        return $filesToMove;
-    }
-
-    /**
-     * @return array<string,SplFileInfo>
-     */
-    private function getClassmapFilesToMove(Classmap $autoloader, Package $package): array
-    {
-        $filesToMove = array();
-
-        foreach ($autoloader->files as $file) {
-            $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                            . DIRECTORY_SEPARATOR . $package->getName();
-
-            $files = $this->files->getFile($sourcePath, $file);
-
-            foreach ($files as $foundFile) {
-                $filePath = $foundFile->getRealPath();
-                $filesToMove[ $filePath ] = $foundFile;
-            }
-        }
-
-        foreach ($autoloader->paths as $path) {
-            $sourcePath = $this->workingDir . DIRECTORY_SEPARATOR . 'vendor'
-                            . DIRECTORY_SEPARATOR . $package->getName() . DIRECTORY_SEPARATOR . $path;
-
-            $files = $this->files->getFilesFromPath($sourcePath);
-            foreach ($files as $foundFile) {
-                $filePath = $foundFile->getRealPath();
-                $filesToMove[ $filePath ] = $foundFile;
-            }
-        }
-
-        return $filesToMove;
-    }
-
-    private function moveFile(Package $package, Autoloader $autoloader, SplFileInfo $file, string $path = ''): void
-    {
-        if ($autoloader instanceof NamespaceAutoloader) {
-            $targetFile = $this->getNamespaceTargetFile($package, $autoloader, $file, $path);
-            $this->copyFile($file, $targetFile);
+        if (in_array($file->getRealPath(), $this->movedFiles)) {
             return;
         }
 
-        $targetFile = $this->getClassmapTargetFile($package, $file);
+        $targetFile = $autoloader->getTargetFilePath($file);
         $this->copyFile($file, $targetFile);
-    }
 
-    private function getNamespaceTargetFile(
-        Package $package,
-        NamespaceAutoloader $autoloader,
-        SplFileInfo $file,
-        string $path
-    ): string {
-        $namespacePath = $autoloader->getNamespacePath();
-        $replaceWith = $this->config->getDepDirectory() . $namespacePath;
-        $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
-
-        $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
-                                . DIRECTORY_SEPARATOR . $path;
-        $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-        return str_replace($packageVendorPath, '', $targetFile);
-    }
-
-    private function getClassmapTargetFile(Package $package, SplFileInfo $file): string
-    {
-        $namespacePath = $package->getName();
-        $replaceWith = $this->config->getClassmapDirectory() . $namespacePath;
-        $targetFile = str_replace($this->workingDir, $replaceWith, $file->getPathname());
-
-        $packageVendorPath = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . $package->getName()
-                                . DIRECTORY_SEPARATOR;
-        $packageVendorPath = str_replace('/', DIRECTORY_SEPARATOR, $packageVendorPath);
-        return str_replace($packageVendorPath, DIRECTORY_SEPARATOR, $targetFile);
+        array_push($this->movedFiles, $file->getRealPath());
     }
 
     private function copyFile(SplFileInfo $file, string $targetFile): void
     {
         $this->files->copyFile(
-            str_replace($this->workingDir, '', $file->getPathname()),
+            str_replace($this->config->getWorkingDir(), '', $file->getPathname()),
             $targetFile
         );
     }

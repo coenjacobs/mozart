@@ -25,10 +25,12 @@ class Package
     public ?Autoload $autoload = null;
     public ?Extra $extra = null;
 
+    private bool $dependenciesLoaded = false;
+
     public function setAutoload(stdClass $data): void
     {
         $autoload = new Autoload();
-        $autoload->setupAutoloaders($data);
+        $autoload->setupAutoloaders($data, $this);
         $this->autoload = $autoload;
     }
 
@@ -85,6 +87,10 @@ class Package
 
     public function loadDependencies(PackageFinder $finder): void
     {
+        if ($this->dependenciesLoaded) {
+            return;
+        }
+
         if ($this->isValidMozartConfig() && !empty($this->getExtra())) {
             $mozart = $this->getExtra()->getMozart();
 
@@ -97,6 +103,7 @@ class Package
         $dependencies = $finder->getPackagesBySlugs($this->getRequire());
 
         $this->registerDependencies($dependencies);
+        $this->dependenciesLoaded = true;
     }
 
     public function registerDependency(Package $package): void

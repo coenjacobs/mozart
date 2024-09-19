@@ -105,12 +105,12 @@ class Mozart
      */
     public function getDepDirectory(): string
     {
-        return rtrim($this->depDirectory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->depDirectory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
     }
 
     public function getClassmapDirectory(): string
     {
-        return rtrim($this->classmapDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->classmapDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
     }
 
     public function getDeleteVendorDirectories(): bool
@@ -154,6 +154,6 @@ class Mozart
 
     public function getWorkingDir(): string
     {
-        return $this->workingDir;
+        return rtrim($this->workingDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 }

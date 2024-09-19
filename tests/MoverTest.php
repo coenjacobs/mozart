@@ -68,7 +68,7 @@ class MoverTest extends TestCase
     #[Test]
     public function it_creates_absent_dirs(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
 
         $packages = array();
 
@@ -88,7 +88,7 @@ class MoverTest extends TestCase
     #[Test]
     public function it_is_unpertrubed_by_existing_dirs(): void
     {
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
 
         if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
             mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
@@ -147,7 +147,7 @@ class MoverTest extends TestCase
             $packages[] = $parsedPackage;
         }
 
-        $mover = new Mover($this->testsWorkingDir, $this->config);
+        $mover = new Mover($this->config);
         $mover->deleteTargetDirs($packages);
 
         $this->assertDirectoryDoesNotExist($this->testsWorkingDir . $this->config->getDepDirectory() . 'Pimple');

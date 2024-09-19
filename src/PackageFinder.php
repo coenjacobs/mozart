@@ -81,8 +81,9 @@ class PackageFinder
         foreach ($packages as $package) {
             $dependencies = $package->getDependencies();
 
-            $package->registerDependencies($this->findPackages($dependencies));
-            $packages[$package->getName()] = $package;
+            if (! empty($dependencies)) {
+                $packages = array_merge($packages, $this->findPackages($dependencies));
+            }
         }
 
         return $packages;

@@ -78,12 +78,10 @@ class Compose extends Command
         $finder->setConfig($this->config);
 
         $package->loadDependencies($finder);
+        $packages = $finder->findPackages($package->getDependencies());
 
-        $packages = $finder->getPackagesBySlugs($require);
-        $packages = $finder->findPackages($packages);
-
-        $this->mover = new Mover($this->workingDir, $this->config);
-        $this->replacer = new Replacer($this->workingDir, $this->config);
+        $this->mover = new Mover($this->config);
+        $this->replacer = new Replacer($this->config);
 
         $this->mover->deleteTargetDirs($packages);
         $this->mover->movePackages($packages);

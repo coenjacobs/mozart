@@ -37,6 +37,11 @@ class FilesHandler
         return $contents;
     }
 
+    public function getConfig(): Mozart
+    {
+        return $this->config;
+    }
+
     public function writeFile(string $path, string $contents): void
     {
         $this->filesystem->write($path, $contents);

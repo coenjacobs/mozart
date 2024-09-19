@@ -14,12 +14,6 @@ use Exception;
 
 class Replacer
 {
-    /** @var string */
-    protected $workingDir;
-
-    /** @var string */
-    protected $targetDir;
-
     /** @var Mozart */
     protected $config;
 
@@ -29,11 +23,9 @@ class Replacer
     /** @var FilesHandler */
     protected $files;
 
-    public function __construct(string $workingDir, Mozart $config)
+    public function __construct(Mozart $config)
     {
-        $this->workingDir = $workingDir;
         $this->config     = $config;
-        $this->targetDir  = $this->config->getDepDirectory();
         $this->files      = new FilesHandler($config);
     }
 
@@ -57,7 +49,7 @@ class Replacer
 
     public function replaceInFile(string $targetFile, Autoloader $autoloader): void
     {
-        $targetFile = str_replace($this->workingDir, '', $targetFile);
+        $targetFile = str_replace($this->config->getWorkingDir(), '', $targetFile);
         $contents = $this->files->readFile($targetFile);
 
         if (!$contents) {
@@ -96,11 +88,11 @@ class Replacer
         }
 
         if ($autoloader instanceof NamespaceAutoloader) {
-            $sourcePath = $this->workingDir . $this->targetDir
+            $sourcePath = $this->config->getWorkingDir() . $this->config->getDepDirectory()
                            . str_replace('\\', DIRECTORY_SEPARATOR, $autoloader->getNamespace());
             $this->replaceInDirectory($autoloader, $sourcePath);
         } elseif ($autoloader instanceof Classmap) {
-            $sourcePath = $this->workingDir . $this->config->getClassmapDirectory() . $package->getName();
+            $sourcePath = $this->config->getWorkingDir() . $this->config->getClassmapDirectory() . $package->getName();
             $files = $this->files->getFilesFromPath($sourcePath);
 
             foreach ($files as $foundFile) {
@@ -180,7 +172,7 @@ class Replacer
             foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
                     $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                    $directory = $this->workingDir . $this->config->getDepDirectory() . $namespace
+                    $directory = $this->config->getWorkingDir() . $this->config->getDepDirectory() . $namespace
                                  . DIRECTORY_SEPARATOR;
 
                     if ($autoloader instanceof NamespaceAutoloader) {
@@ -188,12 +180,12 @@ class Replacer
                         return;
                     }
 
-                    $directory = str_replace($this->workingDir, '', $directory);
+                    $directory = str_replace($this->config->getWorkingDir(), '', $directory);
                     $this->replaceParentClassesInDirectory($directory);
                     return;
                 }
 
-                $directory = $this->workingDir .
+                $directory = $this->config->getWorkingDir() .
                 $this->config->getClassmapDirectory() . $parent->getName();
 
                 if ($autoloader instanceof NamespaceAutoloader) {
@@ -201,7 +193,7 @@ class Replacer
                     return;
                 }
 
-                $directory = str_replace($this->workingDir, '', $directory);
+                $directory = str_replace($this->config->getWorkingDir(), '', $directory);
                 $this->replaceParentClassesInDirectory($directory);
             }
         }
