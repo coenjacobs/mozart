@@ -80,6 +80,9 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
         return $filesToMove;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getTargetFilePath(SplFileInfo $file): string
     {
         $suffix = '';

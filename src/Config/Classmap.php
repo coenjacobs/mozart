@@ -74,6 +74,9 @@ class Classmap extends AbstractAutoloader
         return $filesToMove;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getTargetFilePath(SplFileInfo $file): string
     {
         $suffix = '';

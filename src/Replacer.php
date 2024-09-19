@@ -81,6 +81,10 @@ class Replacer
         return $replacer;
     }
 
+    /**
+     * Fetches the files or directories to perform a replace action on, based
+     * on the provided autoloader, for the provided package.
+     */
     public function replacePackageByAutoloader(Package $package, Autoloader $autoloader): void
     {
         if ($this->config->isExcludedPackage($package)) {
@@ -105,6 +109,11 @@ class Replacer
         }
     }
 
+    /**
+     * Replaces all occurances of previously replaced classes, in the provided
+     * directory. This to ensure that each package has its parents package
+     * classes also replaced in its own files.
+     */
     public function replaceParentClassesInDirectory(string $directory): void
     {
         if (count($this->replacedClasses)===0) {

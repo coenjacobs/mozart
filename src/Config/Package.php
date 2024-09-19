@@ -85,6 +85,13 @@ class Package
         return $this->dependencies;
     }
 
+    /**
+     * Loads and registers all dependencies of this package, by checking the
+     * require-object of the composer.json file of this package. Each package
+     * listed as a dependency is then loaded and registered as being a
+     * dependency of this package. Also flags this package for having its
+     * dependencies already loaded, so it doesn't duplicate dependencies.
+     */
     public function loadDependencies(PackageFinder $finder): void
     {
         if ($this->dependenciesLoaded) {
