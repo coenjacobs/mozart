@@ -47,7 +47,8 @@
         "test": [
             "@test:lint",
             "@test:phpunit",
-            "@test:phpstan"
+            "@test:phpstan",
+            "@test:phpmd"
         ],
         "test:lint": [
             "composer validate",
@@ -58,6 +59,9 @@
         ],
         "test:phpstan": [
             "./vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=2G"
+        ],
+        "test:phpmd": [
+            "./vendor/bin/phpmd src ansi phpmd.xml.dist"
         ]
     }
 }
