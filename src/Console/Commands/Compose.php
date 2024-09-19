@@ -39,7 +39,7 @@ class Compose extends Command
 
         $this->workingDir = $workingDir;
 
-        $composerFile = $this->workingDir . DIRECTORY_SEPARATOR. 'composer.json';
+        $composerFile = $this->workingDir . DIRECTORY_SEPARATOR . 'composer.json';
         try {
             $factory = new PackageFactory();
             $package = $factory->createPackage($composerFile);

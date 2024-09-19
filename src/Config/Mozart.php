@@ -105,12 +105,12 @@ class Mozart
      */
     public function getDepDirectory(): string
     {
-        return trim($this->depDirectory, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->depDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getClassmapDirectory(): string
     {
-        return trim($this->classmapDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        return trim($this->classmapDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getDeleteVendorDirectories(): bool
@@ -120,7 +120,7 @@ class Mozart
 
     public function getDependencyNamespace(): string
     {
-        $namespace = preg_replace("/\\\{2,}$/", "\\", $this->depNamespace."\\");
+        $namespace = preg_replace("/\\\{2,}$/", "\\", $this->depNamespace . "\\");
 
         if (empty($namespace)) {
             throw new Exception('Could not get target dependency namespace');

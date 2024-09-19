@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The purpose of this file is to find and update classnames (and interfaces...)
  * in their declarations. Those replaced are recorded and their uses elsewhere
@@ -11,7 +12,6 @@ use Exception;
 
 class ClassmapReplacer extends BaseReplacer
 {
-
     /** @var string[] */
     public $replacedClasses = [];
 
