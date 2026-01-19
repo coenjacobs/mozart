@@ -30,7 +30,6 @@ class ReplacerTest extends TestCase
         $this->config->setClassmapDirectory($this->testDir . DIRECTORY_SEPARATOR . 'classmap' . DIRECTORY_SEPARATOR);
         $this->config->setClassmapPrefix('Test_');
         $this->config->setWorkingDir($this->testDir);
-        $this->config->setOverrideAutoload(new \stdClass());
     }
 
     protected function tearDown(): void

@@ -109,9 +109,6 @@ class PackageFinderTest extends TestCase
         ];
         file_put_contents($packageDir . DIRECTORY_SEPARATOR . 'composer.json', json_encode($composerJson));
 
-        // Initialize overrideAutoload to avoid uninitialized property error
-        $this->config->setOverrideAutoload(new \stdClass());
-
         $finder = new PackageFinder();
         $finder->setConfig($this->config);
 
