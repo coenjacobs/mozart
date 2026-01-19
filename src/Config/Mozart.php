@@ -27,6 +27,11 @@ class Mozart
 
     public string $workingDir = '';
 
+    public function __construct()
+    {
+        $this->overrideAutoload = new OverrideAutoload(new stdClass());
+    }
+
     public function setDepNamespace(string $depNamespace): void
     {
         $this->depNamespace = $depNamespace;
