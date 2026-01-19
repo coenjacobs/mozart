@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
@@ -22,6 +23,23 @@ class ConfigMapperTest extends TestCase
         $package->loadDependencies($finder);
         $this->assertInstanceOf(Package::class, $package);
         $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
+		$this->assertInstanceOf(OverrideAutoload::class, $package->getExtra()->getMozart()->getOverrideAutoload());
+        $this->assertCount(4, $package->autoload->getAutoloaders());
+    }
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function it_creates_a_valid_config_object_based_on_composer_file_without_override()
+    {
+        $finder = new PackageFinder();
+        $factory = new PackageFactory();
+        $package = $factory->createPackage(__DIR__ . '/config-mapper-no-override-test.json');
+        $package->loadDependencies($finder);
+        $this->assertInstanceOf(Package::class, $package);
+        $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
+        $this->assertInstanceOf(OverrideAutoload::class, $package->getExtra()->getMozart()->getOverrideAutoload());
         $this->assertCount(4, $package->autoload->getAutoloaders());
     }
 }
