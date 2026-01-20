@@ -5,33 +5,39 @@ namespace CoenJacobs\Mozart;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use Iterator;
-use League\Flysystem\Local\LocalFilesystemAdapter;
-use League\Flysystem\UnableToReadFile;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 class FilesHandler
 {
-    protected Mozart $config;
-    protected Filesystem $filesystem;
+    /** @var Mozart */
+    protected $config;
+
+    /** @var Filesystem */
+    protected $filesystem;
 
     public function __construct(Mozart $config)
     {
         $this->config = $config;
 
-        $adapter = new LocalFilesystemAdapter(
+        $adapter = new Local(
             $this->config->getWorkingDir()
         );
 
-        // The FilesystemOperator
         $this->filesystem = new Filesystem($adapter);
     }
 
     public function readFile(string $path): string
     {
         try {
-            return $this->filesystem->read($path);
-        } catch (UnableToReadFile $e) {
+            $contents = $this->filesystem->read($path);
+            if ($contents === false) {
+                throw new FileOperationException("Failed to read file: {$path}");
+            }
+            return $contents;
+        } catch (FileNotFoundException $e) {
             throw new FileOperationException("Failed to read file: {$path}. " . $e->getMessage(), 0, $e);
         }
     }
@@ -43,7 +49,7 @@ class FilesHandler
 
     public function writeFile(string $path, string $contents): void
     {
-        $this->filesystem->write($path, $contents);
+        $this->filesystem->put($path, $contents);
     }
 
     public function getFilesFromPath(string $path): Iterator
@@ -60,17 +66,17 @@ class FilesHandler
 
     public function createDirectory(string $path): void
     {
-        $this->filesystem->createDirectory($path);
+        $this->filesystem->createDir($path);
     }
 
     public function deleteDirectory(string $path): void
     {
-        $this->filesystem->deleteDirectory($path);
+        $this->filesystem->deleteDir($path);
     }
 
     public function isDirectoryEmpty(string $path): bool
     {
-        return count($this->filesystem->listContents($path, true)->toArray()) === 0;
+        return count($this->filesystem->listContents($path, true)) === 0;
     }
 
     public function copyFile(string $origin, string $destination): void

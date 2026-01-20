@@ -146,7 +146,16 @@ class Replacer
                     $contents = preg_replace_callback(
                         '/(.*)([^a-zA-Z0-9_\x7f-\xff])' . $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
                         function ($matches) use ($replacement) {
+                            // Don't replace in include/require statements
                             if (preg_match('/(include|require)/', $matches[0])) {
+                                return $matches[0];
+                            }
+                            // Don't replace if this looks like property access (->PropertyName)
+                            if (substr($matches[1], -1) === '-' && $matches[2] === '>') {
+                                return $matches[0];
+                            }
+                            // Don't replace if this looks like a variable name ($PropertyName)
+                            if ($matches[2] === '$') {
                                 return $matches[0];
                             }
                             return $matches[1] . $matches[2] . $replacement . $matches[3];
