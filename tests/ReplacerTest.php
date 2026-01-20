@@ -178,5 +178,110 @@ class ReplacerTest extends TestCase
         // Should complete without error
         $this->assertTrue(true);
     }
+
+    /**
+     * Test that replaceParentClassesInDirectory does not replace property access
+     *
+     * This tests the fix for the bug where $this->names was incorrectly replaced
+     * with $this->Prefix_names when a class named "names" existed.
+     *
+     * @test
+     * @see https://github.com/coenjacobs/mozart/issues/XXX
+     */
+    public function it_does_not_replace_property_access(): void
+    {
+        // Create test directory structure
+        $testDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps' . DIRECTORY_SEPARATOR . 'Test';
+        mkdir($testDir, 0777, true);
+
+        // Create a file with property access that should NOT be replaced
+        $testFile = $testDir . DIRECTORY_SEPARATOR . 'TestClass.php';
+        $originalContent = <<<'PHP'
+<?php
+class TestClass {
+    private $names = [];
+
+    public function getName() {
+        return $this->names['en'];
+    }
+
+    public function setNames($names) {
+        $this->names = $names;
+    }
+}
+PHP;
+        file_put_contents($testFile, $originalContent);
+
+        // Create a replacer and manually set replaced classes using reflection
+        $replacer = new Replacer($this->config);
+
+        // Use reflection to add 'names' to the replacedClasses array
+        $reflection = new \ReflectionClass($replacer);
+        $property = $reflection->getProperty('replacedClasses');
+        $property->setAccessible(true);
+        $property->setValue($replacer, ['names' => 'Test_names']);
+
+        // Run the replacement
+        $replacer->replaceParentClassesInDirectory($testDir);
+
+        // Read the result
+        $resultContent = file_get_contents($testFile);
+
+        // Property access ($this->names) should NOT be replaced
+        $this->assertStringContainsString('$this->names', $resultContent);
+        $this->assertStringNotContainsString('$this->Test_names', $resultContent);
+
+        // Variable names ($names) should NOT be replaced
+        $this->assertStringContainsString('setNames($names)', $resultContent);
+        $this->assertStringNotContainsString('setNames($Test_names)', $resultContent);
+    }
+
+    /**
+     * Test that replaceParentClassesInDirectory still replaces actual class usages
+     *
+     * @test
+     */
+    public function it_replaces_actual_class_usages(): void
+    {
+        // Create test directory structure
+        $testDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps' . DIRECTORY_SEPARATOR . 'Test';
+        mkdir($testDir, 0777, true);
+
+        // Create a file with actual class usage that SHOULD be replaced
+        $testFile = $testDir . DIRECTORY_SEPARATOR . 'Consumer.php';
+        $originalContent = <<<'PHP'
+<?php
+class Consumer {
+    public function create() {
+        return new MyClass();
+    }
+
+    public function call() {
+        return MyClass::staticMethod();
+    }
+}
+PHP;
+        file_put_contents($testFile, $originalContent);
+
+        // Create a replacer and manually set replaced classes
+        $replacer = new Replacer($this->config);
+
+        $reflection = new \ReflectionClass($replacer);
+        $property = $reflection->getProperty('replacedClasses');
+        $property->setAccessible(true);
+        $property->setValue($replacer, ['MyClass' => 'Test_MyClass']);
+
+        // Run the replacement
+        $replacer->replaceParentClassesInDirectory($testDir);
+
+        // Read the result
+        $resultContent = file_get_contents($testFile);
+
+        // Class instantiation (new MyClass) SHOULD be replaced
+        $this->assertStringContainsString('new Test_MyClass()', $resultContent);
+
+        // Static method call (MyClass::) SHOULD be replaced
+        $this->assertStringContainsString('Test_MyClass::staticMethod()', $resultContent);
+    }
 }
 

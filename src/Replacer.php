@@ -149,6 +149,14 @@ class Replacer
                             if (preg_match('/(include|require)/', $matches[0])) {
                                 return $matches[0];
                             }
+                            // Don't replace if this looks like property access (->)
+                            if (substr($matches[1], -1) === '-' && $matches[2] === '>') {
+                                return $matches[0];
+                            }
+                            // Don't replace if this looks like a variable name ($)
+                            if ($matches[2] === '$') {
+                                return $matches[0];
+                            }
                             return $matches[1] . $matches[2] . $replacement . $matches[3];
                         },
                         $contents
