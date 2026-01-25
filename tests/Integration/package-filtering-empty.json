@@ -1,0 +1,22 @@
+{
+    "require": {
+        "pimple/pimple": "^3.5",
+        "monolog/monolog": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mozart\\TestProject\\": "src/"
+        }
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "Mozart\\TestProject\\Dependencies",
+            "dep_directory": "/src/dependencies",
+            "classmap_directory": "/classes/",
+            "classmap_prefix": "MozartDependency_",
+            "packages": [],
+            "override_autoload": {},
+            "delete_vendor_directories": true
+        }
+    }
+}
