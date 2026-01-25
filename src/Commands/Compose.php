@@ -51,8 +51,10 @@ class Compose
             // Only process the specified packages (and their dependencies)
             $packages = $finder->getPackagesBySlugs($packagesToProcess);
             $packages = $finder->findPackages($packages);
-        } else {
-            // If no packages specified, use all dependencies from root package
+        }
+
+        // If no packages specified, use all dependencies from root package
+        if (empty($packagesToProcess)) {
             $package->loadDependencies($finder);
             $packages = $finder->findPackages($package->getDependencies());
         }
