@@ -45,8 +45,17 @@ class Compose
         $finder = new PackageFinder();
         $finder->setConfig($config);
 
-        $package->loadDependencies($finder);
-        $packages = $finder->findPackages($package->getDependencies());
+        // Determine which packages to process based on config
+        $packagesToProcess = $config->getPackages();
+        if (!empty($packagesToProcess)) {
+            // Only process the specified packages (and their dependencies)
+            $packages = $finder->getPackagesBySlugs($packagesToProcess);
+            $packages = $finder->findPackages($packages);
+        } else {
+            // If no packages specified, use all dependencies from root package
+            $package->loadDependencies($finder);
+            $packages = $finder->findPackages($package->getDependencies());
+        }
 
         $mover = new Mover($config);
         $replacer = new Replacer($config);
