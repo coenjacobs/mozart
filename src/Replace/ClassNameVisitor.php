@@ -156,27 +156,58 @@ class ClassNameVisitor extends NodeVisitorAbstract
      */
     protected function shouldSkipName(Name $node): bool
     {
+        if ($this->isPartOfNamespaceOrUseStatement($node)) {
+            return true;
+        }
+
+        return $this->isUnqualifiedNameInPrefixedNamespace($node);
+    }
+
+    /**
+     * Check if node is part of a namespace or use statement (handled separately).
+     */
+    protected function isPartOfNamespaceOrUseStatement(Name $node): bool
+    {
         $parent = $node->getAttribute('parent');
 
-        // Skip if this is a namespace declaration (handled separately)
-        if ($parent instanceof Namespace_) {
-            return true;
-        }
+        return $parent instanceof Namespace_
+            || $parent instanceof UseUse
+            || $parent instanceof Use_;
+    }
 
-        // Skip if this is part of a use statement (handled separately)
-        if ($parent instanceof UseUse || $parent instanceof Use_) {
-            return true;
-        }
-
+    /**
+     * Check if node is an unqualified name that will resolve via namespace.
+     */
+    protected function isUnqualifiedNameInPrefixedNamespace(Name $node): bool
+    {
         $nameStr = $node->toString();
 
-        // If this is a simple name that matches a tracked alias, skip it
+        // Only check simple names (no backslash)
+        if (str_contains($nameStr, '\\') || $node->isFullyQualified()) {
+            return false;
+        }
+
+        // If this name matches a tracked alias, skip it
         // (it will resolve through the prefixed use statement)
-        if (!str_contains($nameStr, '\\') && isset($this->aliases[$nameStr])) {
+        if (isset($this->aliases[$nameStr])) {
             return true;
         }
 
-        return false;
+        // If we're inside a namespace that's being prefixed,
+        // unqualified names will resolve correctly via the prefixed namespace
+        return $this->isCurrentNamespaceBeingPrefixed();
+    }
+
+    /**
+     * Check if the current namespace is in the list of namespaces being prefixed.
+     */
+    protected function isCurrentNamespaceBeingPrefixed(): bool
+    {
+        if ($this->currentNamespace === null) {
+            return false;
+        }
+
+        return $this->shouldPrefixNamespace($this->currentNamespace);
     }
 
     /**
