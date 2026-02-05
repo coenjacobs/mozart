@@ -53,8 +53,8 @@ class AstNamespaceReplacer extends BaseReplacer
 
         $ast = $this->astUtils->parseCode($contents);
         if ($ast === null) {
-            // Parsing failed, fall back to original (unmodified) content
-            return $contents;
+            $error = $this->astUtils->getLastError() ?? 'Unknown parse error';
+            throw new FileOperationException("Failed to parse PHP code: {$error}");
         }
 
         $modifiedAst = $this->traverseAndModify($ast, $searchNamespace);
