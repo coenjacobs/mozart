@@ -5,6 +5,7 @@ namespace CoenJacobs\Mozart;
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Classmap;
+use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
@@ -110,6 +111,53 @@ class Replacer
                     $this->replaceInFile($targetFile, $autoloader);
                 }
             }
+        } elseif ($autoloader instanceof Files) {
+            $this->replaceFilesAutoloader($autoloader);
+        }
+    }
+
+    /**
+     * Handle replacement for Files autoloader entries.
+     *
+     * Files with namespaces use NamespaceReplacer, files without use ClassmapReplacer.
+     */
+    protected function replaceFilesAutoloader(Files $autoloader): void
+    {
+        $filesToProcess = $autoloader->getFiles($this->files);
+
+        foreach ($filesToProcess as $file) {
+            $targetFile = $autoloader->getTargetFilePath($file);
+            $fullPath = $this->config->getWorkingDir() . $targetFile;
+
+            if ('.php' !== substr($fullPath, -4, 4)) {
+                continue;
+            }
+
+            $targetFile = str_replace($this->config->getWorkingDir(), '', $fullPath);
+
+            try {
+                $contents = $this->files->readFile($targetFile);
+            } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
+                continue;
+            }
+
+            if (empty($contents)) {
+                continue;
+            }
+
+            // Use appropriate replacer based on whether file has a namespace
+            $replacer = $autoloader->hasNamespace($file)
+                ? new NamespaceReplacer($this->config->getDependencyNamespace())
+                : new ClassmapReplacer($this->config->getClassmapPrefix());
+            $replacer->setAutoloader($autoloader);
+
+            $contents = $replacer->replace($contents);
+
+            if ($replacer instanceof ClassmapReplacer) {
+                $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
+            }
+
+            $this->files->writeFile($targetFile, $contents);
         }
     }
 
