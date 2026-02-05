@@ -49,6 +49,15 @@ class Autoload
             $autoloaders[] = $autoloader;
         }
 
+        // Files autoloader is processed LAST so it can filter out files
+        // already covered by PSR-4/PSR-0 paths
+        if (isset($autoloadData->files)) {
+            $autoloader = new Files();
+            $autoloader->processConfig($autoloadData->files);
+            $autoloader->setPackage($package);
+            $autoloaders[] = $autoloader;
+        }
+
         $this->setAutoloaders($autoloaders);
     }
 

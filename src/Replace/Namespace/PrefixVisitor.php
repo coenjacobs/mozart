@@ -4,7 +4,10 @@ namespace CoenJacobs\Mozart\Replace\Namespace;
 
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeVisitorAbstract;
@@ -16,7 +19,10 @@ use PhpParser\NodeVisitorAbstract;
  * - Prefixes namespace declarations
  * - Prefixes use statements and tracks aliases
  * - Prefixes class references in type hints, extends, implements, instanceof, new, etc.
- * - Does NOT touch variable names, property names, or string literals
+ * - Handles string literals in existence checks (function_exists, class_exists, etc.)
+ * - Does NOT touch variable names, property names, or other string literals
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class PrefixVisitor extends NodeVisitorAbstract
 {
@@ -107,6 +113,11 @@ class PrefixVisitor extends NodeVisitorAbstract
         // Handle all Name nodes (class references in various contexts)
         if ($node instanceof Name) {
             return $this->processName($node);
+        }
+
+        // Handle string literals in existence checks (function_exists, class_exists, etc.)
+        if ($node instanceof FuncCall) {
+            return $this->processExistenceCheck($node);
         }
 
         return null;
@@ -292,5 +303,36 @@ class PrefixVisitor extends NodeVisitorAbstract
     public function getAliases(): array
     {
         return $this->aliases;
+    }
+
+    /**
+     * Process function calls that check for existence of classes/functions/etc.
+     *
+     * Handles: function_exists(), class_exists(), interface_exists(), trait_exists()
+     * If the argument is a string literal containing a namespace that should be prefixed,
+     * the string is updated to use the prefixed namespace.
+     */
+    protected function processExistenceCheck(FuncCall $node): ?FuncCall
+    {
+        if (!$node->name instanceof Name) {
+            return null;
+        }
+
+        $existenceChecks = ['function_exists', 'class_exists', 'interface_exists', 'trait_exists'];
+        if (!in_array($node->name->toString(), $existenceChecks, true)) {
+            return null;
+        }
+
+        if (count($node->args) === 0 || !$node->args[0] instanceof Arg) {
+            return null;
+        }
+
+        $firstArgValue = $node->args[0]->value;
+        if (!$firstArgValue instanceof String_ || !$this->shouldPrefixNamespace($firstArgValue->value)) {
+            return null;
+        }
+
+        $firstArgValue->value = $this->prefix . '\\' . $firstArgValue->value;
+        return $node;
     }
 }

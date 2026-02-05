@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Classmap;
+use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr0;
@@ -67,6 +68,12 @@ class Mover
                         $this->config->getClassmapDirectory(),
                         $package->getDirectoryName()
                     );
+                    break;
+                case Files::class:
+                    // Files autoloader handles individual files that go to either
+                    // dep_directory (if namespaced) or classmap_directory (if global).
+                    // We don't delete directories for files autoloader since files
+                    // are handled individually and may overlap with PSR-4 directories.
                     break;
             }
 
