@@ -1,9 +1,11 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Namespace;
 
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use CoenJacobs\Mozart\Replace\BaseReplacer;
+use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
 /**
  * AST-based namespace replacer that properly handles PHP syntax.
@@ -12,7 +14,7 @@ use CoenJacobs\Mozart\Exceptions\FileOperationException;
  * references, avoiding the issues with regex-based replacement on constructs
  * like nullable type hints (?ClassName).
  */
-class AstNamespaceReplacer extends BaseReplacer
+class NamespaceReplacer extends BaseReplacer
 {
     /**
      * The prefix to add to existing namespaces, for example: "My\Mozart\Prefix"
@@ -43,7 +45,7 @@ class AstNamespaceReplacer extends BaseReplacer
 
         $autoloader = $this->autoloader;
         if (!$autoloader instanceof NamespaceAutoloader) {
-            throw new FileOperationException('AstNamespaceReplacer requires a NamespaceAutoloader.');
+            throw new FileOperationException('NamespaceReplacer requires a NamespaceAutoloader.');
         }
 
         $searchNamespace = $autoloader->getSearchNamespace();
@@ -71,7 +73,7 @@ class AstNamespaceReplacer extends BaseReplacer
      */
     protected function traverseAndModify(array $ast, string $searchNamespace): array
     {
-        $visitor = new ClassNameVisitor($this->depNamespace, [$searchNamespace]);
+        $visitor = new PrefixVisitor($this->depNamespace, [$searchNamespace]);
         $traverser = $this->astUtils->createTraverser($visitor);
 
         return $traverser->traverse($ast);

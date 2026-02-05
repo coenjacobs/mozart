@@ -1,7 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Namespace;
 
+use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Namespace_;
@@ -17,7 +18,7 @@ use PhpParser\NodeVisitorAbstract;
  * - Prefixes class references in type hints, extends, implements, instanceof, new, etc.
  * - Does NOT touch variable names, property names, or string literals
  */
-class ClassNameVisitor extends NodeVisitorAbstract
+class PrefixVisitor extends NodeVisitorAbstract
 {
     use NameNodeContextTrait;
 
