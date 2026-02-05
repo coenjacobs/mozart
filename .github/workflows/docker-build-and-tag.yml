@@ -192,8 +192,8 @@ jobs:
             BUILD_DATE=${{ inputs.build_date }}
             VCS_REF=${{ inputs.vcs_ref }}
             SOURCE_URL=${{ inputs.source_url }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=release
+          cache-to: type=gha,mode=max,scope=release
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
