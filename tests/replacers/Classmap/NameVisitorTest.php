@@ -1,18 +1,18 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/AstProcessingTestTrait.php';
+require_once __DIR__ . '/../Support/AstProcessingTestTrait.php';
 
-use CoenJacobs\Mozart\Replace\ClassmapNameVisitor;
+use CoenJacobs\Mozart\Replace\Classmap\NameVisitor;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ClassmapNameVisitorTest extends TestCase
+class NameVisitorTest extends TestCase
 {
     use AstProcessingTestTrait;
 
     /**
-     * Helper to process PHP code through the ClassmapNameVisitor.
+     * Helper to process PHP code through the NameVisitor.
      *
      * @param string $code The PHP code to process (without <?php tag)
      * @param array<string,string> $classMap Map of original => prefixed class names
@@ -20,7 +20,7 @@ class ClassmapNameVisitorTest extends TestCase
      */
     protected function processCode(string $code, array $classMap): string
     {
-        $visitor = new ClassmapNameVisitor($classMap);
+        $visitor = new NameVisitor($classMap);
         return $this->processCodeWithVisitor($code, $visitor);
     }
 
@@ -152,7 +152,7 @@ class ClassmapNameVisitorTest extends TestCase
     #[Test]
     public function it_does_not_modify_class_declaration_name(): void
     {
-        // The ClassmapNameVisitor should not modify the class declaration itself
+        // The NameVisitor should not modify the class declaration itself
         // That's handled by ClassmapReplacer
         $code = 'class MyClass {}';
         $classMap = ['MyClass' => 'Prefix_MyClass'];
@@ -240,13 +240,13 @@ class ClassmapNameVisitorTest extends TestCase
     #[Test]
     public function it_does_not_replace_in_use_statements(): void
     {
-        // Use statements are namespaced code, handled by ClassNameVisitor
+        // Use statements are namespaced code, handled by PrefixVisitor
         $code = 'use MyClass;';
         $classMap = ['MyClass' => 'Prefix_MyClass'];
 
         $result = $this->processCode($code, $classMap);
 
-        // Use statements should remain unchanged by ClassmapNameVisitor
+        // Use statements should remain unchanged by NameVisitor
         $this->assertStringContainsString('use MyClass;', $result);
     }
 

@@ -2,11 +2,11 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ClassMapReplacerTest extends TestCase
+class ClassmapReplacerTest extends TestCase
 {
     #[Test]
     public function it_replaces_class_declarations(): void

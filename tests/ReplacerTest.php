@@ -6,8 +6,8 @@ use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
-use CoenJacobs\Mozart\Replace\AstNamespaceReplacer;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -65,7 +65,7 @@ class ReplacerTest extends TestCase
         $replacer = new Replacer($this->config);
         $result = $replacer->getReplacerByAutoloader($autoloader);
 
-        $this->assertInstanceOf(AstNamespaceReplacer::class, $result);
+        $this->assertInstanceOf(NamespaceReplacer::class, $result);
     }
 
     /** @test */

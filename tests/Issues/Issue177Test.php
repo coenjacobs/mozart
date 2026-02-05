@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CoenJacobs\Mozart\Config\Psr4;
-use CoenJacobs\Mozart\Replace\AstNamespaceReplacer;
-use CoenJacobs\Mozart\Replace\ClassNameVisitor;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\PrefixVisitor;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\ParserFactory;
@@ -37,7 +37,7 @@ class Issue177Test extends TestCase
     {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $traverser = new NodeTraverser();
-        $visitor = new ClassNameVisitor(self::PREFIX, $targetNamespaces);
+        $visitor = new PrefixVisitor(self::PREFIX, $targetNamespaces);
         $traverser->addVisitor(new ParentConnectingVisitor());
         $traverser->addVisitor($visitor);
 
@@ -56,7 +56,7 @@ class Issue177Test extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace($namespace);
 
-        $replacer = new AstNamespaceReplacer(self::PREFIX . '\\');
+        $replacer = new NamespaceReplacer(self::PREFIX . '\\');
         $replacer->setAutoloader($autoloader);
 
         return $replacer->replace($code);

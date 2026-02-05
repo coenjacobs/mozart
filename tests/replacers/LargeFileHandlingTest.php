@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Replace\ClassmapNameReplacer;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 

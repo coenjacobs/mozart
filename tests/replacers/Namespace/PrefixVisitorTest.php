@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use CoenJacobs\Mozart\Replace\ClassNameVisitor;
+use CoenJacobs\Mozart\Replace\Namespace\PrefixVisitor;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ClassNameVisitorTest extends TestCase
+class PrefixVisitorTest extends TestCase
 {
     protected const PREFIX = 'MyPlugin\\Dependencies';
 
@@ -17,7 +17,7 @@ class ClassNameVisitorTest extends TestCase
     {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $traverser = new NodeTraverser();
-        $visitor = new ClassNameVisitor(self::PREFIX, $targetNamespaces);
+        $visitor = new PrefixVisitor(self::PREFIX, $targetNamespaces);
         $traverser->addVisitor(new \PhpParser\NodeVisitor\ParentConnectingVisitor());
         $traverser->addVisitor($visitor);
 

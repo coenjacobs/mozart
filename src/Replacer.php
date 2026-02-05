@@ -7,9 +7,9 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
-use CoenJacobs\Mozart\Replace\AstNamespaceReplacer;
-use CoenJacobs\Mozart\Replace\ClassmapNameReplacer;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer as ReplacerInterface;
 
 class Replacer
@@ -73,7 +73,7 @@ class Replacer
     public function getReplacerByAutoloader(Autoloader $autoloader): ReplacerInterface
     {
         if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new AstNamespaceReplacer($this->config->getDependencyNamespace());
+            $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
             $replacer->setAutoloader($autoloader);
             return $replacer;
         }

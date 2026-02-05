@@ -1,20 +1,20 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/AstProcessingTestTrait.php';
+require_once __DIR__ . '/../Support/AstProcessingTestTrait.php';
 
 use CoenJacobs\Mozart\Config\Psr0;
-use CoenJacobs\Mozart\Replace\AstNamespaceReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class AstNamespaceReplacerTest extends TestCase
+class NamespaceReplacerTest extends TestCase
 {
     use AstProcessingTestTrait;
 
     const PREFIX = 'My\\Mozart\\Prefix\\';
 
-    /** @var AstNamespaceReplacer */
+    /** @var NamespaceReplacer */
     public $replacer;
 
     protected function setUp(): void
@@ -23,14 +23,14 @@ class AstNamespaceReplacerTest extends TestCase
     }
 
     /**
-     * Creates an AstNamespaceReplacer, given a namespace and a prefix.
+     * Creates a NamespaceReplacer, given a namespace and a prefix.
      */
-    protected static function createReplacer(string $namespace, string $prefix = self::PREFIX): AstNamespaceReplacer
+    protected static function createReplacer(string $namespace, string $prefix = self::PREFIX): NamespaceReplacer
     {
         $autoloader = new Psr0;
         $autoloader->setNamespace($namespace);
 
-        $replacer = new AstNamespaceReplacer($prefix);
+        $replacer = new NamespaceReplacer($prefix);
         $replacer->setAutoloader($autoloader);
 
         return $replacer;

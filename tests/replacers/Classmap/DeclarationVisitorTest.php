@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/AstProcessingTestTrait.php';
+require_once __DIR__ . '/../Support/AstProcessingTestTrait.php';
 
-use CoenJacobs\Mozart\Replace\ClassmapDeclarationVisitor;
+use CoenJacobs\Mozart\Replace\Classmap\DeclarationVisitor;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ClassmapDeclarationVisitorTest extends TestCase
+class DeclarationVisitorTest extends TestCase
 {
     use AstProcessingTestTrait;
 
     /**
-     * Helper to process PHP code through the ClassmapDeclarationVisitor.
+     * Helper to process PHP code through the DeclarationVisitor.
      *
      * @param string $code The PHP code to process (without <?php tag)
      * @param string $prefix The prefix to apply to declarations
-     * @return array{code: string, visitor: ClassmapDeclarationVisitor}
+     * @return array{code: string, visitor: DeclarationVisitor}
      */
     protected function processCode(string $code, string $prefix): array
     {
-        $visitor = new ClassmapDeclarationVisitor($prefix);
+        $visitor = new DeclarationVisitor($prefix);
         $result = $this->processCodeWithVisitor($code, $visitor);
         return ['code' => $result, 'visitor' => $visitor];
     }
@@ -189,7 +189,7 @@ PHP;
     #[Test]
     public function it_resets_replaced_classes_on_each_traversal(): void
     {
-        $visitor = new ClassmapDeclarationVisitor('Mozart_');
+        $visitor = new DeclarationVisitor('Mozart_');
 
         // First traversal
         $code1 = $this->wrapCode('class FirstClass {}');
