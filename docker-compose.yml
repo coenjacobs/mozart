@@ -1,20 +1,25 @@
 services:
   builder:
+    # Local development service with Xdebug enabled
     build:
       context: .
       dockerfile: Dockerfile
-      target: builder
+      target: develop
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
     volumes:
       - .:/mozart/
     command: /bin/sh -c "while sleep 1000; do :; done"
   actions-tester:
-    # This service is technically the same as the builder service, only this one
-    # has no volume mounted to the working directory. This causes the files to
-    # be used (for example installed dependencies) that are created _inside_ the
-    # container to be used, rather than having to set them up in the working
-    # directory, during GitHub Actions for example.
+    # CI testing service without Xdebug (faster builds)
+    # No volume mounted - uses files copied into the container at build time
+    # In CI: uses pre-built mozart:latest image if available
+    # Locally: builds from Dockerfile
+    image: mozart:latest
     build:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
     command: /bin/sh -c "while sleep 1000; do :; done"

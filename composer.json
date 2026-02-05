@@ -25,6 +25,11 @@
             "CoenJacobs\\Mozart\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "CoenJacobs\\Mozart\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "allow-plugins": {
             "phpstan/extension-installer": true,
@@ -65,8 +70,14 @@
             "composer validate",
             "./vendor/bin/phpcs  --standard=phpcs.xml.dist"
         ],
+        "test:unit": [
+            "./vendor/bin/phpunit --testsuite unit"
+        ],
+        "test:integration": [
+            "./vendor/bin/phpunit --testsuite integration"
+        ],
         "test:phpunit": [
-            "./vendor/bin/phpunit -c phpunit.xml.dist"
+            "./vendor/bin/phpunit --testsuite all"
         ],
         "test:phpstan": [
             "./vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=2G"

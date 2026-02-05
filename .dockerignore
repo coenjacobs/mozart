@@ -1,0 +1,25 @@
+# Dependencies - installed inside container
+vendor/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PHPUnit cache
+.phpunit.cache/
+
+# Test artifacts
+tests/**/temptestdir/
+
+# Claude Code
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
