@@ -51,7 +51,7 @@ class Replacer
 
         try {
             $contents = $this->files->readFile($targetFile);
-        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException $e) {
+        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
             // Skip files that cannot be read
             return;
         }
@@ -64,7 +64,7 @@ class Replacer
         $contents = $replacer->replace($contents);
 
         if ($replacer instanceof ClassmapReplacer) {
-            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
+            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
         }
 
         $this->files->writeFile($targetFile, $contents);
@@ -73,14 +73,12 @@ class Replacer
     public function getReplacerByAutoloader(Autoloader $autoloader): ReplacerInterface
     {
         if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new AstNamespaceReplacer();
-            $replacer->depNamespace = $this->config->getDependencyNamespace();
+            $replacer = new AstNamespaceReplacer($this->config->getDependencyNamespace());
             $replacer->setAutoloader($autoloader);
             return $replacer;
         }
 
-        $replacer = new ClassmapReplacer();
-        $replacer->classmapPrefix = $this->config->getClassmapPrefix();
+        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix());
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -139,9 +137,8 @@ class Replacer
             if ('.php' == substr($targetFile, -4, 4)) {
                 try {
                     $contents = $this->files->readFile($targetFile);
-                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException $e) {
+                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
                     // Skip files that cannot be read
-                    unset($e);
                     continue;
                 }
 
