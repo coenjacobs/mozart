@@ -1,13 +1,15 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use CoenJacobs\Mozart\Replace\StringReplacer;
+use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
 /**
  * Replaces classmap class names in PHP code.
  */
-class ClassmapNameReplacer implements StringReplacer
+class NameReplacer implements StringReplacer
 {
     /**
      * Map of original class names to their prefixed versions.
@@ -46,7 +48,7 @@ class ClassmapNameReplacer implements StringReplacer
             throw new FileOperationException("Failed to parse PHP code: {$error}");
         }
 
-        $visitor = new ClassmapNameVisitor($this->classMap);
+        $visitor = new NameVisitor($this->classMap);
         $traverser = $this->astUtils->createTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
 

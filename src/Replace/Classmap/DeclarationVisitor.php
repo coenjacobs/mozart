@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -15,7 +15,7 @@ use PhpParser\NodeVisitorAbstract;
  *
  * Only renames declarations in the global namespace (not inside a namespace block).
  */
-class ClassmapDeclarationVisitor extends NodeVisitorAbstract
+class DeclarationVisitor extends NodeVisitorAbstract
 {
     protected string $prefix;
 

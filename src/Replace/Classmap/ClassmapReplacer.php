@@ -6,9 +6,11 @@
  * are updated in a later step.
  */
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use CoenJacobs\Mozart\Replace\BaseReplacer;
+use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
 class ClassmapReplacer extends BaseReplacer
 {
@@ -59,7 +61,7 @@ class ClassmapReplacer extends BaseReplacer
             throw new FileOperationException("Failed to parse PHP code: {$error}");
         }
 
-        $visitor = new ClassmapDeclarationVisitor($this->classmapPrefix);
+        $visitor = new DeclarationVisitor($this->classmapPrefix);
         $traverser = $this->astUtils->createSimpleTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
 

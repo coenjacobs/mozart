@@ -1,7 +1,8 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Classmap;
 
+use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\NodeVisitorAbstract;
@@ -12,12 +13,12 @@ use PhpParser\NodeVisitorAbstract;
  * This is used to update references to classmap classes (global namespace classes)
  * that have been prefixed during the Mozart replacement process.
  *
- * Unlike ClassNameVisitor which handles namespaced code, this visitor:
+ * Unlike PrefixVisitor which handles namespaced code, this visitor:
  * - Only replaces simple class names (no namespace separator)
  * - Uses a direct mapping of original => prefixed names
  * - Does NOT modify string literals or comments (AST doesn't include them as Name nodes)
  */
-class ClassmapNameVisitor extends NodeVisitorAbstract
+class NameVisitor extends NodeVisitorAbstract
 {
     use NameNodeContextTrait;
 
@@ -54,7 +55,7 @@ class ClassmapNameVisitor extends NodeVisitorAbstract
         $nameStr = $node->toString();
 
         // Only process simple names (no namespace separator)
-        // Namespaced references are handled by ClassNameVisitor
+        // Namespaced references are handled by PrefixVisitor
         if (str_contains($nameStr, '\\')) {
             return null;
         }
