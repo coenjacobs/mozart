@@ -253,4 +253,112 @@ try {
 
         $this->assertStringContainsString('catch (\\MyPlugin\\Dependencies\\Invoker\\Exception $e)', $result);
     }
+
+    #[Test]
+    public function it_prefixes_function_exists_string_literal(): void
+    {
+        $code = '<?php
+if (!function_exists(\'Invoker\\invoke\')) {
+    function invoke() {}
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "function_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\invoke')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_class_exists_string_literal(): void
+    {
+        $code = '<?php
+if (class_exists(\'Invoker\\Invoker\')) {
+    $x = new \\Invoker\\Invoker();
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "class_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_interface_exists_string_literal(): void
+    {
+        $code = '<?php
+if (interface_exists(\'Invoker\\InvokerInterface\')) {
+    // do something
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "interface_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\InvokerInterface')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_trait_exists_string_literal(): void
+    {
+        $code = '<?php
+if (trait_exists(\'Invoker\\InvokerTrait\')) {
+    // do something
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "trait_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\InvokerTrait')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_function_exists(): void
+    {
+        $code = '<?php
+if (!function_exists(\'SomeOther\\func\')) {
+    function func() {}
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("function_exists('SomeOther\\\\func')", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_does_not_double_prefix_function_exists(): void
+    {
+        $code = '<?php
+if (!function_exists(\'MyPlugin\\Dependencies\\Invoker\\func\')) {
+    function func() {}
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        // Should not add prefix again
+        $this->assertStringContainsString(
+            "function_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\func')",
+            $result
+        );
+        $this->assertStringNotContainsString(
+            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_handles_nested_namespace_in_function_exists(): void
+    {
+        $code = '<?php
+if (!function_exists(\'DI\\value\')) {
+    function value($value) { return $value; }
+}';
+        $result = $this->processCode($code, ['DI']);
+
+        $this->assertStringContainsString(
+            "function_exists('MyPlugin\\\\Dependencies\\\\DI\\\\value')",
+            $result
+        );
+    }
 }
