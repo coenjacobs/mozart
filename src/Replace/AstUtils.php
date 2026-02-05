@@ -14,6 +14,8 @@ use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
  */
 class AstUtils
 {
+    private ?\PhpParser\Parser $parser = null;
+
     /**
      * Parse PHP code into an AST.
      *
@@ -22,10 +24,12 @@ class AstUtils
      */
     public function parseCode(string $contents): ?array
     {
-        $parser = (new ParserFactory())->createForNewestSupportedVersion();
+        if ($this->parser === null) {
+            $this->parser = (new ParserFactory())->createForNewestSupportedVersion();
+        }
 
         try {
-            return $parser->parse($contents);
+            return $this->parser->parse($contents);
         } catch (\PhpParser\Error) {
             return null;
         }
