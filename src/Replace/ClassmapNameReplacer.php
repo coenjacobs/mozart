@@ -2,19 +2,23 @@
 
 namespace CoenJacobs\Mozart\Replace;
 
+use RuntimeException;
+
 /**
  * Replaces classmap class names in PHP code.
  *
- * Uses AST-based replacement for smaller files, with regex fallback for
- * large files or when AST processing fails.
+ * Uses AST-based replacement with regex fallback when AST processing fails.
  */
 class ClassmapNameReplacer implements StringReplacer
 {
     /**
      * Maximum file size (in bytes) for AST processing.
-     * Files larger than this will use regex-based replacement to avoid memory issues.
+     * Files larger than this use regex to avoid memory issues during printing.
+     * Memory usage is roughly 10x file size for AST operations, but when processing
+     * many files in sequence, memory may accumulate. 300KB keeps us safe with
+     * PHP's default 128MB limit while still handling most files via AST.
      */
-    protected const MAX_AST_FILE_SIZE = 100000; // 100KB
+    protected const MAX_AST_FILE_SIZE = 300000; // 300KB
 
     /**
      * Map of original class names to their prefixed versions.
@@ -46,15 +50,10 @@ class ClassmapNameReplacer implements StringReplacer
             return $contents;
         }
 
-        // Skip AST processing for very large files to avoid memory issues
-        if (strlen($contents) > self::MAX_AST_FILE_SIZE) {
-            return $this->replaceWithRegex($contents);
-        }
-
         try {
             return $this->replaceWithAst($contents);
         } catch (\Throwable) {
-            // If AST processing fails, fall back to regex-based replacement
+            // Fall back to regex if AST processing fails (syntax errors, etc.)
             return $this->replaceWithRegex($contents);
         }
     }
@@ -64,9 +63,15 @@ class ClassmapNameReplacer implements StringReplacer
      *
      * @param string $contents The PHP code to process
      * @return string The processed PHP code
+     * @throws \RuntimeException If file is too large for AST processing
      */
     protected function replaceWithAst(string $contents): string
     {
+        // Skip AST for very large files to avoid memory issues during printing
+        if (strlen($contents) > self::MAX_AST_FILE_SIZE) {
+            throw new RuntimeException('File too large for AST processing');
+        }
+
         $ast = $this->astUtils->parseCode($contents);
 
         if ($ast === null) {
