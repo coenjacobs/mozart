@@ -20,6 +20,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
@@ -43,6 +44,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
@@ -70,6 +72,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
@@ -94,6 +97,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
@@ -114,6 +118,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
@@ -134,6 +139,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}"
+          target: builder
           push: false
           load: true
           tags: mozart:latest
