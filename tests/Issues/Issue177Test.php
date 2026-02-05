@@ -56,9 +56,8 @@ class Issue177Test extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace($namespace);
 
-        $replacer = new AstNamespaceReplacer();
+        $replacer = new AstNamespaceReplacer(self::PREFIX . '\\');
         $replacer->setAutoloader($autoloader);
-        $replacer->depNamespace = self::PREFIX . '\\';
 
         return $replacer->replace($code);
     }

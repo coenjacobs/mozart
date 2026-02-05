@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/AstProcessingTestTrait.php';
+
 use CoenJacobs\Mozart\Config\Psr0;
 use CoenJacobs\Mozart\Replace\AstNamespaceReplacer;
 use PHPUnit\Framework\TestCase;
@@ -8,6 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 
 class AstNamespaceReplacerTest extends TestCase
 {
+    use AstProcessingTestTrait;
+
     const PREFIX = 'My\\Mozart\\Prefix\\';
 
     /** @var AstNamespaceReplacer */
@@ -26,32 +30,12 @@ class AstNamespaceReplacerTest extends TestCase
         $autoloader = new Psr0;
         $autoloader->setNamespace($namespace);
 
-        $replacer = new AstNamespaceReplacer();
+        $replacer = new AstNamespaceReplacer($prefix);
         $replacer->setAutoloader($autoloader);
-        $replacer->depNamespace = $prefix;
 
         return $replacer;
     }
 
-    /**
-     * Helper to wrap code in a valid PHP file for AST parsing.
-     */
-    protected function wrapCode(string $code): string
-    {
-        return "<?php\n" . $code;
-    }
-
-    /**
-     * Helper to extract the relevant code from AST output (strips <?php and normalizes).
-     */
-    protected function extractCode(string $output): string
-    {
-        // Remove the opening PHP tag and normalize whitespace
-        $code = preg_replace('/^<\?php\s*/', '', $output);
-        return trim($code);
-    }
-
-    /** @test */
     #[Test]
     public function it_replaces_namespace_declarations(): void
     {
@@ -62,9 +46,8 @@ class AstNamespaceReplacerTest extends TestCase
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Test;', $extracted);
     }
 
-    /** @test */
     #[Test]
-    public function it_doesnt_replaces_namespace_inside_namespace(): void
+    public function it_does_not_replace_namespace_inside_namespace(): void
     {
         $replacer = self::createReplacer('Test');
 
@@ -76,7 +59,6 @@ class AstNamespaceReplacerTest extends TestCase
         $this->assertStringContainsString('use My\\Mozart\\Prefix\\Test\\Test;', $extracted);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_partial_namespace_declarations(): void
     {
@@ -87,9 +69,8 @@ class AstNamespaceReplacerTest extends TestCase
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Test\\Another;', $extracted);
     }
 
-    /** @test */
     #[Test]
-    public function it_doesnt_prefix_already_prefixed_namespace(): void
+    public function it_does_not_prefix_already_prefixed_namespace(): void
     {
         $replacer = self::createReplacer('Test\\Another');
 
@@ -100,9 +81,8 @@ class AstNamespaceReplacerTest extends TestCase
         $this->assertEquals('namespace My\\Mozart\\Prefix\\Test\\Another;', $extracted);
     }
 
-    /** @test */
     #[Test]
-    public function it_doesnt_double_replace_namespaces_that_also_exist_inside_another_namespace(): void
+    public function it_does_not_double_replace_namespaces_that_also_exist_inside_another_namespace(): void
     {
         $chickenReplacer = self::createReplacer('Chicken');
         $eggReplacer = self::createReplacer('Egg');
@@ -139,8 +119,6 @@ class AstNamespaceReplacerTest extends TestCase
 
     /**
      * @see https://github.com/coenjacobs/mozart/issues/75
-     *
-     * @test
      */
     #[Test]
     public function it_replaces_namespace_use_as_declarations(): void

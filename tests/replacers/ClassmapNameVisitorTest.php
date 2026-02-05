@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/AstProcessingTestTrait.php';
+
 use CoenJacobs\Mozart\Replace\ClassmapNameVisitor;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class ClassmapNameVisitorTest extends TestCase
 {
+    use AstProcessingTestTrait;
+
     /**
      * Helper to process PHP code through the ClassmapNameVisitor.
      *
@@ -20,30 +20,10 @@ class ClassmapNameVisitorTest extends TestCase
      */
     protected function processCode(string $code, array $classMap): string
     {
-        $fullCode = "<?php\n" . $code;
-
-        $parser = (new ParserFactory())->createForNewestSupportedVersion();
-        $ast = $parser->parse($fullCode);
-
-        if ($ast === null) {
-            return $code;
-        }
-
-        $traverser = new NodeTraverser();
-        $traverser->addVisitor(new ParentConnectingVisitor());
-        $traverser->addVisitor(new ClassmapNameVisitor($classMap));
-
-        $modifiedAst = $traverser->traverse($ast);
-
-        $printer = new PrettyPrinter();
-        $result = $printer->prettyPrintFile($modifiedAst);
-
-        // Remove the <?php tag and normalize
-        $result = preg_replace('/^<\?php\s*/', '', $result);
-        return trim($result);
+        $visitor = new ClassmapNameVisitor($classMap);
+        return $this->processCodeWithVisitor($code, $visitor);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_simple_class_name_in_type_hint(): void
     {
@@ -55,7 +35,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('Prefix_MyClass $var', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_nullable_type_hint(): void
     {
@@ -67,7 +46,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('?Prefix_MyClass $var', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_does_not_replace_class_name_in_string_literal(): void
     {
@@ -81,7 +59,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringNotContainsString('Prefix_MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_extends(): void
     {
@@ -93,7 +70,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('extends Prefix_ParentClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_implements(): void
     {
@@ -105,7 +81,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('implements Prefix_MyInterface', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_new_expression(): void
     {
@@ -117,7 +92,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('new Prefix_MyClass()', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_instanceof(): void
     {
@@ -129,7 +103,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('instanceof Prefix_MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_catch_block(): void
     {
@@ -141,7 +114,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('catch (Prefix_MyException $e)', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_return_type(): void
     {
@@ -153,7 +125,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString(': Prefix_MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_nullable_return_type(): void
     {
@@ -165,7 +136,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString(': ?Prefix_MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_does_not_replace_namespaced_class_references(): void
     {
@@ -179,7 +149,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringNotContainsString('Prefix_MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_does_not_modify_class_declaration_name(): void
     {
@@ -194,7 +163,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('class MyClass', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_multiple_class_references(): void
     {
@@ -212,7 +180,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString(': Prefix_ClassC', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_does_not_replace_class_name_not_in_map(): void
     {
@@ -226,7 +193,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringNotContainsString('Prefix_', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_static_method_calls(): void
     {
@@ -238,7 +204,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('Prefix_MyClass::staticMethod()', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_constant_access(): void
     {
@@ -250,7 +215,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('Prefix_MyClass::CONSTANT', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_class_name_in_property_type(): void
     {
@@ -262,7 +226,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('private Prefix_MyClass $prop', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_nullable_property_type(): void
     {
@@ -274,7 +237,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('private ?Prefix_MyClass $prop', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_does_not_replace_in_use_statements(): void
     {
@@ -288,7 +250,6 @@ class ClassmapNameVisitorTest extends TestCase
         $this->assertStringContainsString('use MyClass;', $result);
     }
 
-    /** @test */
     #[Test]
     public function it_replaces_trait_name_in_use_inside_class(): void
     {
