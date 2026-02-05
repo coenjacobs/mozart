@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
-use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -20,6 +19,8 @@ use PhpParser\NodeVisitorAbstract;
  */
 class ClassNameVisitor extends NodeVisitorAbstract
 {
+    use NameNodeContextTrait;
+
     /**
      * The namespace prefix to add.
      */
@@ -60,11 +61,12 @@ class ClassNameVisitor extends NodeVisitorAbstract
     /**
      * Reset state before traversing a new AST.
      *
-     * @param array<Node> $nodes The AST nodes to traverse
+     * @param array<Node> $nodes The AST nodes (unused, required by interface)
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function beforeTraverse(array $nodes): ?array
     {
-        unset($nodes);
         $this->aliases = [];
         $this->currentNamespace = null;
         return null;
@@ -161,18 +163,6 @@ class ClassNameVisitor extends NodeVisitorAbstract
         }
 
         return $this->isUnqualifiedNameInPrefixedNamespace($node);
-    }
-
-    /**
-     * Check if node is part of a namespace or use statement (handled separately).
-     */
-    protected function isPartOfNamespaceOrUseStatement(Name $node): bool
-    {
-        $parent = $node->getAttribute('parent');
-
-        return $parent instanceof Namespace_
-            || $parent instanceof UseUse
-            || $parent instanceof Use_;
     }
 
     /**

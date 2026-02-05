@@ -4,9 +4,6 @@ namespace CoenJacobs\Mozart\Replace;
 
 use PhpParser\Node;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\Namespace_;
-use PhpParser\Node\Stmt\Use_;
-use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -22,6 +19,8 @@ use PhpParser\NodeVisitorAbstract;
  */
 class ClassmapNameVisitor extends NodeVisitorAbstract
 {
+    use NameNodeContextTrait;
+
     /**
      * Map of original class names to their prefixed versions.
      *
@@ -73,17 +72,5 @@ class ClassmapNameVisitor extends NodeVisitorAbstract
         }
 
         return new Name($prefixedName);
-    }
-
-    /**
-     * Check if node is part of a namespace or use statement.
-     */
-    protected function isPartOfNamespaceOrUseStatement(Name $node): bool
-    {
-        $parent = $node->getAttribute('parent');
-
-        return $parent instanceof Namespace_
-            || $parent instanceof UseUse
-            || $parent instanceof Use_;
     }
 }
