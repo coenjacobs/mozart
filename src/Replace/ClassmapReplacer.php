@@ -31,7 +31,8 @@ class ClassmapReplacer extends BaseReplacer
 																# a potential second namespace declaration
 						|										# if found, match that much before repeating the search
 																# on the remainder of the string
-						(?:abstract\sclass|class|interface)\s+	# Look behind for class, abstract class, interface
+						(?:abstract\sclass|class|interface|trait)\s+
+															# Look for class, abstract class, interface, trait
 						([a-zA-Z0-9_\x7f-\xff]+)				# Match the word until the first
 																# non-classname-valid character
 						\s?										# Allow a space after
