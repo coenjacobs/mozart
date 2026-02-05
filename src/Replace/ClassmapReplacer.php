@@ -12,14 +12,26 @@ use CoenJacobs\Mozart\Exceptions\FileOperationException;
 
 class ClassmapReplacer extends BaseReplacer
 {
+    /**
+     * Maximum file size (in bytes) for AST processing.
+     * Files larger than this use regex to avoid memory issues during printing.
+     * Memory usage is roughly 10x file size for AST operations, but when processing
+     * many files in sequence, memory may accumulate. 300KB keeps us safe with
+     * PHP's default 128MB limit while still handling most files via AST.
+     */
+    protected const MAX_AST_FILE_SIZE = 300000; // 300KB
+
     /** @var array<string,string> */
     protected array $replacedClasses = [];
 
     protected string $classmapPrefix;
 
+    protected AstUtils $astUtils;
+
     public function __construct(string $classmapPrefix = '')
     {
         $this->classmapPrefix = $classmapPrefix;
+        $this->astUtils = new AstUtils();
     }
 
     public function getClassmapPrefix(): string
@@ -35,12 +47,56 @@ class ClassmapReplacer extends BaseReplacer
         return $this->replacedClasses;
     }
 
+    /**
+     * Replace class declarations in the given PHP code.
+     * Uses AST-based replacement with regex fallback.
+     */
     public function replace(string $contents): string
     {
-        if (empty($contents)) {
-            return '';
+        if (empty($contents) || empty($this->classmapPrefix)) {
+            return $contents;
         }
 
+        try {
+            return $this->replaceWithAst($contents);
+        } catch (\Throwable) {
+            return $this->replaceWithRegex($contents);
+        }
+    }
+
+    protected function replaceWithAst(string $contents): string
+    {
+        // AST parsing requires a PHP opening tag
+        if (!preg_match('/^\s*<\?php/i', $contents)) {
+            throw new FileOperationException('Content does not start with PHP opening tag');
+        }
+
+        // Skip AST for very large files to avoid memory issues during printing
+        if (strlen($contents) > self::MAX_AST_FILE_SIZE) {
+            throw new FileOperationException('File too large for AST processing');
+        }
+
+        $ast = $this->astUtils->parseCode($contents);
+
+        if ($ast === null) {
+            throw new FileOperationException('Failed to parse PHP code');
+        }
+
+        $visitor = new ClassmapDeclarationVisitor($this->classmapPrefix);
+        $traverser = $this->astUtils->createTraverser($visitor);
+        $modifiedAst = $traverser->traverse($ast);
+
+        // Merge replaced classes
+        $this->replacedClasses = array_merge(
+            $this->replacedClasses,
+            $visitor->getReplacedClasses()
+        );
+
+        return $this->astUtils->printCode($modifiedAst);
+    }
+
+    protected function replaceWithRegex(string $contents): string
+    {
         $replaced = preg_replace_callback(
             "
 			/													# Start the pattern
