@@ -21,8 +21,8 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=default
+          cache-to: type=gha,mode=min,scope=default
       - name: Run linting
         run: docker compose run --rm actions-tester composer test:lint
   testing:
@@ -41,8 +41,8 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=php-${{ matrix.php-version }}
+          cache-to: type=gha,mode=min,scope=php-${{ matrix.php-version }}
       - name: Run testing
         run: docker compose run --rm actions-tester composer test:phpunit
         env:
@@ -60,8 +60,8 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=default
+          cache-to: type=gha,mode=min,scope=default
       - name: Run analysis
         run: docker compose run --rm actions-tester composer test:phpstan
   mess-detect:
@@ -77,8 +77,8 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=default
+          cache-to: type=gha,mode=min,scope=default
       - name: Run mess detector
         run: docker compose run --rm actions-tester composer test:phpmd
   doc-check:
@@ -94,7 +94,7 @@ jobs:
         with:
           context: "{{defaultContext}}"
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=default
+          cache-to: type=gha,mode=min,scope=default
       - name: Run doc check
         run: docker compose run --rm actions-tester composer test:docs
