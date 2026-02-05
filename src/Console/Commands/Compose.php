@@ -22,6 +22,20 @@ class Compose extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // Register shutdown handler for memory errors
+        register_shutdown_function(function () use ($output) {
+            $error = error_get_last();
+            if ($error !== null && str_contains($error['message'], 'Allowed memory size')) {
+                $output->writeln('');
+                $output->writeln('<error>Memory limit exceeded during processing.</error>');
+                $output->writeln('');
+                $output->writeln('Try increasing PHP\'s memory limit:');
+                $output->writeln('  php -d memory_limit=256M vendor/bin/mozart compose');
+                $output->writeln('');
+                $output->writeln('See docs/memory.md for more information.');
+            }
+        });
+
         $workingDir = getcwd();
 
         if (! $workingDir) {
