@@ -9,9 +9,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 /**
  * Tests that verify AST processing works correctly for large files.
- *
- * These tests ensure that the removal of the 100KB file size threshold
- * doesn't cause issues with larger files.
  */
 class LargeFileHandlingTest extends TestCase
 {

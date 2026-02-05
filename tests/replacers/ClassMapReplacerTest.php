@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\Replace\ClassmapReplacer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -10,52 +11,52 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_replaces_class_declarations(): void
     {
-        $contents = 'class Hello_World {';
+        $contents = '<?php class Hello_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals('class Mozart_Hello_World {', $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
 
     #[Test]
     public function it_replaces_abstract_class_declarations(): void
     {
-        $contents = 'abstract class Hello_World {';
+        $contents = '<?php abstract class Hello_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals('abstract class Mozart_Hello_World {', $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('abstract class Mozart_Hello_World', $result);
     }
 
     #[Test]
     public function it_replaces_interface_class_declarations(): void
     {
-        $contents = 'interface Hello_World {';
+        $contents = '<?php interface Hello_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals('interface Mozart_Hello_World {', $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('interface Mozart_Hello_World', $result);
     }
 
     #[Test]
     public function it_replaces_class_declarations_that_extend_other_classes(): void
     {
-        $contents = 'class Hello_World extends Bye_World {';
+        $contents = '<?php class Hello_World extends Bye_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals('class Mozart_Hello_World extends Bye_World {', $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('class Mozart_Hello_World extends Bye_World', $result);
     }
 
     #[Test]
     public function it_replaces_class_declarations_that_implement_interfaces(): void
     {
-        $contents = 'class Hello_World implements Bye_World {';
+        $contents = '<?php class Hello_World implements Bye_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals('class Mozart_Hello_World implements Bye_World {', $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('class Mozart_Hello_World implements Bye_World', $result);
     }
 
     #[Test]
     public function it_stores_replaced_class_names(): void
     {
-        $contents = 'class Hello_World {';
+        $contents = '<?php class Hello_World {}';
         $replacer = new ClassmapReplacer('Mozart_');
         $replacer->replace($contents);
         $this->assertArrayHasKey('Hello_World', $replacer->getReplacedClasses());
@@ -64,10 +65,10 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_replaces_class_declarations_psr2(): void
     {
-        $contents = "class Hello_World\n{";
+        $contents = "<?php\nclass Hello_World\n{}";
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals("class Mozart_Hello_World\n{", $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
 
     /**
@@ -76,10 +77,10 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_replaces_class(): void
     {
-        $contents = "class Hello_World";
+        $contents = "<?php class Hello_World {}";
         $replacer = new ClassmapReplacer('Mozart_');
-        $contents = $replacer->replace($contents);
-        $this->assertEquals("class Mozart_Hello_World", $contents);
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
 
 
@@ -90,14 +91,14 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_does_not_replace_inside_namespace_multiline(): void
     {
-        $input = "
+        $input = "<?php
         namespace Mozart;
-        class Hello_World
+        class Hello_World {}
         ";
         $replacer = new ClassmapReplacer('Mozart_');
         $result = $replacer->replace($input);
 
-        $this->assertEquals($input, $result);
+        $this->assertStringNotContainsString('Mozart_Hello_World', $result);
     }
 
     /**
@@ -107,11 +108,11 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_does_not_replace_inside_namespace_singleline(): void
     {
-        $input = "namespace Mozart; class Hello_World";
+        $input = "<?php namespace Mozart; class Hello_World {}";
         $replacer = new ClassmapReplacer('Mozart_');
         $result = $replacer->replace($input);
 
-        $this->assertEquals($input, $result);
+        $this->assertStringNotContainsString('Mozart_Hello_World', $result);
     }
 
     /**
@@ -123,8 +124,7 @@ class ClassMapReplacerTest extends TestCase
     #[Test]
     public function it_does_not_replace_inside_named_namespace_but_does_inside_explicit_global_namespace(): void
     {
-
-        $input = "
+        $input = "<?php
 		namespace My_Project {
 			class A_Class { }
 		}
@@ -138,5 +138,45 @@ class ClassMapReplacerTest extends TestCase
 
         $this->assertStringNotContainsString('Mozart_A_Class', $result);
         $this->assertStringContainsString('Mozart_B_Class', $result);
+    }
+
+    #[Test]
+    public function it_returns_non_php_content_unmodified(): void
+    {
+        $contents = 'This is not PHP code';
+        $replacer = new ClassmapReplacer('Mozart_');
+        $result = $replacer->replace($contents);
+
+        $this->assertEquals($contents, $result);
+    }
+
+    #[Test]
+    public function it_throws_exception_on_syntax_error(): void
+    {
+        $contents = '<?php class Hello_World { syntax error here';
+        $replacer = new ClassmapReplacer('Mozart_');
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessageMatches('/Failed to parse PHP code:/');
+        $replacer->replace($contents);
+    }
+
+    #[Test]
+    public function it_returns_empty_content_unchanged(): void
+    {
+        $replacer = new ClassmapReplacer('Mozart_');
+        $result = $replacer->replace('');
+
+        $this->assertEquals('', $result);
+    }
+
+    #[Test]
+    public function it_returns_content_unchanged_when_no_prefix(): void
+    {
+        $contents = '<?php class Hello_World {}';
+        $replacer = new ClassmapReplacer('');
+        $result = $replacer->replace($contents);
+
+        $this->assertEquals($contents, $result);
     }
 }
