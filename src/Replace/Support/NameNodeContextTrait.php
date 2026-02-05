@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Support;
 
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Namespace_;

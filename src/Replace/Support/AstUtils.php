@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace;
+namespace CoenJacobs\Mozart\Replace\Support;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
