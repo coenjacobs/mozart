@@ -7,10 +7,10 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
-use CoenJacobs\Mozart\Replace\ClassmapReplacer;
-use CoenJacobs\Mozart\Replace\NamespaceReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer as ReplacerInterface;
-use Exception;
 
 class Replacer
 {
@@ -51,7 +51,7 @@ class Replacer
 
         try {
             $contents = $this->files->readFile($targetFile);
-        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException $e) {
+        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
             // Skip files that cannot be read
             return;
         }
@@ -64,7 +64,7 @@ class Replacer
         $contents = $replacer->replace($contents);
 
         if ($replacer instanceof ClassmapReplacer) {
-            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->replacedClasses);
+            $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
         }
 
         $this->files->writeFile($targetFile, $contents);
@@ -73,14 +73,12 @@ class Replacer
     public function getReplacerByAutoloader(Autoloader $autoloader): ReplacerInterface
     {
         if ($autoloader instanceof NamespaceAutoloader) {
-            $replacer = new NamespaceReplacer();
-            $replacer->depNamespace = $this->config->getDependencyNamespace();
+            $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
             $replacer->setAutoloader($autoloader);
             return $replacer;
         }
 
-        $replacer = new ClassmapReplacer();
-        $replacer->classmapPrefix = $this->config->getClassmapPrefix();
+        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix());
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -119,6 +117,9 @@ class Replacer
      * Replaces all occurrences of previously replaced classes, in the provided
      * directory. This to ensure that each package has its parents package
      * classes also replaced in its own files.
+     *
+     * Uses AST-based replacement to properly handle PHP syntax and avoid
+     * incorrectly replacing class names in string literals or comments.
      */
     public function replaceParentClassesInDirectory(string $directory): void
     {
@@ -128,8 +129,7 @@ class Replacer
 
         $directory = trim($directory, '//');
         $files = $this->files->getFilesFromPath($directory);
-
-        $replacedClasses = $this->replacedClasses;
+        $replacer = new ClassmapNameReplacer($this->replacedClasses);
 
         foreach ($files as $file) {
             $targetFile = $file->getPathName();
@@ -137,29 +137,16 @@ class Replacer
             if ('.php' == substr($targetFile, -4, 4)) {
                 try {
                     $contents = $this->files->readFile($targetFile);
-                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException $e) {
+                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
                     // Skip files that cannot be read
                     continue;
                 }
 
-                foreach ($replacedClasses as $original => $replacement) {
-                    $contents = preg_replace_callback(
-                        '/(.*)([^a-zA-Z0-9_\x7f-\xff])' . $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
-                        function ($matches) use ($replacement) {
-                            if (preg_match('/(include|require)/', $matches[0])) {
-                                return $matches[0];
-                            }
-                            return $matches[1] . $matches[2] . $replacement . $matches[3];
-                        },
-                        $contents
-                    );
+                $modifiedContents = $replacer->replace($contents);
 
-                    if (empty($contents)) {
-                        throw new Exception('Failed to replace parent classes in directory.');
-                    }
+                if ($modifiedContents !== $contents) {
+                    $this->files->writeFile($targetFile, $modifiedContents);
                 }
-
-                $this->files->writeFile($targetFile, $contents);
             }
         }
     }
