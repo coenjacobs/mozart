@@ -58,5 +58,5 @@ jobs:
             SOURCE_URL=${{ github.event.repository.html_url }},linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=release-dev
+          cache-to: type=gha,mode=max,scope=release-dev
