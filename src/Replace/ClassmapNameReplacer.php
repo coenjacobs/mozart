@@ -2,18 +2,13 @@
 
 namespace CoenJacobs\Mozart\Replace;
 
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
-
 /**
  * Replaces classmap class names in PHP code.
  *
  * Uses AST-based replacement for smaller files, with regex fallback for
  * large files or when AST processing fails.
  */
-class ClassmapNameReplacer
+class ClassmapNameReplacer implements StringReplacer
 {
     /**
      * Maximum file size (in bytes) for AST processing.
@@ -28,12 +23,15 @@ class ClassmapNameReplacer
      */
     protected array $classMap;
 
+    protected AstUtils $astUtils;
+
     /**
      * @param array<string,string> $classMap Map of original => prefixed class names
      */
     public function __construct(array $classMap)
     {
         $this->classMap = $classMap;
+        $this->astUtils = new AstUtils();
     }
 
     /**
@@ -55,9 +53,8 @@ class ClassmapNameReplacer
 
         try {
             return $this->replaceWithAst($contents);
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // If AST processing fails, fall back to regex-based replacement
-            unset($e);
             return $this->replaceWithRegex($contents);
         }
     }
@@ -70,21 +67,17 @@ class ClassmapNameReplacer
      */
     protected function replaceWithAst(string $contents): string
     {
-        $parser = (new ParserFactory())->createForNewestSupportedVersion();
-        $ast = $parser->parse($contents);
+        $ast = $this->astUtils->parseCode($contents);
 
         if ($ast === null) {
             return $contents;
         }
 
-        $traverser = new NodeTraverser();
-        $traverser->addVisitor(new ParentConnectingVisitor());
-        $traverser->addVisitor(new ClassmapNameVisitor($this->classMap));
-
+        $visitor = new ClassmapNameVisitor($this->classMap);
+        $traverser = $this->astUtils->createTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
 
-        $printer = new PrettyPrinter();
-        return $printer->prettyPrintFile($modifiedAst);
+        return $this->astUtils->printCode($modifiedAst);
     }
 
     /**

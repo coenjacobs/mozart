@@ -4,10 +4,6 @@ namespace CoenJacobs\Mozart\Replace;
 
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\ParentConnectingVisitor;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
 
 /**
  * AST-based namespace replacer that properly handles PHP syntax.
@@ -21,7 +17,20 @@ class AstNamespaceReplacer extends BaseReplacer
     /**
      * The prefix to add to existing namespaces, for example: "My\Mozart\Prefix"
      */
-    public string $depNamespace = '';
+    protected string $depNamespace;
+
+    protected AstUtils $astUtils;
+
+    public function __construct(string $depNamespace = '')
+    {
+        $this->depNamespace = $depNamespace;
+        $this->astUtils = new AstUtils();
+    }
+
+    public function getDepNamespace(): string
+    {
+        return $this->depNamespace;
+    }
 
     /**
      * Replace namespace references in the given PHP code.
@@ -42,7 +51,7 @@ class AstNamespaceReplacer extends BaseReplacer
             return $contents;
         }
 
-        $ast = $this->parseCode($contents);
+        $ast = $this->astUtils->parseCode($contents);
         if ($ast === null) {
             // Parsing failed, fall back to original (unmodified) content
             return $contents;
@@ -50,25 +59,7 @@ class AstNamespaceReplacer extends BaseReplacer
 
         $modifiedAst = $this->traverseAndModify($ast, $searchNamespace);
 
-        return $this->printCode($modifiedAst);
-    }
-
-    /**
-     * Parse PHP code into an AST.
-     *
-     * @param string $contents The PHP code to parse
-     * @return array<\PhpParser\Node>|null The AST nodes, or null if parsing failed
-     */
-    protected function parseCode(string $contents): ?array
-    {
-        $parser = (new ParserFactory())->createForNewestSupportedVersion();
-
-        try {
-            return $parser->parse($contents);
-        } catch (\PhpParser\Error $exception) {
-            unset($exception);
-            return null;
-        }
+        return $this->astUtils->printCode($modifiedAst);
     }
 
     /**
@@ -80,27 +71,9 @@ class AstNamespaceReplacer extends BaseReplacer
      */
     protected function traverseAndModify(array $ast, string $searchNamespace): array
     {
-        $traverser = new NodeTraverser();
-
-        // Add parent connecting visitor first (required for context detection)
-        $traverser->addVisitor(new ParentConnectingVisitor());
-
-        // Add our class name visitor with the target namespace
         $visitor = new ClassNameVisitor($this->depNamespace, [$searchNamespace]);
-        $traverser->addVisitor($visitor);
+        $traverser = $this->astUtils->createTraverser($visitor);
 
         return $traverser->traverse($ast);
-    }
-
-    /**
-     * Print the AST back to PHP code.
-     *
-     * @param array<\PhpParser\Node> $ast The AST to print
-     * @return string The PHP code
-     */
-    protected function printCode(array $ast): string
-    {
-        $printer = new PrettyPrinter();
-        return $printer->prettyPrintFile($ast);
     }
 }
