@@ -143,6 +143,50 @@ class FilesHandlerTest extends TestCase
     }
 
     /** @test */
+    public function it_excludes_vendor_directory_from_get_files_from_path(): void
+    {
+        $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
+        $vendorDir = $subDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'some-package';
+        mkdir($subDir, 0777, true);
+        mkdir($vendorDir, 0777, true);
+        file_put_contents($subDir . DIRECTORY_SEPARATOR . 'file1.php', 'content1');
+        file_put_contents($vendorDir . DIRECTORY_SEPARATOR . 'file2.php', 'content2');
+
+        $handler = new FilesHandler($this->config);
+        $files = $handler->getFilesFromPath($subDir);
+
+        $filePaths = [];
+        foreach ($files as $file) {
+            $filePaths[] = $file->getFilename();
+        }
+
+        $this->assertContains('file1.php', $filePaths);
+        $this->assertNotContains('file2.php', $filePaths);
+    }
+
+    /** @test */
+    public function it_excludes_vendor_directory_from_get_file(): void
+    {
+        $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
+        $vendorDir = $subDir . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'some-package';
+        mkdir($subDir, 0777, true);
+        mkdir($vendorDir, 0777, true);
+        file_put_contents($subDir . DIRECTORY_SEPARATOR . 'target.php', 'content');
+        file_put_contents($vendorDir . DIRECTORY_SEPARATOR . 'target.php', 'duplicate');
+
+        $handler = new FilesHandler($this->config);
+        $files = $handler->getFile($subDir, 'target.php');
+
+        $fileCount = 0;
+        foreach ($files as $file) {
+            $fileCount++;
+            $this->assertStringNotContainsString('vendor', $file->getPathname());
+        }
+
+        $this->assertEquals(1, $fileCount);
+    }
+
+    /** @test */
     public function it_can_get_specific_file_by_name(): void
     {
         $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
