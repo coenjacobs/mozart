@@ -13,6 +13,9 @@ use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer as ReplacerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
 class Replacer
 {
     protected Mozart $config;
@@ -102,6 +105,11 @@ class Replacer
             $sourcePath = $this->config->getWorkingDir()
                            . $this->config->getClassmapDirectory()
                            . $package->getDirectoryName();
+
+            if (!is_dir($sourcePath)) {
+                return;
+            }
+
             $files = $this->files->getFilesFromPath($sourcePath);
 
             foreach ($files as $foundFile) {
@@ -181,6 +189,11 @@ class Replacer
         }
 
         $directory = trim($directory, '//');
+
+        if (!is_dir($directory)) {
+            return;
+        }
+
         $files = $this->files->getFilesFromPath($directory);
         $replacer = new ClassmapNameReplacer($this->replacedClasses);
 
@@ -204,8 +217,15 @@ class Replacer
         }
     }
 
+    /**
+     * Replace namespace references in all PHP files within a directory.
+     */
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
+        if (!is_dir($directory)) {
+            return;
+        }
+
         $files = $this->files->getFilesFromPath($directory);
 
         foreach ($files as $file) {

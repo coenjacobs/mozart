@@ -180,5 +180,58 @@ class ReplacerTest extends TestCase
         // Should complete without error
         $this->assertTrue(true);
     }
+
+    /** @test */
+    public function it_handles_classmap_package_with_nonexistent_directory(): void
+    {
+        $package = new Package();
+        $package->name = 'test/package';
+
+        $autoloader = new Classmap();
+        $autoloader->processConfig(['src/']);
+
+        $replacer = new Replacer($this->config);
+        $replacer->replacePackageByAutoloader($package, $autoloader);
+
+        // Should complete without error when classmap directory doesn't exist
+        $this->assertTrue(true);
+    }
+
+    /** @test */
+    public function it_handles_namespace_autoloader_with_nonexistent_directory(): void
+    {
+        $autoloader = new Psr4();
+        $autoloader->setNamespace('Nonexistent\\Namespace');
+
+        $replacer = new Replacer($this->config);
+        $replacer->replaceInDirectory($autoloader, $this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
+
+        // Should complete without error when directory doesn't exist
+        $this->assertTrue(true);
+    }
+
+    /** @test */
+    public function it_handles_parent_classes_in_nonexistent_directory(): void
+    {
+        // Create a real file with a class to populate replacedClasses
+        $classmapDir = $this->testDir . DIRECTORY_SEPARATOR . 'classmap' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'package';
+        mkdir($classmapDir, 0777, true);
+        file_put_contents($classmapDir . DIRECTORY_SEPARATOR . 'MyClass.php', '<?php class MyClass {}');
+
+        $package = new Package();
+        $package->name = 'test/package';
+
+        $autoloader = new Classmap();
+        $autoloader->processConfig(['src/']);
+
+        $replacer = new Replacer($this->config);
+        $replacer->replacePackageByAutoloader($package, $autoloader);
+
+        // Now call replaceParentClassesInDirectory with a non-existent path
+        $replacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
+
+        // Should complete without error
+        $this->assertTrue(true);
+    }
 }
 
