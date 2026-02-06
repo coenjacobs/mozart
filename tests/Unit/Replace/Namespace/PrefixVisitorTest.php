@@ -361,4 +361,45 @@ if (!function_exists(\'DI\\value\')) {
             $result
         );
     }
+
+    #[Test]
+    public function it_prefixes_constant_string_literal(): void
+    {
+        $code = '<?php
+$level = constant(\'Invoker\\Invoker::SOME_CONST\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_constant(): void
+    {
+        $code = '<?php
+$level = constant(\'SomeOther\\SomeClass::CONST_NAME\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("constant('SomeOther\\\\SomeClass::CONST_NAME')", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_does_not_double_prefix_constant(): void
+    {
+        $code = '<?php
+$level = constant(\'MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            $result
+        );
+        $this->assertStringNotContainsString(
+            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            $result
+        );
+    }
 }
