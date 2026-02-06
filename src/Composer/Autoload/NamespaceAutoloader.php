@@ -68,6 +68,9 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
 
             $sourcePath = str_replace('/', DIRECTORY_SEPARATOR, $sourcePath);
 
+            if (!is_dir($sourcePath)) {
+                continue;
+            }
 
             $files = $fileHandler->getFilesFromPath($sourcePath);
 
