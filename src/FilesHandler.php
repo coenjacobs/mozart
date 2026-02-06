@@ -49,13 +49,13 @@ class FilesHandler
     public function getFilesFromPath(string $path): Iterator
     {
         $finder = new Finder();
-        return $finder->files()->in($path)->getIterator();
+        return $finder->files()->exclude('vendor')->in($path)->getIterator();
     }
 
     public function getFile(string $path, string $fileName): Iterator
     {
         $finder = new Finder();
-        return $finder->files()->name($fileName)->in($path)->getIterator();
+        return $finder->files()->exclude('vendor')->name($fileName)->in($path)->getIterator();
     }
 
     public function createDirectory(string $path): void
