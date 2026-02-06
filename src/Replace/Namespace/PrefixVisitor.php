@@ -313,12 +313,16 @@ class PrefixVisitor extends NodeVisitorAbstract
      */
     protected function processExistenceCheck(FuncCall $node): ?FuncCall
     {
-        $parsed = $this->parseExistenceCheck($node);
-        if ($parsed === null || !$this->shouldPrefixNamespace($parsed['value'])) {
-            return null;
+        $allParsed = $this->parseAllExistenceChecks($node);
+        $modified = false;
+
+        foreach ($allParsed as $parsed) {
+            if ($this->shouldPrefixNamespace($parsed['value'])) {
+                $parsed['argNode']->value = $this->prefix . '\\' . $parsed['value'] . $parsed['suffix'];
+                $modified = true;
+            }
         }
 
-        $parsed['argNode']->value = $this->prefix . '\\' . $parsed['value'] . $parsed['suffix'];
-        return $node;
+        return $modified ? $node : null;
     }
 }
