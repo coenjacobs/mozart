@@ -178,5 +178,57 @@ class ReplacerTest extends TestCase
         // Should complete without error
         $this->assertTrue(true);
     }
+
+    /**
+     * Helper to simulate the regex replacement logic from replaceParentClassesInDirectory.
+     *
+     * @param string $contents The PHP source code to process
+     * @param array<string,string> $replacedClasses Map of original => replacement class names
+     * @return string The processed source code
+     */
+    private function applyParentClassReplacement(string $contents, array $replacedClasses): string
+    {
+        foreach ($replacedClasses as $original => $replacement) {
+            $contents = preg_replace_callback(
+                '/(.*)([^a-zA-Z0-9_\x7f-\xff$>])' . $original . '([^a-zA-Z0-9_\x7f-\xff])/U',
+                function ($matches) use ($replacement) {
+                    if (preg_match('/(include|require)/', $matches[0])) {
+                        return $matches[0];
+                    }
+                    return $matches[1] . $matches[2] . $replacement . $matches[3];
+                },
+                $contents
+            );
+        }
+
+        return $contents;
+    }
+
+    /** @test */
+    public function it_does_not_replace_property_access_matching_classmap_class(): void
+    {
+        $contents = '<?php $this->names = "value";';
+        $result = $this->applyParentClassReplacement($contents, ['names' => 'Test_names']);
+
+        $this->assertSame('<?php $this->names = "value";', $result);
+    }
+
+    /** @test */
+    public function it_does_not_replace_variable_matching_classmap_class(): void
+    {
+        $contents = '<?php $names = "value";';
+        $result = $this->applyParentClassReplacement($contents, ['names' => 'Test_names']);
+
+        $this->assertSame('<?php $names = "value";', $result);
+    }
+
+    /** @test */
+    public function it_still_replaces_actual_class_usages_in_classmap(): void
+    {
+        $contents = '<?php new names();';
+        $result = $this->applyParentClassReplacement($contents, ['names' => 'Test_names']);
+
+        $this->assertSame('<?php new Test_names();', $result);
+    }
 }
 
