@@ -1,1 +1,0 @@
-All public methods in `src/` require a docblock. The `test:docs` CI check (`composer test:docs`) enforces this — it will fail the build if any public method is missing one. Always add a docblock when creating or modifying public methods.
