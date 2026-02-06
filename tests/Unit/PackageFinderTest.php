@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CoenJacobs\Mozart\Tests\Unit;
 
 use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
@@ -132,6 +133,86 @@ class PackageFinderTest extends TestCase
         $finder = new PackageFinder();
 
         $this->assertInstanceOf(PackageFactory::class, $finder->factory);
+    }
+
+    private function createMockPackage(string $name): Package
+    {
+        $package = new Package();
+        $package->name = $name;
+        return $package;
+    }
+
+    /** @test */
+    public function it_deduplicates_diamond_dependencies(): void
+    {
+        // A depends on B and C; both B and C depend on D
+        $d = $this->createMockPackage('vendor/d');
+        $b = $this->createMockPackage('vendor/b');
+        $b->registerDependency($d);
+        $c = $this->createMockPackage('vendor/c');
+        $c->registerDependency($d);
+        $a = $this->createMockPackage('vendor/a');
+        $a->registerDependency($b);
+        $a->registerDependency($c);
+
+        $finder = new PackageFinder();
+        $result = $finder->findPackages([$a]);
+
+        $this->assertCount(4, $result);
+
+        $names = array_map(fn(Package $p) => $p->getName(), $result);
+        $this->assertContains('vendor/a', $names);
+        $this->assertContains('vendor/b', $names);
+        $this->assertContains('vendor/c', $names);
+        $this->assertContains('vendor/d', $names);
+        $this->assertCount(4, array_unique($names));
+    }
+
+    /** @test */
+    public function it_handles_circular_dependencies(): void
+    {
+        // A depends on B, B depends on A
+        $a = $this->createMockPackage('vendor/a');
+        $b = $this->createMockPackage('vendor/b');
+        $a->registerDependency($b);
+        $b->registerDependency($a);
+
+        $finder = new PackageFinder();
+        $result = $finder->findPackages([$a]);
+
+        $this->assertCount(2, $result);
+
+        $names = array_map(fn(Package $p) => $p->getName(), $result);
+        $this->assertContains('vendor/a', $names);
+        $this->assertContains('vendor/b', $names);
+    }
+
+    /** @test */
+    public function it_does_not_grow_exponentially_with_deep_shared_dependencies(): void
+    {
+        // Build a chain where each level shares a dependency with the next:
+        // p0 -> p1 -> p2 -> p3 -> p4 -> p5
+        // p0 -> p2, p1 -> p3, p2 -> p4, p3 -> p5 (extra shared edges)
+        $packages = [];
+        for ($i = 0; $i <= 5; $i++) {
+            $packages[$i] = $this->createMockPackage("vendor/p{$i}");
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $packages[$i]->registerDependency($packages[$i + 1]);
+        }
+        // Add extra shared edges
+        for ($i = 0; $i < 4; $i++) {
+            $packages[$i]->registerDependency($packages[$i + 2]);
+        }
+
+        $finder = new PackageFinder();
+        $result = $finder->findPackages([$packages[0]]);
+
+        $this->assertCount(6, $result);
+
+        $names = array_map(fn(Package $p) => $p->getName(), $result);
+        $this->assertCount(6, array_unique($names));
     }
 }
 
