@@ -611,4 +611,60 @@ $check = is_callable(\'Invoker\\Invoker::\' . $method);';
             $result
         );
     }
+
+    #[Test]
+    public function it_prefixes_use_function_statements(): void
+    {
+        $code = '<?php use function Invoker\\invoke;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use function MyPlugin\\Dependencies\\Invoker\\invoke;', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_use_const_statements(): void
+    {
+        $code = '<?php use const Invoker\\SOME_CONSTANT;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use const MyPlugin\\Dependencies\\Invoker\\SOME_CONSTANT;', $result);
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_use_function(): void
+    {
+        $code = '<?php use function SomeOther\\helper;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use function SomeOther\\helper;', $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_use_const(): void
+    {
+        $code = '<?php use const SomeOther\\SOME_CONSTANT;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use const SomeOther\\SOME_CONSTANT;', $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_use_function_with_alias(): void
+    {
+        $code = '<?php use function Invoker\\invoke as di_invoke;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use function MyPlugin\\Dependencies\\Invoker\\invoke as di_invoke;', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_use_const_with_alias(): void
+    {
+        $code = '<?php use const Invoker\\SOME_CONSTANT as MY_CONST;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use const MyPlugin\\Dependencies\\Invoker\\SOME_CONSTANT as MY_CONST;', $result);
+    }
 }

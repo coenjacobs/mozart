@@ -1,0 +1,30 @@
+{
+    "require": {
+        "php-di/php-di": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mozart\\TestProject\\": "src/"
+        }
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "Mozart\\TestProject\\Dependencies",
+            "dep_directory": "/src/dependencies/",
+            "classmap_directory": "/classes/",
+            "classmap_prefix": "MozartDependency_",
+            "packages": [
+                "php-di/php-di"
+            ],
+            "excluded_packages": [
+                "psr/container"
+            ],
+            "override_autoload": {
+                "php-di/php-di": {
+                    "files": ["src/functions.php"]
+                }
+            },
+            "delete_vendor_directories": true
+        }
+    }
+}
