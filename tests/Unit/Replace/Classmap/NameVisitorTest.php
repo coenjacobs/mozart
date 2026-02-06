@@ -262,4 +262,82 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringContainsString('use Prefix_MyTrait;', $result);
     }
+
+    #[Test]
+    public function it_replaces_class_name_in_class_exists(): void
+    {
+        $code = "if (class_exists('MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_exists('Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_function_exists(): void
+    {
+        $code = "if (function_exists('myFunc')) {}";
+        $classMap = ['myFunc' => 'Prefix_myFunc'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("function_exists('Prefix_myFunc')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_interface_exists(): void
+    {
+        $code = "if (interface_exists('MyInterface')) {}";
+        $classMap = ['MyInterface' => 'Prefix_MyInterface'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("interface_exists('Prefix_MyInterface')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_trait_exists(): void
+    {
+        $code = "if (trait_exists('MyTrait')) {}";
+        $classMap = ['MyTrait' => 'Prefix_MyTrait'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("trait_exists('Prefix_MyTrait')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_constant(): void
+    {
+        $code = "\$val = constant('MyClass::FOO');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('Prefix_MyClass::FOO')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_existence_check(): void
+    {
+        $code = "if (class_exists('OtherClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_exists('OtherClass')", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_string_in_existence_check(): void
+    {
+        $code = "if (class_exists('Some\\\\Ns\\\\MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringNotContainsString('Prefix_MyClass', $result);
+    }
 }
