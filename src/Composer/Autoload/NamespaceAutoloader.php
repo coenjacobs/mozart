@@ -57,6 +57,9 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
         return '';
     }
 
+    /**
+     * @return array<string,SplFileInfo>
+     */
     public function getFiles(FilesHandler $fileHandler): array
     {
         $this->fileHandler = $fileHandler;
@@ -68,6 +71,9 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
 
             $sourcePath = str_replace('/', DIRECTORY_SEPARATOR, $sourcePath);
 
+            if (!is_dir($sourcePath)) {
+                continue;
+            }
 
             $files = $fileHandler->getFilesFromPath($sourcePath);
 
