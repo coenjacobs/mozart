@@ -146,9 +146,14 @@ class Replacer
             }
 
             // Use appropriate replacer based on whether file has a namespace
-            $replacer = $autoloader->hasNamespace($file)
-                ? new NamespaceReplacer($this->config->getDependencyNamespace())
-                : new ClassmapReplacer($this->config->getClassmapPrefix());
+            $detectedNamespace = $autoloader->getDetectedNamespace($file);
+            $replacer = new ClassmapReplacer($this->config->getClassmapPrefix());
+
+            if ($detectedNamespace !== null) {
+                $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
+                $replacer->setSearchNamespace($detectedNamespace);
+            }
+
             $replacer->setAutoloader($autoloader);
 
             $contents = $replacer->replace($contents);

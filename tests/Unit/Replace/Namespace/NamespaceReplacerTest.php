@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit\Replace\Namespace;
 
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Psr0;
+use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Tests\Support\AstProcessingTestTrait;
 use PHPUnit\Framework\Attributes\Test;
@@ -135,5 +137,33 @@ class NamespaceReplacerTest extends TestCase
         $extracted = $this->extractCode($result);
 
         $this->assertEquals("use MBViews\\Dependencies\\Symfony\\Polyfill\\Mbstring as p;", $extracted);
+    }
+
+    #[Test]
+    public function it_replaces_namespace_using_explicit_search_namespace(): void
+    {
+        $autoloader = $this->createMock(Autoloader::class);
+
+        $replacer = new NamespaceReplacer(self::PREFIX);
+        $replacer->setSearchNamespace('DI');
+        $replacer->setAutoloader($autoloader);
+
+        $contents = $this->wrapCode('namespace DI;');
+        $contents = $replacer->replace($contents);
+        $extracted = $this->extractCode($contents);
+
+        $this->assertEquals('namespace My\\Mozart\\Prefix\\DI;', $extracted);
+    }
+
+    #[Test]
+    public function it_throws_when_no_search_namespace_and_not_namespace_autoloader(): void
+    {
+        $autoloader = $this->createMock(Autoloader::class);
+
+        $replacer = new NamespaceReplacer(self::PREFIX);
+        $replacer->setAutoloader($autoloader);
+
+        $this->expectException(FileOperationException::class);
+        $replacer->replace($this->wrapCode('namespace DI;'));
     }
 }

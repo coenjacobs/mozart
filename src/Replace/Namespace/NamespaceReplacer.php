@@ -23,6 +23,8 @@ class NamespaceReplacer extends BaseReplacer
 
     protected AstUtils $astUtils;
 
+    protected ?string $searchNamespace = null;
+
     public function __construct(string $depNamespace = '')
     {
         $this->depNamespace = $depNamespace;
@@ -34,6 +36,28 @@ class NamespaceReplacer extends BaseReplacer
         return $this->depNamespace;
     }
 
+    public function setSearchNamespace(string $namespace): void
+    {
+        $this->searchNamespace = $namespace;
+    }
+
+    /**
+     * Resolve the search namespace from the explicit property or the autoloader.
+     */
+    protected function resolveSearchNamespace(): string
+    {
+        if ($this->searchNamespace !== null) {
+            return rtrim($this->searchNamespace, '\\');
+        }
+
+        $autoloader = $this->autoloader;
+        if ($autoloader instanceof NamespaceAutoloader) {
+            return $autoloader->getSearchNamespace();
+        }
+
+        throw new FileOperationException('NamespaceReplacer requires a search namespace or a NamespaceAutoloader.');
+    }
+
     /**
      * Replace namespace references in the given PHP code.
      */
@@ -43,12 +67,7 @@ class NamespaceReplacer extends BaseReplacer
             return $contents;
         }
 
-        $autoloader = $this->autoloader;
-        if (!$autoloader instanceof NamespaceAutoloader) {
-            throw new FileOperationException('NamespaceReplacer requires a NamespaceAutoloader.');
-        }
-
-        $searchNamespace = $autoloader->getSearchNamespace();
+        $searchNamespace = $this->resolveSearchNamespace();
         if (empty($searchNamespace)) {
             return $contents;
         }
