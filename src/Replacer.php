@@ -103,6 +103,11 @@ class Replacer
             $sourcePath = $this->config->getWorkingDir()
                            . $this->config->getClassmapDirectory()
                            . $package->getDirectoryName();
+
+            if (!is_dir($sourcePath)) {
+                return;
+            }
+
             $files = $this->files->getFilesFromPath($sourcePath);
 
             foreach ($files as $foundFile) {
@@ -127,6 +132,11 @@ class Replacer
         }
 
         $directory = trim($directory, '//');
+
+        if (!is_dir($directory)) {
+            return;
+        }
+
         $files = $this->files->getFilesFromPath($directory);
 
         $replacedClasses = $this->replacedClasses;
@@ -164,8 +174,15 @@ class Replacer
         }
     }
 
+    /**
+     * Replace namespace references in all PHP files within a directory.
+     */
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
     {
+        if (!is_dir($directory)) {
+            return;
+        }
+
         $files = $this->files->getFilesFromPath($directory);
 
         foreach ($files as $file) {
