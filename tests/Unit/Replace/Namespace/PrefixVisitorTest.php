@@ -426,4 +426,189 @@ $level = constant(\'SomeOther\\SomeClass::\' . $constName);';
         $this->assertStringContainsString("constant('SomeOther\\\\SomeClass::'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
+
+    #[Test]
+    public function it_prefixes_defined_string_literal(): void
+    {
+        $code = '<?php
+$check = defined(\'Invoker\\Invoker::SOME_CONST\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "defined('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_defined(): void
+    {
+        $code = '<?php
+$check = defined(\'SomeOther\\SomeClass::CONST_NAME\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("defined('SomeOther\\\\SomeClass::CONST_NAME')", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_defined_with_concatenation(): void
+    {
+        $code = '<?php
+$check = defined(\'Invoker\\Invoker::\' . $constName);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "defined('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_defined_concat(): void
+    {
+        $code = '<?php
+$check = defined(\'SomeOther\\SomeClass::\' . $constName);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("defined('SomeOther\\\\SomeClass::'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_enum_exists_string_literal(): void
+    {
+        $code = '<?php
+if (enum_exists(\'Invoker\\Status\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "enum_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Status')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_method_exists_string_literal(): void
+    {
+        $code = '<?php
+if (method_exists(\'Invoker\\Invoker\', \'someMethod\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "method_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_method_exists(): void
+    {
+        $code = '<?php
+if (method_exists(\'SomeOther\\SomeClass\', \'someMethod\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("method_exists('SomeOther\\\\SomeClass'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_property_exists_string_literal(): void
+    {
+        $code = '<?php
+if (property_exists(\'Invoker\\Invoker\', \'someProp\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "property_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_is_a_string_literal(): void
+    {
+        $code = '<?php
+$check = is_a($obj, \'Invoker\\Invoker\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "is_a(\$obj, 'MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_is_a(): void
+    {
+        $code = '<?php
+$check = is_a($obj, \'SomeOther\\SomeClass\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("is_a(\$obj, 'SomeOther\\\\SomeClass')", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_is_subclass_of_string_literal(): void
+    {
+        $code = '<?php
+$check = is_subclass_of($obj, \'Invoker\\Invoker\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "is_subclass_of(\$obj, 'MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_is_callable_string_literal(): void
+    {
+        $code = '<?php
+if (is_callable(\'Invoker\\invoke\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\invoke')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_is_callable(): void
+    {
+        $code = '<?php
+if (is_callable(\'SomeOther\\func\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("is_callable('SomeOther\\\\func')", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_is_callable_with_double_colon(): void
+    {
+        $code = '<?php
+$check = is_callable(\'Invoker\\Invoker::someMethod\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::someMethod')",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_prefixes_is_callable_with_concatenation(): void
+    {
+        $code = '<?php
+$check = is_callable(\'Invoker\\Invoker::\' . $method);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            $result
+        );
+    }
 }
