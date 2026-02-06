@@ -1,3 +1,9 @@
+---
+name: learned
+description: Capture lessons from debugging sessions into project documentation. Invoke after resolving non-trivial bugs or discovering non-obvious behavior.
+disable-model-invocation: true
+---
+
 Review this conversation to identify what was just debugged, fixed, or discovered. Extract the non-obvious lesson — the thing that would have saved time if it had been documented before.
 
 Then do the following:
