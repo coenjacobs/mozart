@@ -2,8 +2,10 @@
 
 namespace CoenJacobs\Mozart\Replace\Classmap;
 
+use CoenJacobs\Mozart\Replace\Support\ExistenceCheckTrait;
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\NodeVisitorAbstract;
 
@@ -16,10 +18,11 @@ use PhpParser\NodeVisitorAbstract;
  * Unlike PrefixVisitor which handles namespaced code, this visitor:
  * - Only replaces simple class names (no namespace separator)
  * - Uses a direct mapping of original => prefixed names
- * - Does NOT modify string literals or comments (AST doesn't include them as Name nodes)
+ * - Handles string literals in existence checks (class_exists, function_exists, etc.)
  */
 class NameVisitor extends NodeVisitorAbstract
 {
+    use ExistenceCheckTrait;
     use NameNodeContextTrait;
 
     /**
@@ -42,6 +45,11 @@ class NameVisitor extends NodeVisitorAbstract
      */
     public function leaveNode(Node $node): ?Node
     {
+        // Handle string literals in existence checks (class_exists, function_exists, etc.)
+        if ($node instanceof FuncCall) {
+            return $this->processExistenceCheck($node);
+        }
+
         // Only process Name nodes
         if (!$node instanceof Name) {
             return null;
@@ -73,5 +81,22 @@ class NameVisitor extends NodeVisitorAbstract
         }
 
         return new Name($prefixedName);
+    }
+
+    /**
+     * Process function calls that check for existence of classes/functions/etc.
+     *
+     * Uses ExistenceCheckTrait::parseExistenceCheck() for parsing, then applies
+     * classmap replacement if the value matches a mapped class name.
+     */
+    protected function processExistenceCheck(FuncCall $node): ?FuncCall
+    {
+        $parsed = $this->parseExistenceCheck($node);
+        if ($parsed === null || !isset($this->classMap[$parsed['value']])) {
+            return null;
+        }
+
+        $parsed['argNode']->value = $this->classMap[$parsed['value']] . $parsed['suffix'];
+        return $node;
     }
 }

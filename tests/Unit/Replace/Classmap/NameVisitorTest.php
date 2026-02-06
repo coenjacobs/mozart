@@ -262,4 +262,251 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringContainsString('use Prefix_MyTrait;', $result);
     }
+
+    #[Test]
+    public function it_replaces_class_name_in_class_exists(): void
+    {
+        $code = "if (class_exists('MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_exists('Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_function_exists(): void
+    {
+        $code = "if (function_exists('myFunc')) {}";
+        $classMap = ['myFunc' => 'Prefix_myFunc'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("function_exists('Prefix_myFunc')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_interface_exists(): void
+    {
+        $code = "if (interface_exists('MyInterface')) {}";
+        $classMap = ['MyInterface' => 'Prefix_MyInterface'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("interface_exists('Prefix_MyInterface')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_trait_exists(): void
+    {
+        $code = "if (trait_exists('MyTrait')) {}";
+        $classMap = ['MyTrait' => 'Prefix_MyTrait'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("trait_exists('Prefix_MyTrait')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_constant(): void
+    {
+        $code = "\$val = constant('MyClass::FOO');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('Prefix_MyClass::FOO')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_existence_check(): void
+    {
+        $code = "if (class_exists('OtherClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_exists('OtherClass')", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_string_in_existence_check(): void
+    {
+        $code = "if (class_exists('Some\\\\Ns\\\\MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringNotContainsString('Prefix_MyClass', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_constant_concatenation(): void
+    {
+        $code = "\$val = constant('MyClass::' . \$constName);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('Prefix_MyClass::'", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_constant_concatenation(): void
+    {
+        $code = "\$val = constant('OtherClass::' . \$constName);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('OtherClass::'", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_defined(): void
+    {
+        $code = "\$check = defined('MyClass::FOO');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("defined('Prefix_MyClass::FOO')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_defined(): void
+    {
+        $code = "\$check = defined('OtherClass::FOO');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("defined('OtherClass::FOO')", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_defined_concatenation(): void
+    {
+        $code = "\$check = defined('MyClass::' . \$constName);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("defined('Prefix_MyClass::'", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_enum_exists(): void
+    {
+        $code = "if (enum_exists('MyEnum')) {}";
+        $classMap = ['MyEnum' => 'Prefix_MyEnum'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("enum_exists('Prefix_MyEnum')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_method_exists(): void
+    {
+        $code = "if (method_exists('MyClass', 'myMethod')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("method_exists('Prefix_MyClass'", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_method_exists(): void
+    {
+        $code = "if (method_exists('OtherClass', 'myMethod')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("method_exists('OtherClass'", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_property_exists(): void
+    {
+        $code = "if (property_exists('MyClass', 'myProp')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("property_exists('Prefix_MyClass'", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_is_a(): void
+    {
+        $code = "if (is_a(\$obj, 'MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_a(\$obj, 'Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_is_a(): void
+    {
+        $code = "if (is_a(\$obj, 'OtherClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_a(\$obj, 'OtherClass')", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_is_subclass_of(): void
+    {
+        $code = "if (is_subclass_of(\$obj, 'MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_subclass_of(\$obj, 'Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_is_callable(): void
+    {
+        $code = "if (is_callable('myFunc')) {}";
+        $classMap = ['myFunc' => 'Prefix_myFunc'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_callable('Prefix_myFunc')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_is_callable_with_double_colon(): void
+    {
+        $code = "\$check = is_callable('MyClass::myMethod');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_callable('Prefix_MyClass::myMethod')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_is_callable_concatenation(): void
+    {
+        $code = "\$check = is_callable('MyClass::' . \$method);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("is_callable('Prefix_MyClass::'", $result);
+    }
 }

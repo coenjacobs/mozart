@@ -2,12 +2,11 @@
 
 namespace CoenJacobs\Mozart\Replace\Namespace;
 
+use CoenJacobs\Mozart\Replace\Support\ExistenceCheckTrait;
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeVisitorAbstract;
@@ -26,6 +25,7 @@ use PhpParser\NodeVisitorAbstract;
  */
 class PrefixVisitor extends NodeVisitorAbstract
 {
+    use ExistenceCheckTrait;
     use NameNodeContextTrait;
 
     /**
@@ -308,31 +308,17 @@ class PrefixVisitor extends NodeVisitorAbstract
     /**
      * Process function calls that check for existence of classes/functions/etc.
      *
-     * Handles: function_exists(), class_exists(), interface_exists(), trait_exists()
-     * If the argument is a string literal containing a namespace that should be prefixed,
-     * the string is updated to use the prefixed namespace.
+     * Uses ExistenceCheckTrait::parseExistenceCheck() for parsing, then applies
+     * namespace prefix if the value matches a target namespace.
      */
     protected function processExistenceCheck(FuncCall $node): ?FuncCall
     {
-        if (!$node->name instanceof Name) {
+        $parsed = $this->parseExistenceCheck($node);
+        if ($parsed === null || !$this->shouldPrefixNamespace($parsed['value'])) {
             return null;
         }
 
-        $existenceChecks = ['function_exists', 'class_exists', 'interface_exists', 'trait_exists'];
-        if (!in_array($node->name->toString(), $existenceChecks, true)) {
-            return null;
-        }
-
-        if (count($node->args) === 0 || !$node->args[0] instanceof Arg) {
-            return null;
-        }
-
-        $firstArgValue = $node->args[0]->value;
-        if (!$firstArgValue instanceof String_ || !$this->shouldPrefixNamespace($firstArgValue->value)) {
-            return null;
-        }
-
-        $firstArgValue->value = $this->prefix . '\\' . $firstArgValue->value;
+        $parsed['argNode']->value = $this->prefix . '\\' . $parsed['value'] . $parsed['suffix'];
         return $node;
     }
 }
