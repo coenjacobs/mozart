@@ -86,14 +86,26 @@ class PackageFinder
      */
     public function findPackages(array $packages): array
     {
-        foreach ($packages as $package) {
-            $dependencies = $package->getDependencies();
+        $visited = [];
+        $queue = $packages;
 
-            if (! empty($dependencies)) {
-                $packages = array_merge($packages, $this->findPackages($dependencies));
+        while (!empty($queue)) {
+            $package = array_shift($queue);
+            $name = $package->getName();
+
+            if (isset($visited[$name])) {
+                continue;
+            }
+
+            $visited[$name] = $package;
+
+            foreach ($package->getDependencies() as $dependency) {
+                if (!isset($visited[$dependency->getName()])) {
+                    $queue[] = $dependency;
+                }
             }
         }
 
-        return $packages;
+        return array_values($visited);
     }
 }

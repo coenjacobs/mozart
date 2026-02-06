@@ -284,20 +284,26 @@ class Replacer
      *
      * @param Package   $package
      * @param Package[] $dependencies
+     * @param array<string,bool> $visited
      * @return Package[]
      */
-    private function getAllDependenciesOfPackage(Package $package, $dependencies = []): array
-    {
+    private function getAllDependenciesOfPackage(
+        Package $package,
+        array $dependencies = [],
+        array &$visited = []
+    ): array {
         if (empty($package->getDependencies())) {
             return $dependencies;
         }
 
         foreach ($package->getDependencies() as $dependency) {
+            $name = $dependency->getName();
+            if (isset($visited[$name])) {
+                continue;
+            }
+            $visited[$name] = true;
             $dependencies[] = $dependency;
-        }
-
-        foreach ($package->getDependencies() as $dependency) {
-            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies);
+            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies, $visited);
         }
 
         return $dependencies;
