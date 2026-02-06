@@ -667,4 +667,41 @@ $check = is_callable(\'Invoker\\Invoker::\' . $method);';
 
         $this->assertStringContainsString('use const MyPlugin\\Dependencies\\Invoker\\SOME_CONSTANT as MY_CONST;', $result);
     }
+
+    #[Test]
+    public function it_prefixes_class_alias_first_argument(): void
+    {
+        $code = '<?php
+class_alias(\'Invoker\\Invoker\', \'Legacy_Invoker\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "class_alias('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_class_alias(): void
+    {
+        $code = '<?php
+class_alias(\'SomeOther\\Client\', \'Legacy_Client\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("class_alias('SomeOther\\\\Client'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_both_class_alias_arguments_when_both_are_namespaced(): void
+    {
+        $code = '<?php
+class_alias(\'Invoker\\Invoker\', \'Invoker\\LegacyInvoker\');';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "class_alias('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker', 'MyPlugin\\\\Dependencies\\\\Invoker\\\\LegacyInvoker')",
+            $result
+        );
+    }
 }

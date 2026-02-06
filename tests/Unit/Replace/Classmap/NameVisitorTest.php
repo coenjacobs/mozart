@@ -509,4 +509,49 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringContainsString("is_callable('Prefix_MyClass::'", $result);
     }
+
+    #[Test]
+    public function it_replaces_class_name_in_class_alias_first_argument(): void
+    {
+        $code = "class_alias('MyClass', 'Legacy_MyClass');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_alias('Prefix_MyClass'", $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_name_in_class_alias_second_argument(): void
+    {
+        $code = "class_alias('SomeClass', 'MyClass');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("'Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_only_mapped_arguments_in_class_alias(): void
+    {
+        $code = "class_alias('MyClass', 'OtherClass');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_alias('Prefix_MyClass', 'OtherClass')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_class_alias(): void
+    {
+        $code = "class_alias('UnknownClass', 'AnotherClass');";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("class_alias('UnknownClass', 'AnotherClass')", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
 }
