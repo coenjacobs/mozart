@@ -49,3 +49,37 @@ docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart com
 ```
 
 This command automatically adds the current working directory as a volume into the designated directory for the project: `/project/`. In the Docker container, Mozart is installed in the `/mozart/` directory. Using the above command will run Mozart on the current working directory.
+
+## Dockerfile stages
+
+The Dockerfile uses multi-stage builds. Each stage serves a different purpose:
+
+| Stage | Base | Purpose |
+|---|---|---|
+| `base` | `php:${PHP_VERSION}-cli-alpine` | Bare PHP CLI image, shared by all stages |
+| `builder` | `base` | Adds git, Composer, installs all dependencies. Used for CI testing. |
+| `develop` | `builder` | Adds Xdebug for local development and debugging |
+| `packager` | `builder` | Reinstalls dependencies with `--no-dev` for production |
+| `application` | `base` | Final production image. Copies only built artifacts from `packager`. |
+
+The `PHP_VERSION` build arg defaults to `8.5` and is overridden by CI to test against multiple PHP versions (8.1 through 8.5).
+
+## Docker Compose services
+
+`docker-compose.yml` defines two services for development and testing:
+
+| Service | Dockerfile target | Volume mount | Xdebug | Use case |
+|---|---|---|---|---|
+| `builder` | `develop` | Yes (`.:/mozart/`) | Yes | Local development — code changes reflected immediately |
+| `actions-tester` | `builder` | No | No | CI simulation — files copied at build time |
+
+The `builder` service is what you use for local development. It mounts the working directory so edits are reflected without rebuilding. The `actions-tester` service mirrors how CI runs tests: files are baked into the image at build time, so you must rebuild (`docker compose build actions-tester`) after code changes.
+
+Both services accept a `PHP_VERSION` environment variable (defaults to `8.5`).
+
+## PHP configuration
+
+The `docker/php/` directory contains PHP configuration overrides:
+
+- `error_reporting.ini` — Sets `error_reporting=E_ALL`
+- `xdebug.ini` — Configures Xdebug with `mode=develop`, connecting to `host.docker.internal` (only loaded in the `develop` stage)

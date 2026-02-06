@@ -113,8 +113,43 @@ tests/Integration/MyFeature/
 
 ### Shared test utilities
 
-- `tests/Support/IntegrationTestCase.php` — Base class for integration tests with common setup/teardown
-- `tests/Support/AstProcessingTestTrait.php` — Helpers for AST-related tests (parse code, assert transformations)
+**`IntegrationTestCase`** (`tests/Support/IntegrationTestCase.php`) — Base class for integration tests. Provides:
+
+- `copyFixtures()` — Copies the test's `composer.json` (and any other `.json` files) to an isolated temp directory
+- `runComposerInstall()` — Runs `composer update` in the temp directory
+- `runMozart()` — Executes `Commands\Compose` against the temp directory with mocked Symfony I/O
+- Automatic setup/teardown: creates a unique temp directory per test, cleans it up after
+
+**`AstProcessingTestTrait`** (`tests/Support/AstProcessingTestTrait.php`) — Helpers for AST visitor unit tests:
+
+- `processCodeWithVisitor($code, $visitor)` — Parses PHP code, applies a visitor via AST traversal, returns the printed result
+- `wrapCode($code)` — Wraps code in `<?php` tags for the parser
+- `extractCode($code)` — Removes PHP tags from pretty-printed output
+
+### Test naming conventions
+
+Test methods use the pattern `it_<action>_<expected_result>`:
+
+```php
+public function it_replaces_namespace_declarations(): void
+public function it_does_not_double_prefix(): void
+public function it_handles_nullable_type_hints(): void
+```
+
+Tests use the `#[Test]` PHPUnit attribute.
+
+### Regression tests
+
+Several GitHub issues have dedicated regression tests to prevent recurrence:
+
+| Issue | Test location | What it prevents |
+|---|---|---|
+| #75 | `NamespaceReplacerTest` | `use ... as` alias handling |
+| #81 | `ClassmapReplacerTest` | Class declaration replacement |
+| #89 | `Integration/MoverFileOnce` | Duplicate "file already exists" errors |
+| #93 | `ClassmapReplacerTest` | Namespace-aware class replacement |
+| #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
+| #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
 
 ### After adding tests
 

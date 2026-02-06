@@ -17,12 +17,12 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 
 | File | Contents |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | Execution flow, configuration options, dependency resolution algorithm, project structure |
+| [docs/architecture.md](docs/architecture.md) | Entry points, execution flow, Mover, configuration loading chain, dependency resolution, exceptions, project structure |
 | [docs/replace-pipeline.md](docs/replace-pipeline.md) | AST-based replacement system: namespace and classmap replacers, visitors, support traits, directory guards |
-| [docs/autoloaders.md](docs/autoloaders.md) | PSR-4, PSR-0, classmap, and files autoloader types: how files are discovered, moved, and routed to replacers |
-| [docs/testing.md](docs/testing.md) | Running tests, Docker services, CI checks (lint/phpstan/phpmd/docs), adding new tests |
+| [docs/autoloaders.md](docs/autoloaders.md) | PSR-4, PSR-0, classmap, and files autoloader types: processing order, file discovery, movement, replacer routing |
+| [docs/testing.md](docs/testing.md) | Running tests, Docker services, CI checks, test utilities (IntegrationTestCase, AstProcessingTestTrait), regression tests |
 | [docs/memory.md](docs/memory.md) | Memory requirements for AST processing, how to increase limits |
-| [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, multi-architecture support |
+| [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, Dockerfile stages, Docker Compose services, PHP configuration |
 | [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts, configuring the project autoloader |
 | [docs/background.md](docs/background.md) | Why Mozart exists, comparison with PHP-Scoper, project values |
 

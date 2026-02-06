@@ -15,9 +15,18 @@ Each Composer package can have multiple autoloader types defined in its `compose
 | Classmap | `Config\Classmap` | `classmap_directory` | `ClassmapReplacer` | `AbstractAutoloader` |
 | Files | `Config\Files` | Both (depends on file) | Either (depends on file) | `AbstractAutoloader` |
 
+## Processing order
+
+`Config\Autoload::setupAutoloaders()` processes autoloader types in a specific order: PSR-4 first, then PSR-0, then classmap, then **files last**. This order matters because the Files autoloader uses `isInsidePsrPath()` to skip files already covered by PSR-4 or PSR-0 paths. If files were processed first, this overlap detection wouldn't work.
+
 ## PSR-4 and PSR-0
 
-Both extend `NamespaceAutoloader` and share the same file discovery and moving logic. The difference is in path resolution (matching Composer's own PSR-4 vs PSR-0 behavior).
+Both extend `NamespaceAutoloader` and share the same file discovery and moving logic. The difference is in target path resolution:
+
+- **PSR-4** overrides `getNamespacePath()` to convert the namespace to a directory path (e.g., `Foo\Bar` → `Foo/Bar/`). Files are placed under `dep_directory/Foo/Bar/`.
+- **PSR-0** inherits the default `getNamespacePath()` which returns an empty string. Files go directly into `dep_directory/` without namespace-based subdirectories.
+
+Both share `getSearchNamespace()` which returns the namespace trimmed of trailing backslashes.
 
 **File discovery:** Iterates `paths` from the autoload config, resolves each to a directory under `vendor/{package}/`, and collects all files recursively.
 
@@ -105,6 +114,7 @@ All autoloaders implement:
 - `getFiles(FilesHandler)` — Discover files to process
 - `getTargetFilePath(SplFileInfo)` — Determine where a file should be moved to
 - `getSearchNamespace()` — Return the namespace to search for (throws on Classmap/Files)
+- `getOutputDir($basePath, $autoloadPath)` — Combines a base directory with an autoload-specific path (e.g., `dep_directory` + namespace path), converting backslashes to `DIRECTORY_SEPARATOR`
 
 ## Nested vendor directories
 

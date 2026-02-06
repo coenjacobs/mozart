@@ -62,6 +62,7 @@ Classmap replacement requires two passes, unlike namespace replacement which onl
 - Uses the `replacedClasses` map to update references everywhere
 - Called via `Replacer::replaceParentClassesInDirectory()`
 - Only replaces simple (non-namespaced) names that appear in the map
+- `NameReplacer` implements `StringReplacer` (not `Replacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context
 
 This two-pass design exists because you can't know the full set of renamed classes until all declarations have been processed.
 
