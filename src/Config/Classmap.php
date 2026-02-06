@@ -65,6 +65,10 @@ class Classmap extends AbstractAutoloader
                             . DIRECTORY_SEPARATOR . $this->getPackage()->getDirectoryName()
                             . DIRECTORY_SEPARATOR . $path;
 
+            if (!is_dir($sourcePath)) {
+                continue;
+            }
+
             $files = $fileHandler->getFilesFromPath($sourcePath);
             foreach ($files as $foundFile) {
                 $filePath = $foundFile->getRealPath();
