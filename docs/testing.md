@@ -1,6 +1,6 @@
 # Testing
 
-## Test Structure
+## Test structure
 
 ```
 tests/
@@ -9,9 +9,9 @@ tests/
 └── Support/        # Shared test utilities
 ```
 
-**Unit tests** test individual components in isolation. Each integration test has its own directory with a `composer.json` fixture.
+**Unit tests** test individual components in isolation. **Integration tests** run the full Mozart flow against real composer.json fixtures.
 
-## Running Tests Locally
+## Running tests locally
 
 Use the `builder` service for local development. It mounts your working directory, so changes are reflected immediately:
 
@@ -32,7 +32,7 @@ docker compose run --rm builder composer test:phpunit
 docker compose run --rm builder composer dump-autoload
 ```
 
-## Docker Services
+## Docker services
 
 | Service | Volume Mount | Xdebug | Use Case |
 |---------|--------------|--------|----------|
@@ -50,6 +50,37 @@ docker compose run --rm actions-tester composer test:phpunit
 
 In CI, the workflow pre-builds the `mozart:latest` image, which `actions-tester` then uses directly (no double-build).
 
+The Dockerfile has multiple stages: `base` -> `builder` (for testing) -> `develop` (adds Xdebug) -> `packager` -> `application`. CI builds target the `builder` stage.
+
+## CI checks
+
+The full CI suite (`composer test`) runs these checks in order. All must pass before merge.
+
+| Script | Tool | What it checks |
+|---|---|---|
+| `test:lint` | phpcs + `composer validate` | Code style (PSR-12), PHP 8.1-8.5 compatibility |
+| `test:phpunit` | PHPUnit 10 | Unit tests (all PHP versions) + integration tests (PHP 8.1 + 8.5) |
+| `test:phpstan` | PHPStan level 8 | Static type analysis on `src/` |
+| `test:phpmd` | PHPMD | Code smells: codesize, cleancode, naming, unused code, design |
+| `test:docs` | php-doc-check | Docblock completeness (see below) |
+
+### Docblock requirement
+
+`php-doc-check src` requires **every public method in `src/` to have a docblock**. Missing one fails CI. This is the least obvious check — when adding a new public method, always add a docblock.
+
+### PHPMD suppressions
+
+When a PHPMD violation is intentional, suppress it with an annotation:
+
+```php
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
+class Replacer { ... }
+```
+
+Also use `@SuppressWarnings(PHPMD.UnusedFormalParameter)` for interface-mandated parameters.
+
 ## GitHub Actions
 
 The CI workflow (`.github/workflows/main.yml`) runs:
@@ -59,8 +90,32 @@ The CI workflow (`.github/workflows/main.yml`) runs:
 
 The PHP version matrix works via the `PHP_VERSION` build arg passed to Docker.
 
-## Adding Tests
+## Adding tests
 
-- **Unit test**: Add to `tests/Unit/`, mirroring `src/` structure. Use namespace `CoenJacobs\Mozart\Tests\Unit\...`
-- **Integration test**: Create directory in `tests/Integration/` with test file + `composer.json`. Use namespace `CoenJacobs\Mozart\Tests\Integration\...`
-- After adding new test files, run `composer dump-autoload` to update the autoloader
+### Unit tests
+
+Add to `tests/Unit/`, mirroring the `src/` directory structure.
+
+- Namespace: `CoenJacobs\Mozart\Tests\Unit\...`
+- Example: a test for `src/Replace/Classmap/NameVisitor.php` goes in `tests/Unit/Replace/Classmap/NameVisitorTest.php`
+
+### Integration tests
+
+Create a directory in `tests/Integration/` with both a test class and a `composer.json` fixture:
+
+```
+tests/Integration/MyFeature/
+  MyFeatureTest.php     # extends IntegrationTestCase from tests/Support/
+  composer.json         # fixture with Mozart config and dependencies
+```
+
+- Namespace: `CoenJacobs\Mozart\Tests\Integration\...`
+
+### Shared test utilities
+
+- `tests/Support/IntegrationTestCase.php` — Base class for integration tests with common setup/teardown
+- `tests/Support/AstProcessingTestTrait.php` — Helpers for AST-related tests (parse code, assert transformations)
+
+### After adding tests
+
+Run `composer dump-autoload` to update the autoloader so PHPUnit can find new test classes.
