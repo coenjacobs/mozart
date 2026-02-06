@@ -340,4 +340,27 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringNotContainsString('Prefix_MyClass', $result);
     }
+
+    #[Test]
+    public function it_replaces_class_name_in_constant_concatenation(): void
+    {
+        $code = "\$val = constant('MyClass::' . \$constName);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('Prefix_MyClass::'", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_non_mapped_class_in_constant_concatenation(): void
+    {
+        $code = "\$val = constant('OtherClass::' . \$constName);";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("constant('OtherClass::'", $result);
+        $this->assertStringNotContainsString('Prefix_', $result);
+    }
 }

@@ -402,4 +402,28 @@ $level = constant(\'MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST\');';
             $result
         );
     }
+
+    #[Test]
+    public function it_prefixes_constant_with_concatenation(): void
+    {
+        $code = '<?php
+$level = constant(\'Invoker\\Invoker::\' . $constName);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_constant_concat(): void
+    {
+        $code = '<?php
+$level = constant(\'SomeOther\\SomeClass::\' . $constName);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("constant('SomeOther\\\\SomeClass::'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
 }
