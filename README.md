@@ -139,6 +139,35 @@ The following configuration values are required:
 
 **Important:** Since Mozart automatically processes the full dependency tree of the packages you specify, you **need to specify all these configuration options**, because you can't reliably determine what kind of autoloaders are being used in the full dependency tree. A package way down the tree might suddenly use a classmap autoloader for example. Make sure you also include the namespace directory and classmap directory in your own autoloader, so they are always loaded.
 
+For example, given the Mozart configuration above, your `composer.json` should include matching `autoload` entries:
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "CoenJacobs\\TestProject\\": "src/",
+            "CoenJacobs\\TestProject\\Dependencies\\": "src/Dependencies/"
+        },
+        "classmap": [
+            "classes/dependencies/"
+        ]
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "CoenJacobs\\TestProject\\Dependencies\\",
+            "dep_directory": "/src/Dependencies/",
+            "classmap_directory": "/classes/dependencies/",
+            "classmap_prefix": "CJTP_",
+            "packages": [
+                "pimple/pimple"
+            ]
+        }
+    }
+}
+```
+
+The `dep_directory` is mapped as a PSR-4 entry under `dep_namespace`, so namespaced dependencies are autoloaded correctly. The `classmap_directory` is added to the `classmap` array, so classmap dependencies are discovered by Composer's autoloader. After running Mozart, remember to run `composer dump-autoload` to regenerate the autoloader with the new paths.
+
 The following configuration is optional:
 
 - `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
