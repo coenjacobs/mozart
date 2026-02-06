@@ -3,6 +3,8 @@
 namespace CoenJacobs\Mozart\Replace\Support;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
@@ -39,7 +41,7 @@ trait ExistenceCheckTrait
 
         $firstArgValue = $node->args[0]->value;
         if (!$firstArgValue instanceof String_) {
-            return null;
+            return $this->parseConstantConcat($functionName, $firstArgValue);
         }
 
         $value = $firstArgValue->value;
@@ -56,6 +58,32 @@ trait ExistenceCheckTrait
             'argNode' => $firstArgValue,
             'value'   => $value,
             'suffix'  => $suffix,
+        ];
+    }
+
+    /**
+     * Handle concatenation in constant() calls: constant('Namespace\Class::' . $var)
+     *
+     * @return array{argNode: String_, value: string, suffix: string}|null
+     */
+    private function parseConstantConcat(string $functionName, Expr $argValue): ?array
+    {
+        if ($functionName !== 'constant') {
+            return null;
+        }
+
+        if (!$argValue instanceof Concat || !$argValue->left instanceof String_) {
+            return null;
+        }
+
+        if (!str_ends_with($argValue->left->value, '::')) {
+            return null;
+        }
+
+        return [
+            'argNode' => $argValue->left,
+            'value'   => substr($argValue->left->value, 0, -2),
+            'suffix'  => '::',
         ];
     }
 }
