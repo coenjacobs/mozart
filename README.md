@@ -3,6 +3,36 @@ Composes all dependencies as a package inside a WordPress plugin. Load packages 
 
 This package requires PHP 8.1 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
 
+## How it works
+
+Mozart takes your Composer dependencies, copies them into your plugin, and rewrites their namespaces and class names so they can't conflict with other plugins loading the same packages.
+
+For namespaced packages, Mozart prefixes the namespace and updates all references:
+
+```diff
+-namespace Pimple;
++namespace CoenJacobs\TestProject\Dependencies\Pimple;
+
+-use Psr\Container\ContainerInterface;
++use CoenJacobs\TestProject\Dependencies\Psr\Container\ContainerInterface;
+
+ class Container implements ContainerInterface
+```
+
+For packages using global-scope classes, Mozart adds a prefix to class names:
+
+```diff
+-class Container {
++class CJTP_Container {
+     // ...
+ }
+
+-$container = new Container();
++$container = new CJTP_Container();
+```
+
+This happens across the full dependency tree — namespace declarations, `use` statements, type hints, string references in `class_exists()` calls, and more. The result is a self-contained copy of your dependencies that won't collide with any other plugin's versions.
+
 ## Installation
 
 Mozart brings its own dependencies to the table and that potentially introduces its own problems (yes, I realise how meta that is, for a package like this). That's why installing Mozart in isolation, either through the Docker container, the available PHAR file or installing Mozart as a global dependency with Composer is preferred. In all cases, the [configuration](#configuration) still needs to be placed in the `composer.json` file of the project itself.
