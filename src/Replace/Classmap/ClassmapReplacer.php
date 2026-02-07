@@ -9,10 +9,10 @@
 namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use CoenJacobs\Mozart\Replace\BaseReplacer;
+use CoenJacobs\Mozart\Replace\AbstractAutoloadReplacer;
 use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
-class ClassmapReplacer extends BaseReplacer
+class ClassmapReplacer extends AbstractAutoloadReplacer
 {
     /** @var array<string,string> */
     protected array $replacedClasses = [];

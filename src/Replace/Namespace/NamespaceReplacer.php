@@ -4,7 +4,7 @@ namespace CoenJacobs\Mozart\Replace\Namespace;
 
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use CoenJacobs\Mozart\Replace\BaseReplacer;
+use CoenJacobs\Mozart\Replace\AbstractAutoloadReplacer;
 use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
 /**
@@ -14,7 +14,7 @@ use CoenJacobs\Mozart\Replace\Support\AstUtils;
  * references, avoiding the issues with regex-based replacement on constructs
  * like nullable type hints (?ClassName).
  */
-class NamespaceReplacer extends BaseReplacer
+class NamespaceReplacer extends AbstractAutoloadReplacer
 {
     /**
      * The prefix to add to existing namespaces, for example: "My\Mozart\Prefix"

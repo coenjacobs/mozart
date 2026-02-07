@@ -4,7 +4,7 @@ namespace CoenJacobs\Mozart\Replace;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 
-abstract class BaseReplacer implements Replacer
+abstract class AbstractAutoloadReplacer implements AutoloadReplacer
 {
     public Autoloader $autoloader;
 
