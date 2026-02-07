@@ -37,7 +37,9 @@ class Classmap extends AbstractAutoloader
      */
     public function getSearchNamespace(): string
     {
-        throw new ConfigurationException('Classmap autoloaders do not contain a namespace and this method can not be used.');
+        throw new ConfigurationException(
+            'Classmap autoloaders do not contain a namespace and this method can not be used.'
+        );
     }
 
     /**
