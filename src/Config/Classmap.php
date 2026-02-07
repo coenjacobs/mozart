@@ -24,11 +24,11 @@ class Classmap extends AbstractAutoloader
     {
         foreach ($autoloadConfig as $value) {
             if (str_ends_with($value, '.php')) {
-                array_push($this->files, $value);
+                $this->files[] = $value;
                 continue;
             }
 
-            array_push($this->paths, $value);
+            $this->paths[] = $value;
         }
     }
 

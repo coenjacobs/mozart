@@ -122,7 +122,7 @@ class Package
 
     public function registerDependency(Package $package): void
     {
-        array_push($this->dependencies, $package);
+        $this->dependencies[] = $package;
     }
 
     /**

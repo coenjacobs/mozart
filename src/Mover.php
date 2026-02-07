@@ -159,7 +159,7 @@ class Mover
         $targetFile = $autoloader->getTargetFilePath($file);
         $this->copyFile($file, $targetFile);
 
-        array_push($this->movedFiles, $file->getRealPath());
+        $this->movedFiles[] = $file->getRealPath();
     }
 
     private function copyFile(SplFileInfo $file, string $targetFile): void
