@@ -21,12 +21,6 @@ composer test:integration   # integration tests
 composer test:phpunit       # both suites
 ```
 
-If you add new files or change namespaces, regenerate the autoloader first:
-
-```bash
-composer dump-autoload
-```
-
 **Docker is the recommended way to run these commands.** It guarantees the correct PHP version and extensions without any local setup. Prefix any command above with `docker compose run --rm builder`:
 
 ```bash
@@ -154,7 +148,3 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #93 | `ClassmapReplacerTest` | Namespace-aware class replacement |
 | #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
-
-### After adding tests
-
-Run `composer dump-autoload` to update the autoloader so PHPUnit can find new test classes.

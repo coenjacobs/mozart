@@ -8,7 +8,6 @@ Composer dependency bundler for WordPress plugins. Copies dependencies into the 
 docker compose run --rm builder composer test:unit          # unit tests
 docker compose run --rm builder composer test:integration   # integration tests
 docker compose run --rm builder composer test:phpunit       # both suites
-docker compose run --rm builder composer dump-autoload      # after adding files
 ```
 
 ## Documentation
@@ -31,7 +30,6 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 ## Key things to know
 
 - **All public methods in `src/` require a docblock** or the `test:docs` CI check fails.
-- **After adding new files**, run `composer dump-autoload` before testing.
 - **Classmap replacement is two-pass**: declarations are renamed first, then references are updated using the collected rename map. See [docs/replace-pipeline.md](docs/replace-pipeline.md).
 - **Files autoloader** is the most complex autoloader type — each file is inspected individually to determine if it's namespaced or global-scope. See [docs/autoloaders.md](docs/autoloaders.md).
 - **After resolving a non-trivial bug or discovering non-obvious behavior**, run `/learned` to capture the lesson in the right doc file before moving on.
