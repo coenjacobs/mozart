@@ -60,9 +60,9 @@ Classmap replacement requires two passes, unlike namespace replacement which onl
 **Pass 2 — Reference updating** (`NameReplacer` + `NameVisitor`):
 - Runs after all declarations have been renamed
 - Uses the `replacedClasses` map to update references everywhere
-- Called via `Replacer::replaceParentClassesInDirectory()`
+- Called via `ParentReplacer::replaceParentClassesInDirectory()`
 - Only replaces simple (non-namespaced) names that appear in the map
-- `NameReplacer` implements `StringReplacer` (not `Replacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `Replacer` provides, so using a separate interface keeps that dependency out
+- `NameReplacer` implements `StringReplacer` (not `AutoloadReplacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `AutoloadReplacer` provides, so using a separate interface keeps that dependency out
 
 This two-pass design exists because you can't know the full set of renamed classes until all declarations have been processed.
 
@@ -128,8 +128,8 @@ Also handles concatenation patterns like `constant('Namespace\Class::' . $var)` 
 Multiple points in the replacement flow need `is_dir()` checks because directories may not exist:
 
 - `Replacer::replacePackageByAutoloader()` — classmap source path may not exist
-- `Replacer::replaceParentClassesInDirectory()` — directory may not exist yet
 - `Replacer::replaceInDirectory()` — namespace directory may not exist
+- `ParentReplacer::replaceParentClassesInDirectory()` — directory may not exist yet
 - `NamespaceAutoloader::getFiles()` — PSR-4 paths (especially when defined as arrays) may list non-existent directories
 - `Classmap::getFiles()` — classmap paths may not exist
 - `FilesHandler::getFilesFromPath()` — uses Symfony Finder with `->exclude('vendor')` to avoid processing nested vendor directories

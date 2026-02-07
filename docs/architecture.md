@@ -34,15 +34,18 @@ In code:
 $mover->deleteTargetDirs($packages);
 $mover->movePackages($packages);
 $replacer->replacePackages($packages);
-$replacer->replaceParentInTree($packages);
-$replacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
+
+$parentReplacer = new ParentReplacer($config, $replacer);
+$parentReplacer->setReplacedClasses($replacer->getReplacedClasses());
+$parentReplacer->replaceParentInTree($packages);
+$parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 
 if ($config->getDeleteVendorDirectories()) {
     $mover->deletePackageVendorDirectories();
 }
 ```
 
-The `replaceParentInTree` step is important: after replacing namespaces/classes within each package, it also updates references in parent packages that depend on them. This ensures package A (which requires package B) gets updated with the new names from package B.
+The `ParentReplacer` handles cross-replacement: after `Replacer` rewrites namespaces/classes within each package, `ParentReplacer` propagates those renames into parent packages. This ensures package A (which requires package B) gets updated with the new names from package B.
 
 ## Configuration
 
@@ -142,14 +145,15 @@ src/
   Config/                           # Configuration models (Mozart, Package, Psr4, Classmap, Files, etc.)
   Composer/Autoload/                # Autoloader abstractions (NamespaceAutoloader, AbstractAutoloader)
   Replace/
-    BaseReplacer.php                # Abstract base (holds autoloader reference)
-    Replacer.php                    # Interface: replace(string): string
+    AbstractAutoloadReplacer.php    # Abstract base (holds autoloader reference)
+    AutoloadReplacer.php            # Interface: extends StringReplacer with setAutoloader()
     StringReplacer.php              # Interface: same as Replacer but for class-map style
     Classmap/                       # ClassmapReplacer, DeclarationVisitor, NameReplacer, NameVisitor
     Namespace/                      # NamespaceReplacer, PrefixVisitor
     Support/                        # AstUtils, ExistenceCheckTrait, NameNodeContextTrait
   Mover.php                         # Copies files from vendor/ to target directories
   Replacer.php                      # Orchestrator (routes packages to correct replacer)
+  ParentReplacer.php                # Cross-replacement: propagates renames into parent packages
   PackageFinder.php                 # Dependency tree resolution (BFS with deduplication)
   PackageFactory.php                # Creates Package objects from composer.json
   FilesHandler.php                  # File I/O via Flysystem (read, write, copy, delete)
