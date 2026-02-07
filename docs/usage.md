@@ -27,8 +27,7 @@ Since Mozart processes the full dependency tree, packages may use any combinatio
 {
     "autoload": {
         "psr-4": {
-            "CoenJacobs\\TestProject\\": "src/",
-            "CoenJacobs\\TestProject\\Dependencies\\": "src/Dependencies/"
+            "CoenJacobs\\TestProject\\": "src/"
         },
         "classmap": [
             "classes/dependencies/"
@@ -48,6 +47,6 @@ Since Mozart processes the full dependency tree, packages may use any combinatio
 }
 ```
 
-The `dep_directory` is mapped as a PSR-4 entry under `dep_namespace`, so namespaced dependencies are autoloaded correctly. The `classmap_directory` is added to the `classmap` array, so classmap dependencies are discovered by Composer's autoloader.
+The `dep_directory` is a subdirectory of `src/`, which is already mapped via PSR-4. Since `dep_namespace` falls under the existing `CoenJacobs\TestProject\` namespace, Composer resolves it automatically — no additional PSR-4 entry is needed. The `classmap_directory` is added to the `classmap` array so classmap dependencies are discovered by Composer's autoloader.
 
 After running Mozart, run `composer dump-autoload` to regenerate the autoloader with the new paths.
