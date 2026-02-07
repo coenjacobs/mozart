@@ -43,5 +43,3 @@ LABEL org.opencontainers.image.version="${VERSION}" \
 RUN mkdir project
 WORKDIR /project/
 COPY --from=packager /mozart/ /mozart/
-COPY ./bin/ /mozart/bin/
-COPY ./src/ /mozart/src/
