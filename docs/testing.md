@@ -62,6 +62,10 @@ The full CI suite (`composer test`) runs these checks in order. All must pass be
 | `test:phpmd` | PHPMD | Code smells: codesize, cleancode, naming, unused code, design |
 | `test:docs` | php-doc-check | Docblock completeness (see below) |
 
+### Line length near the boundary
+
+Several lines in `src/` sit just under the 120-character PSR-12 soft limit. Mechanical changes like renaming a class reference (e.g., `Exception` → `ConfigurationException`) can push a line past the limit and fail `test:lint`, even though the logic is unchanged. Always run `test:lint` after rename-style refactors.
+
 ### Docblock requirement
 
 `php-doc-check src` requires **every public method in `src/` to have a docblock**. Missing one fails CI. This is the least obvious check — when adding a new public method, always add a docblock.

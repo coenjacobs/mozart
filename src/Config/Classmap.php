@@ -3,8 +3,8 @@
 namespace CoenJacobs\Mozart\Config;
 
 use CoenJacobs\Mozart\Composer\Autoload\AbstractAutoloader;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\FilesHandler;
-use Exception;
 use Symfony\Component\Finder\SplFileInfo;
 
 class Classmap extends AbstractAutoloader
@@ -23,21 +23,23 @@ class Classmap extends AbstractAutoloader
     public function processConfig($autoloadConfig): void
     {
         foreach ($autoloadConfig as $value) {
-            if ('.php' == substr($value, -4, 4)) {
-                array_push($this->files, $value);
+            if (str_ends_with($value, '.php')) {
+                $this->files[] = $value;
                 continue;
             }
 
-            array_push($this->paths, $value);
+            $this->paths[] = $value;
         }
     }
 
     /**
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function getSearchNamespace(): string
     {
-        throw new Exception('Classmap autoloaders do not contain a namespace and this method can not be used.');
+        throw new ConfigurationException(
+            'Classmap autoloaders do not contain a namespace and this method can not be used.'
+        );
     }
 
     /**

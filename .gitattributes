@@ -1,0 +1,22 @@
+# Line ending normalization
+* text=auto
+
+# Export ignore (keeps Composer installs lean)
+/.claude/             export-ignore
+/.github/             export-ignore
+/docker/              export-ignore
+/docs/                export-ignore
+/tests/               export-ignore
+.dockerignore         export-ignore
+.gitattributes        export-ignore
+.gitignore            export-ignore
+.phpactor.json        export-ignore
+CLAUDE.md             export-ignore
+composer.lock         export-ignore
+Dockerfile            export-ignore
+docker-compose.yml    export-ignore
+mozart.code-workspace export-ignore
+phpcs.xml.dist        export-ignore
+phpmd.xml.dist        export-ignore
+phpstan.neon.dist     export-ignore
+phpunit.xml.dist      export-ignore

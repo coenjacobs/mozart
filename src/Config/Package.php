@@ -6,8 +6,8 @@ use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Autoload;
 use CoenJacobs\Mozart\Config\Extra;
 use CoenJacobs\Mozart\Config\ReadsConfig;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFinder;
-use Exception;
 use stdClass;
 
 class Package
@@ -109,7 +109,7 @@ class Package
             $mozart = $this->getExtra()->getMozart();
 
             if (empty($mozart)) {
-                throw new Exception("Couldn't load dependencies because config not set.");
+                throw new ConfigurationException("Couldn't load dependencies because config not set.");
             }
             $finder->setConfig($mozart);
         }
@@ -122,7 +122,7 @@ class Package
 
     public function registerDependency(Package $package): void
     {
-        array_push($this->dependencies, $package);
+        $this->dependencies[] = $package;
     }
 
     /**

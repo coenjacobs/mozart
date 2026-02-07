@@ -8,7 +8,7 @@ use stdClass;
 class PackageFactory
 {
     /** @var array <string,Package> */
-    public array $cache = [];
+    private array $cache = [];
 
     public function createPackage(string $path, ?stdClass $overrideAutoload = null): Package
     {

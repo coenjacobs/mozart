@@ -75,7 +75,6 @@ class PackageFactoryTest extends TestCase
         $package2 = $factory->createPackage($filePath);
 
         $this->assertSame($package1, $package2);
-        $this->assertArrayHasKey($filePath, $factory->cache);
     }
 
     /** @test */
@@ -120,13 +119,5 @@ class PackageFactoryTest extends TestCase
         $this->assertInstanceOf(Package::class, $package);
     }
 
-    /** @test */
-    public function it_has_cache_property(): void
-    {
-        $factory = new PackageFactory();
-
-        $this->assertIsArray($factory->cache);
-        $this->assertEmpty($factory->cache);
-    }
 }
 
