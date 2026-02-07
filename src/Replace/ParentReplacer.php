@@ -48,7 +48,7 @@ class ParentReplacer
             return;
         }
 
-        $directory = trim($directory, '//');
+        $directory = trim($directory, '/');
 
         if (!is_dir($directory)) {
             return;
