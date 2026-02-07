@@ -1,11 +1,12 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace CoenJacobs\Mozart\Replace;
 
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
-use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
+use CoenJacobs\Mozart\FilesHandler;
+use CoenJacobs\Mozart\Replace\Classmap\NameReplacer;
 
 class ParentReplacer
 {
@@ -54,7 +55,7 @@ class ParentReplacer
         }
 
         $files = $this->files->getFilesFromPath($directory);
-        $replacer = new ClassmapNameReplacer($this->replacedClasses);
+        $replacer = new NameReplacer($this->replacedClasses);
 
         foreach ($files as $file) {
             $targetFile = $file->getPathName();

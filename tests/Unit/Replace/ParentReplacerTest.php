@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace;
 
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
-use CoenJacobs\Mozart\ParentReplacer;
-use CoenJacobs\Mozart\Replacer;
+use CoenJacobs\Mozart\Replace\ParentReplacer;
+use CoenJacobs\Mozart\Replace\Replacer;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 

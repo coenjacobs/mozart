@@ -6,8 +6,8 @@ use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
-use CoenJacobs\Mozart\ParentReplacer;
-use CoenJacobs\Mozart\Replacer;
+use CoenJacobs\Mozart\Replace\ParentReplacer;
+use CoenJacobs\Mozart\Replace\Replacer;
 
 class Compose
 {

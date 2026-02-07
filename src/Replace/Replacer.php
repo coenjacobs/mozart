@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart;
+namespace CoenJacobs\Mozart\Replace;
 
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
@@ -8,9 +8,9 @@ use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
+use CoenJacobs\Mozart\FilesHandler;
 use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
-use CoenJacobs\Mozart\Replace\AutoloadReplacer;
 
 class Replacer
 {

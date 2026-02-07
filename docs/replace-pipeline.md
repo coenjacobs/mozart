@@ -4,7 +4,7 @@ All code transformation in Mozart uses AST-based processing via `nikic/php-parse
 
 ## Overview
 
-The `Replacer` class (in `src/Replacer.php`) orchestrates all replacement. It routes each package to the right replacer based on its autoloader type:
+The `Replacer` class (in `src/Replace/Replacer.php`) orchestrates all replacement. It routes each package to the right replacer based on its autoloader type:
 
 ```
 Replacer (orchestrator)
