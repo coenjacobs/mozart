@@ -62,7 +62,7 @@ Classmap replacement requires two passes, unlike namespace replacement which onl
 - Uses the `replacedClasses` map to update references everywhere
 - Called via `Replacer::replaceParentClassesInDirectory()`
 - Only replaces simple (non-namespaced) names that appear in the map
-- `NameReplacer` implements `StringReplacer` (not `Replacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context
+- `NameReplacer` implements `StringReplacer` (not `Replacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `Replacer` provides, so using a separate interface keeps that dependency out
 
 This two-pass design exists because you can't know the full set of renamed classes until all declarations have been processed.
 
