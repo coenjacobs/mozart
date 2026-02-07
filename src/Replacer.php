@@ -9,13 +9,9 @@ use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
-use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
-use CoenJacobs\Mozart\Replace\Replacer as ReplacerInterface;
+use CoenJacobs\Mozart\Replace\AutoloadReplacer;
 
-/**
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- */
 class Replacer
 {
     protected Mozart $config;
@@ -42,6 +38,9 @@ class Replacer
         }
     }
 
+    /**
+     * Replace all autoloaders for a given package.
+     */
     public function replacePackage(Package $package): void
     {
         foreach ($package->getAutoloaders() as $autoloader) {
@@ -49,6 +48,9 @@ class Replacer
         }
     }
 
+    /**
+     * Replace namespace or classmap references in a single PHP file.
+     */
     public function replaceInFile(string $targetFile, Autoloader $autoloader): void
     {
         $targetFile = str_replace($this->config->getWorkingDir(), '', $targetFile);
@@ -74,7 +76,10 @@ class Replacer
         $this->files->writeFile($targetFile, $contents);
     }
 
-    public function getReplacerByAutoloader(Autoloader $autoloader): ReplacerInterface
+    /**
+     * Create the appropriate replacer for an autoloader type.
+     */
+    public function getReplacerByAutoloader(Autoloader $autoloader): AutoloadReplacer
     {
         if ($autoloader instanceof NamespaceAutoloader) {
             $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
@@ -175,49 +180,6 @@ class Replacer
     }
 
     /**
-     * Replaces all occurrences of previously replaced classes, in the provided
-     * directory. This to ensure that each package has its parents package
-     * classes also replaced in its own files.
-     *
-     * Uses AST-based replacement to properly handle PHP syntax and avoid
-     * incorrectly replacing class names in string literals or comments.
-     */
-    public function replaceParentClassesInDirectory(string $directory): void
-    {
-        if (count($this->replacedClasses) === 0) {
-            return;
-        }
-
-        $directory = trim($directory, '//');
-
-        if (!is_dir($directory)) {
-            return;
-        }
-
-        $files = $this->files->getFilesFromPath($directory);
-        $replacer = new ClassmapNameReplacer($this->replacedClasses);
-
-        foreach ($files as $file) {
-            $targetFile = $file->getPathName();
-
-            if ('.php' == substr($targetFile, -4, 4)) {
-                try {
-                    $contents = $this->files->readFile($targetFile);
-                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
-                    // Skip files that cannot be read
-                    continue;
-                }
-
-                $modifiedContents = $replacer->replace($contents);
-
-                if ($modifiedContents !== $contents) {
-                    $this->files->writeFile($targetFile, $modifiedContents);
-                }
-            }
-        }
-    }
-
-    /**
      * Replace namespace references in all PHP files within a directory.
      */
     public function replaceInDirectory(NamespaceAutoloader $autoloader, string $directory): void
@@ -238,94 +200,10 @@ class Replacer
     }
 
     /**
-     * Replace everything in parent package, based on the dependency package.
-     * This is done to ensure that package A (which requires package B), is also
-     * updated with the replacements being made in package B.
+     * @return array<string,string>
      */
-    public function replaceParentPackage(Package $package, Package $parent): void
+    public function getReplacedClasses(): array
     {
-        if ($this->config->isExcludedPackage($package)) {
-            return;
-        }
-
-        foreach ($parent->getAutoloaders() as $parentAutoloader) {
-            foreach ($package->getAutoloaders() as $autoloader) {
-                if ($parentAutoloader instanceof NamespaceAutoloader) {
-                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                    $directory = $this->config->getWorkingDir() . $this->config->getDepDirectory() . $namespace
-                                 . DIRECTORY_SEPARATOR;
-
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $this->replaceInDirectory($autoloader, $directory);
-                        return;
-                    }
-
-                    $directory = str_replace($this->config->getWorkingDir(), '', $directory);
-                    $this->replaceParentClassesInDirectory($directory);
-                    return;
-                }
-
-                $directory = $this->config->getWorkingDir() .
-                $this->config->getClassmapDirectory() . $parent->getDirectoryName();
-
-                if ($autoloader instanceof NamespaceAutoloader) {
-                    $this->replaceInDirectory($autoloader, $directory);
-                    return;
-                }
-
-                $directory = str_replace($this->config->getWorkingDir(), '', $directory);
-                $this->replaceParentClassesInDirectory($directory);
-            }
-        }
-    }
-
-    /**
-     * Get an array containing all the dependencies and dependencies.
-     *
-     * @param Package   $package
-     * @param Package[] $dependencies
-     * @param array<string,bool> $visited
-     * @return Package[]
-     */
-    private function getAllDependenciesOfPackage(
-        Package $package,
-        array $dependencies = [],
-        array &$visited = []
-    ): array {
-        if (empty($package->getDependencies())) {
-            return $dependencies;
-        }
-
-        foreach ($package->getDependencies() as $dependency) {
-            $name = $dependency->getName();
-            if (isset($visited[$name])) {
-                continue;
-            }
-            $visited[$name] = true;
-            $dependencies[] = $dependency;
-            $dependencies = $this->getAllDependenciesOfPackage($dependency, $dependencies, $visited);
-        }
-
-        return $dependencies;
-    }
-
-    /**
-     * @param Package[] $packages
-     */
-    public function replaceParentInTree(array $packages): void
-    {
-        foreach ($packages as $package) {
-            if ($this->config->isExcludedPackage($package)) {
-                continue;
-            }
-
-            $dependencies = $this->getAllDependenciesOfPackage($package);
-
-            foreach ($dependencies as $dependency) {
-                $this->replaceParentPackage($dependency, $package);
-            }
-
-            $this->replaceParentInTree($package->getDependencies());
-        }
+        return $this->replacedClasses;
     }
 }
