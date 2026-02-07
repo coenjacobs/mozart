@@ -23,7 +23,7 @@ class Classmap extends AbstractAutoloader
     public function processConfig($autoloadConfig): void
     {
         foreach ($autoloadConfig as $value) {
-            if ('.php' == substr($value, -4, 4)) {
+            if (str_ends_with($value, '.php')) {
                 array_push($this->files, $value);
                 continue;
             }

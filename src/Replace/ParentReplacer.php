@@ -60,7 +60,7 @@ class ParentReplacer
         foreach ($files as $file) {
             $targetFile = $file->getPathName();
 
-            if ('.php' == substr($targetFile, -4, 4)) {
+            if (str_ends_with($targetFile, '.php')) {
                 try {
                     $contents = $this->files->readFile($targetFile);
                 } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {

@@ -120,7 +120,7 @@ class Replacer
             foreach ($files as $foundFile) {
                 $targetFile = $foundFile->getRealPath();
 
-                if ('.php' == substr($targetFile, -4, 4)) {
+                if (str_ends_with($targetFile, '.php')) {
                     $this->replaceInFile($targetFile, $autoloader);
                 }
             }
@@ -142,7 +142,7 @@ class Replacer
             $targetFile = $autoloader->getTargetFilePath($file);
             $fullPath = $this->config->getWorkingDir() . $targetFile;
 
-            if ('.php' !== substr($fullPath, -4, 4)) {
+            if (!str_ends_with($fullPath, '.php')) {
                 continue;
             }
 
@@ -193,7 +193,7 @@ class Replacer
         foreach ($files as $file) {
             $targetFile = $file->getPathName();
 
-            if ('.php' == substr($targetFile, -4, 4)) {
+            if (str_ends_with($targetFile, '.php')) {
                 $this->replaceInFile($targetFile, $autoloader);
             }
         }
