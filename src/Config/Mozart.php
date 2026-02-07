@@ -5,7 +5,7 @@ namespace CoenJacobs\Mozart\Config;
 use stdClass;
 use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
-use Exception;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 
 class Mozart
 {
@@ -128,7 +128,7 @@ class Mozart
         $namespace = preg_replace("/\\\{2,}$/", "\\", $this->depNamespace . "\\");
 
         if (empty($namespace)) {
-            throw new Exception('Could not get target dependency namespace');
+            throw new ConfigurationException('Could not get target dependency namespace');
         }
 
         return $namespace;
