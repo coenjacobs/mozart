@@ -23,6 +23,8 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 | [docs/testing.md](docs/testing.md) | Running tests, Docker services, CI checks, test utilities (IntegrationTestCase, AstProcessingTestTrait), regression tests |
 | [docs/memory.md](docs/memory.md) | Memory requirements for AST processing, how to increase limits |
 | [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, Dockerfile stages, Docker Compose services, PHP configuration |
+| [docs/installation.md](docs/installation.md) | All installation methods: Docker, PHAR, Composer |
+| [docs/configuration.md](docs/configuration.md) | Full configuration reference: required and optional options |
 | [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts, configuring the project autoloader |
 | [docs/background.md](docs/background.md) | Why Mozart exists, comparison with PHP-Scoper, project values |
 

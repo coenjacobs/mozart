@@ -4,61 +4,14 @@ Composes all dependencies as a package inside a WordPress plugin. Load packages 
 This package requires PHP 8.1 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
 
 ## Installation
+
 Mozart brings its own dependencies to the table and that potentially introduces its own problems (yes, I realise how meta that is, for a package like this). That's why installing Mozart in isolation, either through the Docker container, the available PHAR file or installing Mozart as a global dependency with Composer is preferred. In all cases, the [configuration](#configuration) still needs to be placed in the `composer.json` file of the project itself.
-
-### Docker (recommended)
-
-Run Mozart on your current working directory:
 
 ```
 docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart compose
 ```
 
-Images are available from both Docker Hub (`coenjacobs/mozart`) and GitHub Container Registry (`ghcr.io/coenjacobs/mozart`), with multi-architecture support (amd64, arm64, arm/v7). See [docs/docker.md](docs/docker.md) for registries, tag strategy, and all available options.
-
-### PHAR (via Phive)
-Mozart can be installed via [Phive](https://github.com/phar-io/phive):
-
-```
-phive install coenjacobs/mozart --force-accept-unsigned
-```
-
-Alternatively, the `mozart.phar` file can be [downloaded from the releases page](https://github.com/coenjacobs/mozart/releases) and then be run from your project directory:
-
-```
-php mozart.phar compose
-```
-
-### Composer
-To install Mozart and its dependencies, without conflicting with the dependencies of your project, it is recommended that you install Mozart as a global package, if you choose to install Mozart via Composer.
-
-#### Global package
-Using the `global` command when installing Mozart, it will be installed as a system wide package:
-
-```
-composer global require coenjacobs/mozart
-```
-
-You can then find the bin file named `mozart` inside your `~/.composer/vendor/bin/` directory and run it from your project directory, referencing the full path to the bin file:
-
-```
-~/.composer/vendor/bin/mozart compose
-```
-
-#### Development dependency of your project
-You can install through Composer in the project itself, only required in development environments:
-
-```
-composer require coenjacobs/mozart --dev
-```
-
-This gives you a bin file named `mozart` inside your `vendor/bin` directory, after loading the whole package inside your project. Try running `vendor/bin/mozart` to verify it works.
-
-After configuring Mozart properly, the `mozart compose` command does all the magic:
-
-```
-vendor/bin/mozart compose
-```
+See [docs/installation.md](docs/installation.md) for all installation methods (Docker, PHAR, Composer).
 
 ## Configuration
 Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
@@ -95,21 +48,14 @@ The following configuration values are required:
 - `classmap_directory` defines the directory files that are being autoloaded through a classmap, will be stored in. Note that this directory needs to be autoloaded by a classmap in your projects autoloader.
 - `classmap_prefix` defines the prefix that will be applied to all classes inside the classmap of the package you bundle. Say a class named `Pimple` and the defined prefix of `CJTP_` will result in the class name `CJTP_Pimple`.
 
-**Important:** Since Mozart automatically processes the full dependency tree of the packages you specify, you **need to specify all these configuration options**, because you can't reliably determine what kind of autoloaders are being used in the full dependency tree. A package way down the tree might suddenly use a classmap autoloader for example. Make sure you also include the namespace directory and classmap directory in your own autoloader, so they are always loaded.
-
-The following configuration is optional:
-
-- `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
-- `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
-- `excluded_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
-- `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
-
-It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. See [docs/usage.md](docs/usage.md) for how to automate this with Composer scripts and how to configure your project's autoloader.
+See [docs/configuration.md](docs/configuration.md) for optional configuration, the full dependency tree caveat, and autoloader setup.
 
 ## Further reading
 
 | Document | Description |
 |---|---|
+| [docs/installation.md](docs/installation.md) | All installation methods: Docker, PHAR, Composer |
+| [docs/configuration.md](docs/configuration.md) | Full configuration reference: required and optional options |
 | [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts, configuring your project's autoloader |
 | [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, multi-architecture support |
 | [docs/background.md](docs/background.md) | Why Mozart was created and how it compares to PHP-Scoper |
