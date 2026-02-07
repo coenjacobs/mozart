@@ -49,4 +49,4 @@ Since Mozart processes the full dependency tree, packages may use any combinatio
 
 The `dep_directory` is a subdirectory of `src/`, which is already mapped via PSR-4. Since `dep_namespace` falls under the existing `CoenJacobs\TestProject\` namespace, Composer resolves it automatically — no additional PSR-4 entry is needed. The `classmap_directory` is added to the `classmap` array so classmap dependencies are discovered by Composer's autoloader.
 
-After running Mozart, run `composer dump-autoload` to regenerate the autoloader with the new paths.
+After running Mozart, run `composer dump-autoload` to regenerate the autoloader with the new paths. If you encounter memory issues during Mozart's AST processing, see [memory.md](memory.md) for how to increase the limit.

@@ -13,24 +13,28 @@ tests/
 
 ## Running tests locally
 
-Use the `builder` service for local development. It mounts your working directory, so changes are reflected immediately:
+The test suites are exposed as Composer scripts:
 
 ```bash
-# Run unit tests
+composer test:unit          # unit tests
+composer test:integration   # integration tests
+composer test:phpunit       # both suites
+```
+
+If you add new files or change namespaces, regenerate the autoloader first:
+
+```bash
+composer dump-autoload
+```
+
+**Docker is the recommended way to run these commands.** It guarantees the correct PHP version and extensions without any local setup. Prefix any command above with `docker compose run --rm builder`:
+
+```bash
 docker compose run --rm builder composer test:unit
-
-# Run integration tests
-docker compose run --rm builder composer test:integration
-
-# Run all tests
 docker compose run --rm builder composer test:phpunit
 ```
 
-**Important:** If you add new files or change namespaces, regenerate the autoloader first:
-
-```bash
-docker compose run --rm builder composer dump-autoload
-```
+The `builder` service mounts your working directory, so code changes are reflected immediately.
 
 ## Docker services
 

@@ -13,3 +13,7 @@ There are other tools that enable you to do this. [PHP-Scoper](https://github.co
 - Shouldn't add a whole layer of complexity to the development process, i.e. learning a whole new tool/language.
 
 Mozart always has been and always will be geared towards solving the conflicting dependencies problem in the WordPress ecosystem, as efficiently and opinionated as possible. By being opinionated in certain ways and specifically focussed on WordPress projects, Mozart has quickly become easy to understand and implement.
+
+## See also
+
+- [installation.md](installation.md) — Get started with Mozart

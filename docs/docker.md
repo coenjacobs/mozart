@@ -83,3 +83,7 @@ The `docker/php/` directory contains PHP configuration overrides:
 
 - `error_reporting.ini` — Sets `error_reporting=E_ALL`
 - `xdebug.ini` — Configures Xdebug with `mode=develop`, connecting to `host.docker.internal` (only loaded in the `develop` stage)
+
+## See also
+
+- [testing.md](testing.md) — Running tests with Docker

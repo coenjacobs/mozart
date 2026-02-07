@@ -59,3 +59,7 @@ After configuring Mozart properly, the `mozart compose` command does all the mag
 ```
 vendor/bin/mozart compose
 ```
+
+## See also
+
+- [configuration.md](configuration.md) — Required and optional configuration options

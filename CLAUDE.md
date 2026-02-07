@@ -34,5 +34,4 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 - **After adding new files**, run `composer dump-autoload` before testing.
 - **Classmap replacement is two-pass**: declarations are renamed first, then references are updated using the collected rename map. See [docs/replace-pipeline.md](docs/replace-pipeline.md).
 - **Files autoloader** is the most complex autoloader type — each file is inspected individually to determine if it's namespaced or global-scope. See [docs/autoloaders.md](docs/autoloaders.md).
-- **Directory guards (`is_dir()`)** are required before any file discovery operation. Multiple locations in `Replacer`, autoloaders, and `FilesHandler` depend on these. See [docs/replace-pipeline.md](docs/replace-pipeline.md).
 - **After resolving a non-trivial bug or discovering non-obvious behavior**, run `/learned` to capture the lesson in the right doc file before moving on.
