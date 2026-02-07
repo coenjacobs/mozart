@@ -6,6 +6,7 @@ use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
+use CoenJacobs\Mozart\ParentReplacer;
 use CoenJacobs\Mozart\Replacer;
 
 class Compose
@@ -65,8 +66,11 @@ class Compose
         $mover->deleteTargetDirs($packages);
         $mover->movePackages($packages);
         $replacer->replacePackages($packages);
-        $replacer->replaceParentInTree($packages);
-        $replacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
+
+        $parentReplacer = new ParentReplacer($config, $replacer);
+        $parentReplacer->setReplacedClasses($replacer->getReplacedClasses());
+        $parentReplacer->replaceParentInTree($packages);
+        $parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 
         if ($config->getDeleteVendorDirectories()) {
             $mover->deletePackageVendorDirectories();

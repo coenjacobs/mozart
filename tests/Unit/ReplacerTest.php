@@ -152,36 +152,6 @@ class ReplacerTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_empty_directory_for_parent_classes(): void
-    {
-        $replacer = new Replacer($this->config);
-        $replacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'empty_dir');
-
-        // Should complete without error
-        $this->assertTrue(true);
-    }
-
-    /** @test */
-    public function it_handles_no_replaced_classes(): void
-    {
-        $replacer = new Replacer($this->config);
-        $replacer->replaceParentClassesInDirectory($this->testDir);
-
-        // Should complete without error when no classes to replace
-        $this->assertTrue(true);
-    }
-
-    /** @test */
-    public function it_handles_empty_packages_for_replace_parent_in_tree(): void
-    {
-        $replacer = new Replacer($this->config);
-        $replacer->replaceParentInTree([]);
-
-        // Should complete without error
-        $this->assertTrue(true);
-    }
-
-    /** @test */
     public function it_handles_classmap_package_with_nonexistent_directory(): void
     {
         $package = new Package();
@@ -210,28 +180,5 @@ class ReplacerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
-    public function it_handles_parent_classes_in_nonexistent_directory(): void
-    {
-        // Create a real file with a class to populate replacedClasses
-        $classmapDir = $this->testDir . DIRECTORY_SEPARATOR . 'classmap' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'package';
-        mkdir($classmapDir, 0777, true);
-        file_put_contents($classmapDir . DIRECTORY_SEPARATOR . 'MyClass.php', '<?php class MyClass {}');
-
-        $package = new Package();
-        $package->name = 'test/package';
-
-        $autoloader = new Classmap();
-        $autoloader->processConfig(['src/']);
-
-        $replacer = new Replacer($this->config);
-        $replacer->replacePackageByAutoloader($package, $autoloader);
-
-        // Now call replaceParentClassesInDirectory with a non-existent path
-        $replacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
-
-        // Should complete without error
-        $this->assertTrue(true);
-    }
 }
 
