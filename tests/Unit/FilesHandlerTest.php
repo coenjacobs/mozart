@@ -228,5 +228,60 @@ class FilesHandlerTest extends TestCase
 
         $this->assertSame($this->config, $handler->getConfig());
     }
+
+    /** @test */
+    public function it_creates_directories_with_public_permissions(): void
+    {
+        $handler = new FilesHandler($this->config);
+        $handler->createDirectory('output_dir');
+
+        $dirPath = $this->testDir . DIRECTORY_SEPARATOR . 'output_dir';
+        $permissions = fileperms($dirPath) & 0777;
+
+        $this->assertSame(0755, $permissions, sprintf(
+            'Expected directory permissions 0755, got %04o',
+            $permissions
+        ));
+    }
+
+    /** @test */
+    public function it_writes_files_with_public_permissions(): void
+    {
+        $handler = new FilesHandler($this->config);
+        $handler->writeFile('output.php', '<?php echo "hello";');
+
+        $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'output.php';
+        $permissions = fileperms($filePath) & 0777;
+
+        $this->assertSame(0644, $permissions, sprintf(
+            'Expected file permissions 0644, got %04o',
+            $permissions
+        ));
+    }
+
+    /** @test */
+    public function it_creates_nested_directories_with_public_permissions(): void
+    {
+        $handler = new FilesHandler($this->config);
+        $handler->createDirectory('vendor_prefixed/Package/SubDir');
+
+        $basePath = $this->testDir . DIRECTORY_SEPARATOR;
+
+        $dirs = [
+            'vendor_prefixed',
+            'vendor_prefixed/Package',
+            'vendor_prefixed/Package/SubDir',
+        ];
+
+        foreach ($dirs as $dir) {
+            $fullPath = $basePath . $dir;
+            $permissions = fileperms($fullPath) & 0777;
+            $this->assertSame(0755, $permissions, sprintf(
+                'Expected 0755 for %s, got %04o',
+                $dir,
+                $permissions
+            ));
+        }
+    }
 }
 
