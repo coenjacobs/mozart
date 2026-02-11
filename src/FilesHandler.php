@@ -7,6 +7,8 @@ use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use Iterator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\UnableToReadFile;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
+use League\Flysystem\Visibility;
 use League\Flysystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -20,7 +22,8 @@ class FilesHandler
         $this->config = $config;
 
         $adapter = new LocalFilesystemAdapter(
-            $this->config->getWorkingDir()
+            $this->config->getWorkingDir(),
+            new PortableVisibilityConverter(0644, 0600, 0755, 0700, Visibility::PUBLIC)
         );
 
         // The FilesystemOperator
