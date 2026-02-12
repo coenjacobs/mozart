@@ -40,3 +40,9 @@ Rules are specific constraints and workflows that must always be followed when w
 
 @.agents/rules/directory-guards.md
 @.agents/rules/lint-before-commit.md
+
+## Commands
+
+Commands are reusable prompt templates that can be invoked on demand to perform specific workflows.
+
+@.agents/commands/learned.md
