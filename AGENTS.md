@@ -32,7 +32,7 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 - **All public methods in `src/` require a docblock** or the `test:docs` CI check fails.
 - **Classmap replacement is two-pass**: declarations are renamed first, then references are updated using the collected rename map. See [docs/replace-pipeline.md](docs/replace-pipeline.md).
 - **Files autoloader** is the most complex autoloader type — each file is inspected individually to determine if it's namespaced or global-scope. See [docs/autoloaders.md](docs/autoloaders.md).
-- **Agent-agnostic setup uses `.agents/` as source of truth** — rules and commands live in `.agents/` and are imported into `AGENTS.md` via `@`. Claude Code registers slash commands through thin wrappers in `.claude/commands/` that import the `.agents/` versions.
+- **Agent-agnostic setup uses `.agents/` as source of truth** — tool-specific directories (`.claude/`, `.opencode/`) are symlinks to `.agents/`, so all tools share the same rules, commands, and configuration. See the [Agent setup](#agent-setup) section below.
 - **After resolving a non-trivial bug or discovering non-obvious behavior**, run `/learned` to capture the lesson in the right doc file before moving on.
 
 ## Rules
@@ -47,3 +47,11 @@ Rules are specific constraints and workflows that must always be followed when w
 Commands are reusable prompt templates that can be invoked on demand to perform specific workflows.
 
 @.agents/commands/learned.md
+
+## Agent setup
+
+This repository follows the [AGENTS.md](https://agents.md) convention for agent-agnostic tooling instructions. All agent configuration — rules, commands, plans — lives in `.agents/`. No AI coding tool reads from `.agents/` natively, so tool-specific directories (`.claude/`, `.opencode/`) and `CLAUDE.md` are symlinks to their `.agents/` equivalents, giving every tool access to the same shared configuration without content duplication.
+
+The `@` imports in the Rules and Commands sections above are resolved by tools that support them (like Claude Code); other tools will see them as plain text but still discover the files through their symlinked directories.
+
+On Windows without Developer Mode enabled, git checks out symlinks as plain text files containing the target path. The agent tooling will not work in that environment.
