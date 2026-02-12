@@ -2,8 +2,10 @@
 * text=auto
 
 # Export ignore (keeps Composer installs lean)
+/.agents/             export-ignore
 /.claude/             export-ignore
 /.github/             export-ignore
+/.opencode/           export-ignore
 /docker/              export-ignore
 /docs/                export-ignore
 /tests/               export-ignore
@@ -11,6 +13,7 @@
 .gitattributes        export-ignore
 .gitignore            export-ignore
 .phpactor.json        export-ignore
+AGENTS.md             export-ignore
 CLAUDE.md             export-ignore
 composer.lock         export-ignore
 Dockerfile            export-ignore
