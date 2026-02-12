@@ -59,7 +59,7 @@ jobs:
             VERSION=dev
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VCS_REF=${{ github.sha }}
-            SOURCE_URL=${{ github.event.repository.html_url }},linux/arm64
+            SOURCE_URL=${{ github.event.repository.html_url }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
           cache-from: type=gha,scope=release-dev
