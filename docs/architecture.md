@@ -165,6 +165,10 @@ tests/
   Support/                          # IntegrationTestCase base class, AstProcessingTestTrait
 ```
 
+## Flysystem visibility default
+
+`FilesHandler` creates its `LocalFilesystemAdapter` with `Visibility::PUBLIC`. Without this, Flysystem defaults to private visibility — directories get `0700` and files get `0600`, which breaks setups where the web server user differs from the Composer user. If the adapter construction is ever changed, the permission tests in `FilesHandlerTest` will catch the regression.
+
 ## Key dependencies
 
 | Package | Purpose |

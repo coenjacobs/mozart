@@ -152,3 +152,4 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #93 | `ClassmapReplacerTest` | Namespace-aware class replacement |
 | #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
+| #209 | `FilesHandlerTest` | Restrictive file permissions (0700/0600) from Flysystem's default private visibility |
