@@ -59,39 +59,38 @@ class ParentReplacerTest extends TestCase
     /** @test */
     public function it_handles_empty_directory_for_parent_classes(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $replacer = new Replacer($this->config);
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'empty_dir');
-
-        // Should complete without error
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_handles_no_replaced_classes(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $replacer = new Replacer($this->config);
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentClassesInDirectory($this->testDir);
-
-        // Should complete without error when no classes to replace
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_handles_empty_packages_for_replace_parent_in_tree(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $replacer = new Replacer($this->config);
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentInTree([]);
-
-        // Should complete without error
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_handles_parent_classes_in_nonexistent_directory(): void
     {
+        $this->expectNotToPerformAssertions();
+
         // Create a real file with a class to populate replacedClasses
         $classmapDir = $this->testDir . DIRECTORY_SEPARATOR . 'classmap' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'package';
         mkdir($classmapDir, 0777, true);
@@ -110,8 +109,89 @@ class ParentReplacerTest extends TestCase
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->setReplacedClasses($replacer->getReplacedClasses());
         $parentReplacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
+    }
 
-        // Should complete without error
-        $this->assertTrue(true);
+    /**
+     * Regression test for #215: replaceParentPackage() must process all
+     * autoloader combinations, not just the first one.
+     *
+     * @test
+     */
+    public function it_processes_all_autoloader_combinations_for_parent_replacement(): void
+    {
+        // Use relative dep/classmap directories (matching production config)
+        $config = new Mozart();
+        $config->setDepNamespace('Test\\Namespace\\');
+        $config->setDepDirectory('deps' . DIRECTORY_SEPARATOR);
+        $config->setClassmapDirectory('classmap' . DIRECTORY_SEPARATOR);
+        $config->setClassmapPrefix('Test_');
+        $config->setWorkingDir($this->testDir);
+        $config->setOverrideAutoload(new stdClass());
+
+        // Child package with BOTH PSR-4 and classmap autoloaders
+        $child = new Package();
+        $child->name = 'child/package';
+        $childAutoload = new stdClass();
+        $childPsr4 = new stdClass();
+        $childPsr4->{'Child\\Ns\\'} = ['src/'];
+        $childAutoload->{'psr-4'} = $childPsr4;
+        $childAutoload->classmap = ['lib/'];
+        $child->setAutoload($childAutoload);
+
+        // Parent package with PSR-4 autoloader
+        $parent = new Package();
+        $parent->name = 'parent/package';
+        $parentAutoload = new stdClass();
+        $parentPsr4 = new stdClass();
+        $parentPsr4->{'Parent\\Lib\\'} = ['src/'];
+        $parentAutoload->{'psr-4'} = $parentPsr4;
+        $parent->setAutoload($parentAutoload);
+
+        // Create parent's namespace directory with a PHP file that references
+        // both the child's namespace and a global class
+        $parentDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps' . DIRECTORY_SEPARATOR
+                     . 'Parent' . DIRECTORY_SEPARATOR . 'Lib';
+        mkdir($parentDir, 0777, true);
+
+        $parentFile = $parentDir . DIRECTORY_SEPARATOR . 'ParentClass.php';
+        file_put_contents($parentFile, <<<'PHP'
+<?php
+
+namespace Parent\Lib;
+
+use Child\Ns\ChildClass;
+
+class ParentClass
+{
+    public function foo(): ChildClass
+    {
+        $helper = new \OrigHelper();
+        return new ChildClass();
+    }
+}
+PHP);
+
+        $replacer = new Replacer($config);
+        $parentReplacer = new ParentReplacer($config, $replacer);
+        $parentReplacer->setReplacedClasses(['OrigHelper' => 'Test_OrigHelper']);
+
+        // chdir to working dir so relative paths in replaceParentClassesInDirectory
+        // resolve correctly (Symfony Finder uses CWD for relative paths)
+        $originalCwd = getcwd();
+        chdir($this->testDir);
+
+        try {
+            $parentReplacer->replaceParentPackage($child, $parent);
+        } finally {
+            chdir($originalCwd);
+        }
+
+        $result = file_get_contents($parentFile);
+
+        // PSR-4 replacement applied: child namespace was prefixed
+        $this->assertStringContainsString('use Test\Namespace\Child\Ns\ChildClass', $result);
+
+        // Classmap replacement applied: global class was prefixed
+        $this->assertStringContainsString('Test_OrigHelper', $result);
     }
 }
