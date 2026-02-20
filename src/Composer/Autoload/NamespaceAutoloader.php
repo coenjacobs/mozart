@@ -57,6 +57,9 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
         return '';
     }
 
+    /**
+     * @return array<string,SplFileInfo>
+     */
     public function getFiles(FilesHandler $fileHandler): array
     {
         $this->fileHandler = $fileHandler;
