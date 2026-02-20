@@ -129,22 +129,22 @@ jobs:
             if [ "$VERSION_NO_V" = "$LATEST_IN_MAJOR" ]; then
               echo "This is the latest in major version $MAJOR, creating major version tag"
               TAGS="${TAGS},${DOCKER_IMAGE}:${MAJOR},${GHCR_IMAGE}:${MAJOR}"
+            fi
 
-              # Check minor version tag (independent of 'latest' tag, but only if major matches)
-              # This should update whenever the version is the latest in its minor version range
-              echo "Checking if this is the latest in minor version ${MAJOR}.${MINOR}..."
-              LATEST_IN_MINOR=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                "https://api.github.com/repos/${{ github.repository }}/releases" | \
-                jq -r ".[] | select(.prerelease == false) | .tag_name" | \
-                sed 's/^v//' | \
-                grep "^${MAJOR}\.${MINOR}\." | \
-                sort -V | \
-                tail -n1)
+            # Check minor version tag (independent of both 'latest' and major version tags)
+            # This should update whenever the version is the latest in its minor version range
+            echo "Checking if this is the latest in minor version ${MAJOR}.${MINOR}..."
+            LATEST_IN_MINOR=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases" | \
+              jq -r ".[] | select(.prerelease == false) | .tag_name" | \
+              sed 's/^v//' | \
+              grep "^${MAJOR}\.${MINOR}\." | \
+              sort -V | \
+              tail -n1)
 
-              if [ "$VERSION_NO_V" = "$LATEST_IN_MINOR" ]; then
-                echo "This is the latest in minor version ${MAJOR}.${MINOR}, creating minor version tag"
-                TAGS="${TAGS},${DOCKER_IMAGE}:${MAJOR}.${MINOR},${GHCR_IMAGE}:${MAJOR}.${MINOR}"
-              fi
+            if [ "$VERSION_NO_V" = "$LATEST_IN_MINOR" ]; then
+              echo "This is the latest in minor version ${MAJOR}.${MINOR}, creating minor version tag"
+              TAGS="${TAGS},${DOCKER_IMAGE}:${MAJOR}.${MINOR},${GHCR_IMAGE}:${MAJOR}.${MINOR}"
             fi
           fi
 
