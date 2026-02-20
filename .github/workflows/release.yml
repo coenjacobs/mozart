@@ -57,6 +57,7 @@ jobs:
       - uses: meeDamian/github-release@2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.release.tag_name }}
           files: mozart.phar
           gzip: false
           allow_override: true
