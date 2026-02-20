@@ -97,12 +97,12 @@ class ParentReplacer
 
                     if ($autoloader instanceof NamespaceAutoloader) {
                         $this->replacer->replaceInDirectory($autoloader, $directory);
-                        return;
+                        continue;
                     }
 
                     $directory = str_replace($this->config->getWorkingDir(), '', $directory);
                     $this->replaceParentClassesInDirectory($directory);
-                    return;
+                    continue;
                 }
 
                 $directory = $this->config->getWorkingDir() .
@@ -110,7 +110,7 @@ class ParentReplacer
 
                 if ($autoloader instanceof NamespaceAutoloader) {
                     $this->replacer->replaceInDirectory($autoloader, $directory);
-                    return;
+                    continue;
                 }
 
                 $directory = str_replace($this->config->getWorkingDir(), '', $directory);
