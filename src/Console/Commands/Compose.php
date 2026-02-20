@@ -3,7 +3,8 @@
 namespace CoenJacobs\Mozart\Console\Commands;
 
 use CoenJacobs\Mozart\Commands\Compose as ComposeCommand;
-use Exception;
+use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use CoenJacobs\Mozart\Exceptions\MozartException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,15 +26,19 @@ class Compose extends Command
         $workingDir = getcwd();
 
         if (! $workingDir) {
-            throw new Exception('Unable to determine the working directory.');
+            throw new FileOperationException('Unable to determine the working directory.');
         }
 
         $compose = new ComposeCommand($workingDir);
 
         try {
             $compose->execute();
-        } catch (Exception $e) {
-            $output->write($e->getMessage());
+        } catch (MozartException $e) {
+            $output->writeln($e->getMessage());
+            return 1;
+        } catch (\Throwable $e) {
+            $output->writeln(get_class($e) . ': ' . $e->getMessage());
+            $output->writeln($e->getTraceAsString());
             return 1;
         }
 
