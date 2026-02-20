@@ -48,7 +48,7 @@ class CommandsComposeTest extends TestCase
 
         // PackageFactory will throw an exception when file doesn't exist
         // file_get_contents returns false and triggers the exception
-        $this->expectException(\Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Could not read config from provided file');
 
         // Suppress the file_get_contents warning
