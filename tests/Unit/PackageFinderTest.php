@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit;
 
+use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
@@ -185,6 +186,42 @@ class PackageFinderTest extends TestCase
         $names = array_map(fn(Package $p) => $p->getName(), $result);
         $this->assertContains('vendor/a', $names);
         $this->assertContains('vendor/b', $names);
+    }
+
+    /** @test */
+    public function it_passes_override_autoload_to_factory(): void
+    {
+        $vendorDir = $this->testDir . DIRECTORY_SEPARATOR . 'vendor';
+        $packageDir = $vendorDir . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'package';
+        mkdir($packageDir, 0777, true);
+
+        // Package has psr-4 autoloading in its own composer.json
+        $composerJson = [
+            'name' => 'test/package',
+            'autoload' => [
+                'psr-4' => ['Original\\Namespace\\' => 'src/'],
+            ],
+            'require' => [],
+        ];
+        file_put_contents($packageDir . DIRECTORY_SEPARATOR . 'composer.json', json_encode($composerJson));
+
+        // Configure override_autoload to replace it with a classmap
+        $override = new stdClass();
+        $override->{'test/package'} = (object) [
+            'classmap' => ['lib/'],
+        ];
+        $this->config->setOverrideAutoload($override);
+
+        $finder = new PackageFinder();
+        $finder->setConfig($this->config);
+
+        $package = $finder->getPackageBySlug('test/package');
+
+        $this->assertNotNull($package);
+
+        $autoloaders = $package->getAutoloaders();
+        $this->assertCount(1, $autoloaders);
+        $this->assertInstanceOf(Classmap::class, $autoloaders[0]);
     }
 
     /** @test */
