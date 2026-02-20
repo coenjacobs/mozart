@@ -85,7 +85,7 @@ class DeclarationVisitorTest extends TestCase
     #[Test]
     public function it_tracks_all_replaced_classes(): void
     {
-        $code = 'class ClassA {} interface InterfaceB {} trait TraitC {}';
+        $code = 'class ClassA {} interface InterfaceB {} trait TraitC {} enum EnumD { case One; }';
 
         $result = $this->processCode($code, 'Mozart_');
 
@@ -93,9 +93,11 @@ class DeclarationVisitorTest extends TestCase
         $this->assertArrayHasKey('ClassA', $replaced);
         $this->assertArrayHasKey('InterfaceB', $replaced);
         $this->assertArrayHasKey('TraitC', $replaced);
+        $this->assertArrayHasKey('EnumD', $replaced);
         $this->assertEquals('Mozart_ClassA', $replaced['ClassA']);
         $this->assertEquals('Mozart_InterfaceB', $replaced['InterfaceB']);
         $this->assertEquals('Mozart_TraitC', $replaced['TraitC']);
+        $this->assertEquals('Mozart_EnumD', $replaced['EnumD']);
     }
 
     #[Test]
@@ -188,6 +190,49 @@ PHP;
         $result = $this->processCode($code, 'Mozart_');
 
         $this->assertStringContainsString('readonly class Mozart_ReadonlyClass', $result['code']);
+    }
+
+    #[Test]
+    public function it_renames_enum_declaration_in_global_namespace(): void
+    {
+        $code = 'enum Status { case Active; case Inactive; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('enum Mozart_Status', $result['code']);
+    }
+
+    #[Test]
+    public function it_renames_backed_enum_declaration_in_global_namespace(): void
+    {
+        $code = 'enum Color: string { case Red = \'red\'; case Blue = \'blue\'; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('enum Mozart_Color', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_enum_inside_namespace_block(): void
+    {
+        $code = 'namespace MyNamespace; enum Status { case Active; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('enum Status', $result['code']);
+        $this->assertStringNotContainsString('Mozart_Status', $result['code']);
+    }
+
+    #[Test]
+    public function it_tracks_replaced_enum_in_class_map(): void
+    {
+        $code = 'enum Status { case Active; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $replaced = $result['visitor']->getReplacedClasses();
+        $this->assertArrayHasKey('Status', $replaced);
+        $this->assertEquals('Mozart_Status', $replaced['Status']);
     }
 
     #[Test]
