@@ -43,7 +43,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-             ->method('write');
+             ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
@@ -71,7 +71,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-                            ->method('write');
+                            ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
@@ -100,7 +100,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-                            ->method('write');
+                            ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
@@ -130,7 +130,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-                            ->method('write');
+                            ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
@@ -159,7 +159,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-                            ->method('write');
+                            ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
@@ -188,7 +188,7 @@ class ComposeTest extends TestCase
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
         $outputInterfaceMock->expects($this->exactly(1))
-                            ->method('write');
+                            ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
             public function __construct($inputInterfaceMock, $outputInterfaceMock)
