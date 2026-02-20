@@ -46,14 +46,14 @@ An unqualified name inside a namespace that's being prefixed is skipped, because
 
 **Location:** `src/Replace/Classmap/`
 
-Used for packages with classmap autoloading. Prefixes global-scope class, interface, and trait names.
+Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, and enum names.
 
 ### Two-pass process
 
 Classmap replacement requires two passes, unlike namespace replacement which only needs one:
 
 **Pass 1 — Declaration renaming** (`ClassmapReplacer` + `DeclarationVisitor`):
-- Traverses each file and renames class/interface/trait declarations in the global namespace
+- Traverses each file and renames class/interface/trait/enum declarations in the global namespace
 - Records every rename in a `replacedClasses` map (`original => prefixed`)
 - Skips declarations inside namespace blocks (those are handled by namespace replacement)
 
@@ -69,7 +69,7 @@ This two-pass design exists because you can't know the full set of renamed class
 ### DeclarationVisitor
 
 - Only operates on global namespace (enters namespace blocks with `DONT_TRAVERSE_CHILDREN`)
-- Renames `class`, `interface`, and `trait` declarations
+- Renames `class`, `interface`, `trait`, and `enum` declarations
 - Uses `createSimpleTraverser()` (no `ParentConnectingVisitor`) to avoid stack overflow on large files
 
 ### NameVisitor
