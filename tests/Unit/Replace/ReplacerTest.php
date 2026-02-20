@@ -172,4 +172,41 @@ class ReplacerTest extends TestCase
         $replacer = new Replacer($this->config);
         $replacer->replaceInDirectory($autoloader, $this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
     }
+
+    /** @test */
+    public function it_processes_each_package_only_once_in_diamond_dependency_graph(): void
+    {
+        // Diamond: A→B→D, A→C→D — D should only be processed once.
+        $packageD = new Package();
+        $packageD->name = 'vendor/d';
+
+        $packageB = new Package();
+        $packageB->name = 'vendor/b';
+        $packageB->registerDependency($packageD);
+
+        $packageC = new Package();
+        $packageC->name = 'vendor/c';
+        $packageC->registerDependency($packageD);
+
+        $packageA = new Package();
+        $packageA->name = 'vendor/a';
+        $packageA->registerDependency($packageB);
+        $packageA->registerDependency($packageC);
+
+        $replacer = $this->getMockBuilder(Replacer::class)
+            ->setConstructorArgs([$this->config])
+            ->onlyMethods(['replacePackage'])
+            ->getMock();
+
+        $processed = [];
+        $replacer->expects($this->exactly(4))
+            ->method('replacePackage')
+            ->willReturnCallback(function (Package $package) use (&$processed): void {
+                $processed[] = $package->getName();
+            });
+
+        $replacer->replacePackages([$packageA]);
+
+        $this->assertSame(['vendor/d', 'vendor/b', 'vendor/c', 'vendor/a'], $processed);
+    }
 }

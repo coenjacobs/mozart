@@ -19,6 +19,9 @@ class Replacer
     /** @var array<string,string> */
     protected array $replacedClasses = [];
 
+    /** @var array<string,bool> */
+    protected array $visitedPackages = [];
+
     protected FilesHandler $files;
 
     public function __construct(Mozart $config)
@@ -33,6 +36,14 @@ class Replacer
     public function replacePackages(array $packages): void
     {
         foreach ($packages as $package) {
+            $name = $package->getName();
+
+            if (isset($this->visitedPackages[$name])) {
+                continue;
+            }
+
+            $this->visitedPackages[$name] = true;
+
             $this->replacePackages($package->getDependencies());
             $this->replacePackage($package);
         }
