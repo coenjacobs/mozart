@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
@@ -11,7 +12,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * AST visitor that renames class/interface/trait declarations with a prefix.
+ * AST visitor that renames class/interface/trait/enum declarations with a prefix.
  *
  * Only renames declarations in the global namespace (not inside a namespace block).
  */
@@ -52,7 +53,7 @@ class DeclarationVisitor extends NodeVisitorAbstract
 
     /**
      * Process node after visiting its children.
-     * Renames class/interface/trait declarations in the global namespace.
+     * Renames class/interface/trait/enum declarations in the global namespace.
      */
     public function leaveNode(Node $node): ?Node
     {
@@ -65,7 +66,12 @@ class DeclarationVisitor extends NodeVisitorAbstract
             return null;
         }
 
-        if ($node instanceof Class_ || $node instanceof Interface_ || $node instanceof Trait_) {
+        if (
+            $node instanceof Class_
+            || $node instanceof Interface_
+            || $node instanceof Trait_
+            || $node instanceof Enum_
+        ) {
             if ($node->name === null) {
                 return null;
             }
