@@ -85,6 +85,8 @@ class ReplacerTest extends TestCase
     /** @test */
     public function it_skips_excluded_packages(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $package = new Package();
         $package->name = 'excluded/package';
         $this->config->setExcludedPackages(['excluded/package']);
@@ -94,45 +96,39 @@ class ReplacerTest extends TestCase
 
         $replacer = new Replacer($this->config);
         $replacer->replacePackageByAutoloader($package, $autoloader);
-
-        // If we get here without error, the package was skipped
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_handles_empty_packages_array(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $replacer = new Replacer($this->config);
         $replacer->replacePackages([]);
-
-        // Should complete without error
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_handles_package_with_no_autoloaders(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $package = new Package();
         $package->name = 'test/package';
 
         $replacer = new Replacer($this->config);
         $replacer->replacePackage($package);
-
-        // Should complete without error
-        $this->assertTrue(true);
     }
 
     /** @test */
     public function it_skips_files_that_cannot_be_read(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $autoloader = new Psr4();
         $autoloader->setNamespace('Test\\Namespace');
 
         $replacer = new Replacer($this->config);
         $replacer->replaceInFile('nonexistent/file.php', $autoloader);
-
-        // Should complete without error (file is skipped)
-        $this->assertTrue(true);
     }
 
     /** @test */
@@ -147,8 +143,7 @@ class ReplacerTest extends TestCase
         $replacer = new Replacer($this->config);
         $replacer->replaceInFile($filePath, $autoloader);
 
-        // Should complete without error (empty file is skipped)
-        $this->assertTrue(true);
+        $this->assertSame('', file_get_contents($filePath));
     }
 
     /** @test */
@@ -163,22 +158,18 @@ class ReplacerTest extends TestCase
         $replacer = new Replacer($this->config);
         $replacer->replacePackageByAutoloader($package, $autoloader);
 
-        // Should complete without error when classmap directory doesn't exist
-        $this->assertTrue(true);
+        $this->assertEmpty($replacer->getReplacedClasses());
     }
 
     /** @test */
     public function it_handles_namespace_autoloader_with_nonexistent_directory(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $autoloader = new Psr4();
         $autoloader->setNamespace('Nonexistent\\Namespace');
 
         $replacer = new Replacer($this->config);
         $replacer->replaceInDirectory($autoloader, $this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
-
-        // Should complete without error when directory doesn't exist
-        $this->assertTrue(true);
     }
-
 }
-
