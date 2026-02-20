@@ -2,7 +2,7 @@
 
 namespace CoenJacobs\Mozart\Config;
 
-use Exception;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use JsonMapper;
 use stdClass;
 
@@ -13,18 +13,18 @@ trait ReadsConfig
      *
      * @param string $filePath Path to the configuration file
      * @return self
-     * @throws Exception If the file cannot be read
+     * @throws ConfigurationException If the file cannot be read
      */
     public function loadFromFile(string $filePath): self
     {
         if (! file_exists($filePath) || ! is_readable($filePath)) {
-            throw new Exception('Could not read config from provided file.');
+            throw new ConfigurationException('Could not read config from provided file.');
         }
 
         $fileContents = file_get_contents($filePath);
 
         if (! $fileContents) {
-            throw new Exception('Could not read config from provided file.');
+            throw new ConfigurationException('Could not read config from provided file.');
         }
 
         return $this->loadFromString($fileContents);
@@ -38,13 +38,13 @@ trait ReadsConfig
         $encoded = json_encode($config);
 
         if (! $encoded) {
-            throw new Exception('Could not read config from provided array.');
+            throw new ConfigurationException('Could not read config from provided array.');
         }
 
         $config = json_decode($encoded, false);
 
         if (! $config) {
-            throw new Exception('Could not read config from provided array.');
+            throw new ConfigurationException('Could not read config from provided array.');
         }
 
         return $this->loadFromStdClass($config);
@@ -57,7 +57,7 @@ trait ReadsConfig
         $object = $mapper->map($config, self::class);
 
         if (! $object instanceof self) {
-            throw new Exception('Could not read config from provided array.');
+            throw new ConfigurationException('Could not read config from provided array.');
         }
 
         return $object;
@@ -68,7 +68,7 @@ trait ReadsConfig
         $config = json_decode($config);
 
         if ($config === null) {
-            throw new Exception('Could not read config from provided array.');
+            throw new ConfigurationException('Could not read config from provided array.');
         }
 
         $mapper = new JsonMapper();
@@ -76,7 +76,7 @@ trait ReadsConfig
         $object = $mapper->map($config, self::class);
 
         if (! $object instanceof self) {
-            throw new Exception('Could not read config from provided array.');
+            throw new ConfigurationException('Could not read config from provided array.');
         }
 
         return $object;
