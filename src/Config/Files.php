@@ -4,8 +4,8 @@ namespace CoenJacobs\Mozart\Config;
 
 use CoenJacobs\Mozart\Composer\Autoload\AbstractAutoloader;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\FilesHandler;
-use Exception;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\ParserFactory;
 use Symfony\Component\Finder\SplFileInfo;
@@ -29,11 +29,13 @@ class Files extends AbstractAutoloader
     }
 
     /**
-     * @throws Exception
+     * @throws ConfigurationException
      */
     public function getSearchNamespace(): string
     {
-        throw new Exception('Files autoloaders do not contain a namespace and this method can not be used.');
+        throw new ConfigurationException(
+            'Files autoloaders do not contain a namespace and this method can not be used.'
+        );
     }
 
     /**
@@ -102,7 +104,7 @@ class Files extends AbstractAutoloader
     public function getTargetFilePath(SplFileInfo $file): string
     {
         if ($this->fileHandler === null) {
-            throw new Exception('FileHandler not initialized. Call getFiles() first.');
+            throw new ConfigurationException('FileHandler not initialized. Call getFiles() first.');
         }
 
         $namespace = $this->getDetectedNamespace($file);
