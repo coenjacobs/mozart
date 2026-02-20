@@ -7,6 +7,11 @@ namespace CoenJacobs\Mozart\Tests\Unit;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\FilesHandler;
+use League\Flysystem\Filesystem;
+use League\Flysystem\UnableToCopyFile;
+use League\Flysystem\UnableToCreateDirectory;
+use League\Flysystem\UnableToDeleteDirectory;
+use League\Flysystem\UnableToWriteFile;
 use PHPUnit\Framework\TestCase;
 
 class FilesHandlerTest extends TestCase
@@ -282,6 +287,66 @@ class FilesHandlerTest extends TestCase
                 $permissions
             ));
         }
+    }
+
+    /** @test */
+    public function it_throws_exception_when_writing_fails(): void
+    {
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('write')
+            ->willThrowException(UnableToWriteFile::atLocation('test.txt', 'Permission denied'));
+
+        $handler = new FilesHandler($this->config, $filesystem);
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessage('Failed to write file: test.txt');
+
+        $handler->writeFile('test.txt', 'content');
+    }
+
+    /** @test */
+    public function it_throws_exception_when_copy_fails(): void
+    {
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('copy')
+            ->willThrowException(UnableToCopyFile::fromLocationTo('source.txt', 'dest.txt'));
+
+        $handler = new FilesHandler($this->config, $filesystem);
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessage('Failed to copy file: source.txt to dest.txt');
+
+        $handler->copyFile('source.txt', 'dest.txt');
+    }
+
+    /** @test */
+    public function it_throws_exception_when_creating_directory_fails(): void
+    {
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('createDirectory')
+            ->willThrowException(UnableToCreateDirectory::atLocation('test_dir', 'Permission denied'));
+
+        $handler = new FilesHandler($this->config, $filesystem);
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessage('Failed to create directory: test_dir');
+
+        $handler->createDirectory('test_dir');
+    }
+
+    /** @test */
+    public function it_throws_exception_when_deleting_directory_fails(): void
+    {
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('deleteDirectory')
+            ->willThrowException(UnableToDeleteDirectory::atLocation('test_dir', 'Directory not empty'));
+
+        $handler = new FilesHandler($this->config, $filesystem);
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessage('Failed to delete directory: test_dir');
+
+        $handler->deleteDirectory('test_dir');
     }
 }
 
