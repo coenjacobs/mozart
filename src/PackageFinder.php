@@ -48,11 +48,8 @@ class PackageFinder
             throw new ConfigurationException("Couldn't load package based on provided slug: " . $slug);
         }
 
-        $autoloaders = null;
         $overrideAutoload = $this->config->getOverrideAutoload();
-        if ($overrideAutoload !== false && isset($overrideAutoload->$slug)) {
-            $autoloaders = $overrideAutoload->$slug;
-        }
+        $autoloaders = $overrideAutoload->getByKey($slug);
 
         $package = $this->factory->createPackage($packageDir . 'composer.json', $autoloaders);
         $package->loadDependencies($this);
