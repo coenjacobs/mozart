@@ -6,7 +6,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use Iterator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
-use League\Flysystem\UnableToReadFile;
+use League\Flysystem\FilesystemOperationFailed;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use League\Flysystem\Visibility;
 use League\Flysystem\Filesystem;
@@ -17,9 +17,14 @@ class FilesHandler
     protected Mozart $config;
     protected Filesystem $filesystem;
 
-    public function __construct(Mozart $config)
+    public function __construct(Mozart $config, ?Filesystem $filesystem = null)
     {
         $this->config = $config;
+
+        if ($filesystem !== null) {
+            $this->filesystem = $filesystem;
+            return;
+        }
 
         $adapter = new LocalFilesystemAdapter(
             $this->config->getWorkingDir(),
@@ -34,7 +39,7 @@ class FilesHandler
     {
         try {
             return $this->filesystem->read($path);
-        } catch (UnableToReadFile $e) {
+        } catch (FilesystemOperationFailed $e) {
             throw new FileOperationException("Failed to read file: {$path}. " . $e->getMessage(), 0, $e);
         }
     }
@@ -46,7 +51,11 @@ class FilesHandler
 
     public function writeFile(string $path, string $contents): void
     {
-        $this->filesystem->write($path, $contents);
+        try {
+            $this->filesystem->write($path, $contents);
+        } catch (FilesystemOperationFailed $e) {
+            throw new FileOperationException("Failed to write file: {$path}. " . $e->getMessage(), 0, $e);
+        }
     }
 
     public function getFilesFromPath(string $path): Iterator
@@ -63,12 +72,20 @@ class FilesHandler
 
     public function createDirectory(string $path): void
     {
-        $this->filesystem->createDirectory($path);
+        try {
+            $this->filesystem->createDirectory($path);
+        } catch (FilesystemOperationFailed $e) {
+            throw new FileOperationException("Failed to create directory: {$path}. " . $e->getMessage(), 0, $e);
+        }
     }
 
     public function deleteDirectory(string $path): void
     {
-        $this->filesystem->deleteDirectory($path);
+        try {
+            $this->filesystem->deleteDirectory($path);
+        } catch (FilesystemOperationFailed $e) {
+            throw new FileOperationException("Failed to delete directory: {$path}. " . $e->getMessage(), 0, $e);
+        }
     }
 
     public function isDirectoryEmpty(string $path): bool
@@ -78,6 +95,14 @@ class FilesHandler
 
     public function copyFile(string $origin, string $destination): void
     {
-        $this->filesystem->copy($origin, $destination);
+        try {
+            $this->filesystem->copy($origin, $destination);
+        } catch (FilesystemOperationFailed $e) {
+            throw new FileOperationException(
+                "Failed to copy file: {$origin} to {$destination}. " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 }
