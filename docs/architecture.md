@@ -150,7 +150,7 @@ src/
     AbstractAutoloadReplacer.php    # Abstract base (holds autoloader reference)
     AutoloadReplacer.php            # Interface: extends StringReplacer with setAutoloader()
     StringReplacer.php              # Interface: same as Replacer but for class-map style
-    Classmap/                       # ClassmapReplacer, DeclarationVisitor, NameReplacer, NameVisitor
+    GlobalScope/                    # GlobalScopeReplacer, DeclarationVisitor, NameReplacer, NameVisitor
     Namespace/                      # NamespaceReplacer, PrefixVisitor
     Support/                        # AstUtils, ExistenceCheckTrait, NameNodeContextTrait
   Mover.php                         # Copies files from vendor/ to target directories

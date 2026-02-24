@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace\Classmap;
+namespace CoenJacobs\Mozart\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
 use PhpParser\Node;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
-use CoenJacobs\Mozart\Replace\Classmap\DeclarationVisitor;
+use CoenJacobs\Mozart\Replace\GlobalScope\DeclarationVisitor;
 use CoenJacobs\Mozart\Tests\Support\AstProcessingTestTrait;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;

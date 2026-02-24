@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace\Classmap;
+namespace CoenJacobs\Mozart\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\Replace\Support\ExistenceCheckTrait;
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;

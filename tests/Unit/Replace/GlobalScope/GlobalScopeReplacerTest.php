@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-class ClassmapReplacerTest extends TestCase
+class GlobalScopeReplacerTest extends TestCase
 {
     #[Test]
     public function it_replaces_class_declarations(): void
     {
         $contents = '<?php class Hello_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
@@ -24,7 +24,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_abstract_class_declarations(): void
     {
         $contents = '<?php abstract class Hello_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('abstract class Mozart_Hello_World', $result);
     }
@@ -33,7 +33,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_interface_class_declarations(): void
     {
         $contents = '<?php interface Hello_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('interface Mozart_Hello_World', $result);
     }
@@ -42,7 +42,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_class_declarations_that_extend_other_classes(): void
     {
         $contents = '<?php class Hello_World extends Bye_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('class Mozart_Hello_World extends Bye_World', $result);
     }
@@ -51,7 +51,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_class_declarations_that_implement_interfaces(): void
     {
         $contents = '<?php class Hello_World implements Bye_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('class Mozart_Hello_World implements Bye_World', $result);
     }
@@ -60,7 +60,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_stores_replaced_class_names(): void
     {
         $contents = '<?php class Hello_World {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $replacer->replace($contents);
         $this->assertArrayHasKey('Hello_World', $replacer->getReplacedClasses());
     }
@@ -69,7 +69,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_class_declarations_psr2(): void
     {
         $contents = "<?php\nclass Hello_World\n{}";
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
@@ -81,14 +81,14 @@ class ClassmapReplacerTest extends TestCase
     public function it_replaces_class(): void
     {
         $contents = "<?php class Hello_World {}";
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
         $this->assertStringContainsString('class Mozart_Hello_World', $result);
     }
 
 
     /**
-     * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
+     * @see GlobalScopeReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
      * @see https://github.com/coenjacobs/mozart/issues/93
      */
     #[Test]
@@ -98,21 +98,21 @@ class ClassmapReplacerTest extends TestCase
         namespace Mozart;
         class Hello_World {}
         ";
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($input);
 
         $this->assertStringNotContainsString('Mozart_Hello_World', $result);
     }
 
     /**
-     * @see ClassmapReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
+     * @see GlobalScopeReplacerIntegrationTest::test_it_does_not_make_classname_replacement_inside_namespaced_file()
      * @see https://github.com/coenjacobs/mozart/issues/93
      */
     #[Test]
     public function it_does_not_replace_inside_namespace_singleline(): void
     {
         $input = "<?php namespace Mozart; class Hello_World {}";
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($input);
 
         $this->assertStringNotContainsString('Mozart_Hello_World', $result);
@@ -136,7 +136,7 @@ class ClassmapReplacerTest extends TestCase
 		}
 		";
 
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($input);
 
         $this->assertStringNotContainsString('Mozart_A_Class', $result);
@@ -147,7 +147,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_returns_non_php_content_unmodified(): void
     {
         $contents = 'This is not PHP code';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($contents);
 
         $this->assertEquals($contents, $result);
@@ -157,7 +157,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_throws_exception_on_syntax_error(): void
     {
         $contents = '<?php class Hello_World { syntax error here';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
 
         $this->expectException(FileOperationException::class);
         $this->expectExceptionMessageMatches('/Failed to parse PHP code:/');
@@ -167,7 +167,7 @@ class ClassmapReplacerTest extends TestCase
     #[Test]
     public function it_returns_empty_content_unchanged(): void
     {
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace('');
 
         $this->assertEquals('', $result);
@@ -177,7 +177,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_returns_content_unchanged_when_no_prefix(): void
     {
         $contents = '<?php class Hello_World {}';
-        $replacer = new ClassmapReplacer('');
+        $replacer = new GlobalScopeReplacer('');
         $result = $replacer->replace($contents);
 
         $this->assertEquals($contents, $result);
@@ -187,7 +187,7 @@ class ClassmapReplacerTest extends TestCase
     public function it_excludes_built_in_classes_from_replaced_classes(): void
     {
         $contents = '<?php class ValueError {} class My_Custom_Class {}';
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $replacer->replace($contents);
 
         $replaced = $replacer->getReplacedClasses();

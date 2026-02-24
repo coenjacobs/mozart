@@ -1,6 +1,6 @@
 <?php
 
-namespace CoenJacobs\Mozart\Replace\Classmap;
+namespace CoenJacobs\Mozart\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\Replace\StringReplacer;

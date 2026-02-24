@@ -6,7 +6,7 @@ use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
-use CoenJacobs\Mozart\Replace\Classmap\NameReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\NameReplacer;
 
 class ParentReplacer
 {

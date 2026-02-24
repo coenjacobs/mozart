@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace\GlobalScope;
 
-use CoenJacobs\Mozart\Replace\Classmap\NameVisitor;
+use CoenJacobs\Mozart\Replace\GlobalScope\NameVisitor;
 use CoenJacobs\Mozart\Tests\Support\AstProcessingTestTrait;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -155,13 +155,13 @@ class NameVisitorTest extends TestCase
     public function it_does_not_modify_class_declaration_name(): void
     {
         // The NameVisitor should not modify the class declaration itself
-        // That's handled by ClassmapReplacer
+        // That's handled by GlobalScopeReplacer
         $code = 'class MyClass {}';
         $classMap = ['MyClass' => 'Prefix_MyClass'];
 
         $result = $this->processCode($code, $classMap);
 
-        // The class declaration name should stay as-is (ClassmapReplacer handles this)
+        // The class declaration name should stay as-is (GlobalScopeReplacer handles this)
         $this->assertStringContainsString('class MyClass', $result);
     }
 

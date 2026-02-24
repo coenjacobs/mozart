@@ -9,12 +9,12 @@ The `Replacer` class (in `src/Replace/Replacer.php`) orchestrates all replacemen
 ```
 Replacer (orchestrator)
   -> getReplacerByAutoloader()
-     -> NamespaceReplacer    (for PSR-4 / PSR-0 autoloaders)
-     -> ClassmapReplacer     (for classmap autoloaders)
+     -> NamespaceReplacer      (for PSR-4 / PSR-0 autoloaders)
+     -> GlobalScopeReplacer    (for classmap autoloaders)
   -> Each replacer: parse PHP -> traverse AST with visitor -> print modified AST
 ```
 
-For files autoloader entries, the `Replacer` inspects each file individually: namespaced files use `NamespaceReplacer`, global-scope files use `ClassmapReplacer`.
+For files autoloader entries, the `Replacer` inspects each file individually: namespaced files use `NamespaceReplacer`, global-scope files use `GlobalScopeReplacer`.
 
 ## Namespace replacement
 
@@ -42,17 +42,17 @@ The visitor maintains state during traversal:
 
 An unqualified name inside a namespace that's being prefixed is skipped, because it will resolve correctly through the already-prefixed namespace declaration.
 
-## Classmap replacement
+## Global-scope replacement
 
-**Location:** `src/Replace/Classmap/`
+**Location:** `src/Replace/GlobalScope/`
 
 Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, and enum names.
 
 ### Two-pass process
 
-Classmap replacement requires two passes, unlike namespace replacement which only needs one:
+Global-scope replacement requires two passes, unlike namespace replacement which only needs one:
 
-**Pass 1 — Declaration renaming** (`ClassmapReplacer` + `DeclarationVisitor`):
+**Pass 1 — Declaration renaming** (`GlobalScopeReplacer` + `DeclarationVisitor`):
 - Traverses each file and renames class/interface/trait/enum declarations in the global namespace
 - Records every rename in a `replacedClasses` map (`original => prefixed`)
 - Skips declarations inside namespace blocks (those are handled by namespace replacement)
@@ -131,7 +131,7 @@ Mozart ships a generated database of PHP built-in symbols (`src/PhpSymbols/data/
 
 The guard sits in `DeclarationVisitor::leaveNode()`: after extracting the original name from a class/interface/trait/enum declaration, it checks `isBuiltInType()` and returns early if the name matches a built-in. This prevents the symbol from entering the `replacedClasses` map, so Pass 2 (`NameVisitor`) naturally skips it too — no changes needed there.
 
-The database is regenerated with `bash tools/generate-php-symbols.sh`, which runs each PHP version via Docker and merges the results. The interface also exposes `isBuiltInFunction()` and `isBuiltInConstant()` for future function and constant prefixing support.
+The database is regenerated with `bash tools/generate-php-symbols.sh`, which runs each PHP version via Docker and merges the results. The interface also exposes `isBuiltInFunction()` and `isBuiltInConstant()` for constant and function prefixing.
 
 ## Directory guards
 

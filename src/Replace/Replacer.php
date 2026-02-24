@@ -10,7 +10,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
-use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 
 class Replacer
@@ -84,7 +84,7 @@ class Replacer
         $replacer = $this->getReplacerByAutoloader($autoloader);
         $contents = $replacer->replace($contents);
 
-        if ($replacer instanceof ClassmapReplacer) {
+        if ($replacer instanceof GlobalScopeReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
         }
 
@@ -102,7 +102,7 @@ class Replacer
             return $replacer;
         }
 
-        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+        $replacer = new GlobalScopeReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -147,7 +147,7 @@ class Replacer
     /**
      * Handle replacement for Files autoloader entries.
      *
-     * Files with namespaces use NamespaceReplacer, files without use ClassmapReplacer.
+     * Files with namespaces use NamespaceReplacer, files without use GlobalScopeReplacer.
      */
     protected function replaceFilesAutoloader(Files $autoloader): void
     {
@@ -175,7 +175,7 @@ class Replacer
 
             // Use appropriate replacer based on whether file has a namespace
             $detectedNamespace = $autoloader->getDetectedNamespace($file);
-            $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+            $replacer = new GlobalScopeReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
 
             if ($detectedNamespace !== null) {
                 $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
@@ -186,7 +186,7 @@ class Replacer
 
             $contents = $replacer->replace($contents);
 
-            if ($replacer instanceof ClassmapReplacer) {
+            if ($replacer instanceof GlobalScopeReplacer) {
                 $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
             }
 

@@ -6,7 +6,7 @@
  * are updated in a later step.
  */
 
-namespace CoenJacobs\Mozart\Replace\Classmap;
+namespace CoenJacobs\Mozart\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
@@ -14,7 +14,7 @@ use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
 use CoenJacobs\Mozart\Replace\AbstractAutoloadReplacer;
 use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
-class ClassmapReplacer extends AbstractAutoloadReplacer
+class GlobalScopeReplacer extends AbstractAutoloadReplacer
 {
     /** @var array<string,string> */
     protected array $replacedClasses = [];
