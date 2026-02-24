@@ -14,7 +14,9 @@ TMP_DIR="$(mktemp -d)"
 
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
-PHP_VERSIONS=(7.2 7.3 7.4 8.0 8.1 8.2 8.3 8.4 8.5)
+# PHP 7.2 and 7.3 are excluded: their Docker Hub images are no longer available,
+# and their built-in symbols are a subset of 7.4 (no symbols were removed).
+PHP_VERSIONS=(7.4 8.0 8.1 8.2 8.3 8.4 8.5)
 
 echo "Collecting symbols from PHP versions..."
 
