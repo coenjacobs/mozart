@@ -94,7 +94,8 @@ abstract class NamespaceAutoloader extends AbstractAutoloader
         $suffix = '';
         foreach ($this->paths as $path) {
             $directoryName = $this->getPackage()->getDirectoryName();
-            if (str_contains($file->getPathname(), $directoryName . DIRECTORY_SEPARATOR . $path)) {
+            $searchPath = str_replace('/', DIRECTORY_SEPARATOR, $directoryName . DIRECTORY_SEPARATOR . $path);
+            if (str_contains($file->getPathname(), $searchPath)) {
                 $suffix = $path;
                 break;
             }

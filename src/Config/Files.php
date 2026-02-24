@@ -117,7 +117,7 @@ class Files extends AbstractAutoloader
         }
 
         // File is global scope - put it in classmap_directory with package name
-        $packageName = $this->getPackage()->getDirectoryName();
+        $packageName = str_replace('/', DIRECTORY_SEPARATOR, $this->getPackage()->getDirectoryName());
         return $this->fileHandler->getConfig()->getClassmapDirectory()
             . $packageName . DIRECTORY_SEPARATOR . $file->getFilename();
     }

@@ -110,12 +110,14 @@ class Mozart
      */
     public function getDepDirectory(): string
     {
-        return trim($this->depDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $dir = str_replace('/', DIRECTORY_SEPARATOR, $this->depDirectory);
+        return trim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getClassmapDirectory(): string
     {
-        return trim($this->classmapDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $dir = str_replace('/', DIRECTORY_SEPARATOR, $this->classmapDir);
+        return trim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
     public function getDeleteVendorDirectories(): bool
