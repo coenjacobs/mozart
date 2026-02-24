@@ -2,9 +2,9 @@
 
 /**
  * The purpose of this file is to find and update global-scope declarations
- * (classes, interfaces, traits, enums, constants) in their declarations.
- * Those replaced are recorded and their uses elsewhere are updated in a
- * later step.
+ * (classes, interfaces, traits, enums, constants, functions) in their
+ * declarations. Those replaced are recorded and their uses elsewhere are
+ * updated in a later step.
  */
 
 namespace CoenJacobs\Mozart\Replace\GlobalScope;
@@ -23,9 +23,14 @@ class GlobalScopeReplacer extends AbstractAutoloadReplacer
     /** @var array<string,string> */
     protected array $replacedConstants = [];
 
+    /** @var array<string,string> */
+    protected array $replacedFunctions = [];
+
     protected string $classmapPrefix;
 
     protected string $constantPrefix;
+
+    protected string $functionsPrefix;
 
     protected BuiltInSymbolsInterface $builtInSymbols;
 
@@ -35,14 +40,17 @@ class GlobalScopeReplacer extends AbstractAutoloadReplacer
      * @param string $classmapPrefix Prefix for class/interface/trait/enum declarations
      * @param BuiltInSymbolsInterface|null $builtInSymbols Built-in symbol database
      * @param string $constantPrefix Prefix for constant declarations
+     * @param string $functionsPrefix Prefix for function declarations
      */
     public function __construct(
         string $classmapPrefix = '',
         ?BuiltInSymbolsInterface $builtInSymbols = null,
-        string $constantPrefix = ''
+        string $constantPrefix = '',
+        string $functionsPrefix = ''
     ) {
         $this->classmapPrefix = $classmapPrefix;
         $this->constantPrefix = $constantPrefix;
+        $this->functionsPrefix = $functionsPrefix;
         $this->builtInSymbols = $builtInSymbols ?? new BuiltInSymbols();
         $this->astUtils = new AstUtils();
     }
@@ -72,11 +80,23 @@ class GlobalScopeReplacer extends AbstractAutoloadReplacer
     }
 
     /**
+     * @return array<string,string>
+     */
+    public function getReplacedFunctions(): array
+    {
+        return $this->replacedFunctions;
+    }
+
+    /**
      * Replace global-scope declarations in the given PHP code.
      */
     public function replace(string $contents): string
     {
-        if (empty($contents) || (empty($this->classmapPrefix) && empty($this->constantPrefix))) {
+        $noPrefixes = empty($this->classmapPrefix)
+            && empty($this->constantPrefix)
+            && empty($this->functionsPrefix);
+
+        if (empty($contents) || $noPrefixes) {
             return $contents;
         }
 
@@ -95,7 +115,8 @@ class GlobalScopeReplacer extends AbstractAutoloadReplacer
         $visitor = new DeclarationVisitor(
             $this->classmapPrefix,
             $this->builtInSymbols,
-            $this->constantPrefix
+            $this->constantPrefix,
+            $this->functionsPrefix
         );
         $traverser = $this->astUtils->createSimpleTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
@@ -108,6 +129,11 @@ class GlobalScopeReplacer extends AbstractAutoloadReplacer
         $this->replacedConstants = array_merge(
             $this->replacedConstants,
             $visitor->getReplacedConstants()
+        );
+
+        $this->replacedFunctions = array_merge(
+            $this->replacedFunctions,
+            $visitor->getReplacedFunctions()
         );
 
         return $this->astUtils->printCode($modifiedAst);

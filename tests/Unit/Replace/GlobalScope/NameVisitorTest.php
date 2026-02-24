@@ -625,4 +625,77 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringNotContainsString('MOZART_MY_CONST', $result);
     }
+
+    // --- Function map tests ---
+
+    /**
+     * Helper to process PHP code with a function map.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param array<string,string> $functionMap Map of original => prefixed function names
+     * @return string The processed PHP code (without <?php tag)
+     */
+    protected function processCodeWithFunctionMap(string $code, array $functionMap): string
+    {
+        $visitor = new NameVisitor([], [], $functionMap);
+        return $this->processCodeWithVisitor($code, $visitor);
+    }
+
+    #[Test]
+    public function it_replaces_function_call_from_function_map(): void
+    {
+        $code = 'my_helper();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString('mozart_my_helper()', $result);
+    }
+
+    #[Test]
+    public function it_replaces_function_name_in_function_exists(): void
+    {
+        $code = "if (function_exists('my_helper')) {}";
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString("function_exists('mozart_my_helper')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_function_call_not_in_map(): void
+    {
+        $code = 'other_func();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString('other_func()', $result);
+        $this->assertStringNotContainsString('mozart_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_function_call(): void
+    {
+        $code = 'Some\\Namespace\\my_helper();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringNotContainsString('mozart_my_helper', $result);
+    }
+
+    #[Test]
+    public function it_does_not_rename_the_existence_check_function_itself(): void
+    {
+        $code = "if (function_exists('my_helper')) {}";
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        // function_exists itself should NOT be renamed
+        $this->assertStringContainsString('function_exists(', $result);
+        $this->assertStringNotContainsString('mozart_function_exists', $result);
+    }
 }

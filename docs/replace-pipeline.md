@@ -46,7 +46,7 @@ An unqualified name inside a namespace that's being prefixed is skipped, because
 
 **Location:** `src/Replace/GlobalScope/`
 
-Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, enum, constant, and function names.
+Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, enum, constant, and function names. Each symbol type uses its own prefix (`classmap_prefix` for classes, `constant_prefix` for constants, `functions_prefix` for functions) and its own replacement map.
 
 ### Two-pass process
 
@@ -56,7 +56,8 @@ Global-scope replacement requires two passes, unlike namespace replacement which
 - Traverses each file and renames declarations in the global namespace
 - Class/interface/trait/enum declarations are prefixed with `classmap_prefix`
 - Constant declarations (`const` statements and `define()` calls) are prefixed with `constant_prefix`
-- Records every rename in separate maps (`replacedClasses`, `replacedConstants`)
+- Function declarations are prefixed with `functions_prefix`
+- Records every rename in separate maps (`replacedClasses`, `replacedConstants`, `replacedFunctions`)
 - Skips declarations inside namespace blocks (those are handled by namespace replacement)
 - Skips PHP built-in symbols via `isBuiltInType()`, `isBuiltInConstant()`
 
@@ -65,7 +66,7 @@ Global-scope replacement requires two passes, unlike namespace replacement which
 - Uses the collected maps to update references everywhere
 - Called via `ParentReplacer::replaceParentClassesInDirectory()`
 - Only replaces simple (non-namespaced) names that appear in the maps
-- Handles `ConstFetch` nodes for constant references and string arguments in `defined()`/`constant()`
+- Handles `ConstFetch` nodes for constant references, `FuncCall` nodes for function call references, and string arguments in `defined()`/`constant()`/`function_exists()`
 - `NameReplacer` implements `StringReplacer` (not `AutoloadReplacer`), so it has no `setAutoloader()` — it operates purely on the maps, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `AutoloadReplacer` provides, so using a separate interface keeps that dependency out
 
 This two-pass design exists because you can't know the full set of renamed symbols until all declarations have been processed.
@@ -75,11 +76,13 @@ This two-pass design exists because you can't know the full set of renamed symbo
 - Only operates on global namespace (enters namespace blocks with `DONT_TRAVERSE_CHILDREN`)
 - Renames `class`, `interface`, `trait`, and `enum` declarations (using `classmap_prefix`)
 - Renames `const` statements and `define()` calls (using `constant_prefix`)
+- Renames `function` declarations (using `functions_prefix`)
 - Uses `createSimpleTraverser()` (no `ParentConnectingVisitor`) to avoid stack overflow on large files
 
 ### NameVisitor
 
 - Replaces `Name` nodes that match entries in the class map
+- Replaces `FuncCall` nodes whose name matches entries in the function map
 - Only processes simple names (no namespace separator)
 - Handles string arguments in existence-check functions
 - Uses `createTraverser()` (with `ParentConnectingVisitor`) because it needs `NameNodeContextTrait`
@@ -134,7 +137,7 @@ Polyfill packages (e.g., `symfony/polyfill-php80`) define classes, interfaces, a
 
 Mozart ships a generated database of PHP built-in symbols (`src/PhpSymbols/data/php-symbols.php`) covering PHP 7.4–8.5. The `BuiltInSymbols` class loads this file once and provides O(1) lookups via `isset()`.
 
-The guard sits in `DeclarationVisitor::leaveNode()`: after extracting the original name from a class/interface/trait/enum declaration, it checks `isBuiltInType()` and returns early if the name matches a built-in. This prevents the symbol from entering the `replacedClasses` map, so Pass 2 (`NameVisitor`) naturally skips it too — no changes needed there.
+The guard sits in `DeclarationVisitor`: after extracting the original name from a class/interface/trait/enum declaration, it checks `isBuiltInType()` and returns early if the name matches a built-in. This prevents the symbol from entering the `replacedClasses` map, so Pass 2 (`NameVisitor`) naturally skips it too — no changes needed there. The same pattern applies to constants (`isBuiltInConstant()`) and functions (`isBuiltInFunction()`).
 
 The database is regenerated with `bash tools/generate-php-symbols.sh`, which runs each PHP version via Docker and merges the results. The interface also exposes `isBuiltInFunction()` and `isBuiltInConstant()` for constant and function prefixing.
 

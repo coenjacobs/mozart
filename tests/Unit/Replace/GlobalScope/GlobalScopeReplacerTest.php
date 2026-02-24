@@ -222,4 +222,31 @@ class GlobalScopeReplacerTest extends TestCase
         $this->assertArrayHasKey('MY_CONST', $replaced);
         $this->assertEquals('MOZART_MY_CONST', $replaced['MY_CONST']);
     }
+
+    // --- Function prefixing tests ---
+
+    #[Test]
+    public function it_collects_replaced_functions(): void
+    {
+        $contents = '<?php function my_helper() { return true; }';
+        $replacer = new GlobalScopeReplacer('', null, '', 'mozart_');
+        $replacer->replace($contents);
+
+        $replaced = $replacer->getReplacedFunctions();
+        $this->assertArrayHasKey('my_helper', $replaced);
+        $this->assertEquals('mozart_my_helper', $replaced['my_helper']);
+    }
+
+    #[Test]
+    public function it_excludes_built_in_functions_from_replaced_functions(): void
+    {
+        $contents = '<?php function array_map() {} function my_helper() {}';
+        $replacer = new GlobalScopeReplacer('', null, '', 'mozart_');
+        $replacer->replace($contents);
+
+        $replaced = $replacer->getReplacedFunctions();
+        $this->assertArrayNotHasKey('array_map', $replaced);
+        $this->assertArrayHasKey('my_helper', $replaced);
+        $this->assertEquals('mozart_my_helper', $replaced['my_helper']);
+    }
 }

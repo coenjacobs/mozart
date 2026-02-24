@@ -427,4 +427,74 @@ PHP;
 
         $this->assertStringContainsString("define('MOZART_MY_CONST'", $result['code']);
     }
+
+    // --- Function prefixing tests ---
+
+    /**
+     * Helper to process PHP code with a functions prefix.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param string $functionsPrefix The prefix to apply to functions
+     * @return array{code: string, visitor: DeclarationVisitor}
+     */
+    protected function processCodeWithFunctionsPrefix(string $code, string $functionsPrefix): array
+    {
+        $visitor = new DeclarationVisitor('', $this->builtInSymbols, '', $functionsPrefix);
+        $result = $this->processCodeWithVisitor($code, $visitor);
+        return ['code' => $result, 'visitor' => $visitor];
+    }
+
+    #[Test]
+    public function it_renames_function_declaration_in_global_namespace(): void
+    {
+        $code = 'function my_helper() { return true; }';
+
+        $result = $this->processCodeWithFunctionsPrefix($code, 'mozart_');
+
+        $this->assertStringContainsString('function mozart_my_helper()', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_function_inside_namespace_block(): void
+    {
+        $code = 'namespace MyNamespace; function my_helper() { return true; }';
+
+        $result = $this->processCodeWithFunctionsPrefix($code, 'mozart_');
+
+        $this->assertStringNotContainsString('mozart_my_helper', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_built_in_function(): void
+    {
+        $code = 'function array_map() {}';
+
+        $result = $this->processCodeWithFunctionsPrefix($code, 'mozart_');
+
+        $this->assertStringNotContainsString('mozart_array_map', $result['code']);
+        $this->assertArrayNotHasKey('array_map', $result['visitor']->getReplacedFunctions());
+    }
+
+    #[Test]
+    public function it_tracks_replaced_functions(): void
+    {
+        $code = 'function my_helper() { return true; }';
+
+        $result = $this->processCodeWithFunctionsPrefix($code, 'mozart_');
+
+        $replaced = $result['visitor']->getReplacedFunctions();
+        $this->assertArrayHasKey('my_helper', $replaced);
+        $this->assertEquals('mozart_my_helper', $replaced['my_helper']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_functions_when_prefix_is_empty(): void
+    {
+        $code = 'function my_helper() { return true; }';
+
+        $result = $this->processCodeWithFunctionsPrefix($code, '');
+
+        $this->assertStringNotContainsString('mozart_', $result['code']);
+        $this->assertEmpty($result['visitor']->getReplacedFunctions());
+    }
 }

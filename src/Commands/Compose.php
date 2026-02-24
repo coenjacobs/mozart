@@ -72,6 +72,7 @@ class Compose
         $parentReplacer = new ParentReplacer($config, $replacer);
         $parentReplacer->setReplacedClasses($replacer->getReplacedClasses());
         $parentReplacer->setReplacedConstants($replacer->getReplacedConstants());
+        $parentReplacer->setReplacedFunctions($replacer->getReplacedFunctions());
         $parentReplacer->replaceParentInTree($packages);
         $parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 

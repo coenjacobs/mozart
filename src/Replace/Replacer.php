@@ -23,6 +23,9 @@ class Replacer
     /** @var array<string,string> */
     protected array $replacedConstants = [];
 
+    /** @var array<string,string> */
+    protected array $replacedFunctions = [];
+
     /** @var array<string,bool> */
     protected array $visitedPackages = [];
 
@@ -93,6 +96,10 @@ class Replacer
                 $this->replacedConstants,
                 $replacer->getReplacedConstants()
             );
+            $this->replacedFunctions = array_merge(
+                $this->replacedFunctions,
+                $replacer->getReplacedFunctions()
+            );
         }
 
         $this->files->writeFile($targetFile, $contents);
@@ -112,7 +119,8 @@ class Replacer
         $replacer = new GlobalScopeReplacer(
             $this->config->getClassmapPrefix(),
             $this->builtInSymbols,
-            $this->config->getConstantPrefix()
+            $this->config->getConstantPrefix(),
+            $this->config->getFunctionsPrefix()
         );
         $replacer->setAutoloader($autoloader);
         return $replacer;
@@ -189,7 +197,8 @@ class Replacer
             $replacer = new GlobalScopeReplacer(
                 $this->config->getClassmapPrefix(),
                 $this->builtInSymbols,
-                $this->config->getConstantPrefix()
+                $this->config->getConstantPrefix(),
+                $this->config->getFunctionsPrefix()
             );
 
             if ($detectedNamespace !== null) {
@@ -206,6 +215,10 @@ class Replacer
                 $this->replacedConstants = array_merge(
                     $this->replacedConstants,
                     $replacer->getReplacedConstants()
+                );
+                $this->replacedFunctions = array_merge(
+                    $this->replacedFunctions,
+                    $replacer->getReplacedFunctions()
                 );
             }
 
@@ -247,5 +260,13 @@ class Replacer
     public function getReplacedConstants(): array
     {
         return $this->replacedConstants;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function getReplacedFunctions(): array
+    {
+        return $this->replacedFunctions;
     }
 }

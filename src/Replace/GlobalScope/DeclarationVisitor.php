@@ -11,6 +11,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Const_;
 use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
@@ -32,6 +33,8 @@ class DeclarationVisitor extends NodeVisitorAbstract
 
     protected string $constantPrefix;
 
+    protected string $functionsPrefix;
+
     protected BuiltInSymbolsInterface $builtInSymbols;
 
     /** @var array<string,string> Map of original => prefixed names */
@@ -40,21 +43,27 @@ class DeclarationVisitor extends NodeVisitorAbstract
     /** @var array<string,string> Map of original => prefixed constant names */
     protected array $replacedConstants = [];
 
+    /** @var array<string,string> Map of original => prefixed function names */
+    protected array $replacedFunctions = [];
+
     protected bool $inNamespace = false;
 
     /**
      * @param string $prefix Prefix for class/interface/trait/enum declarations
      * @param BuiltInSymbolsInterface $builtInSymbols Built-in symbol database
      * @param string $constantPrefix Prefix for constant declarations
+     * @param string $functionsPrefix Prefix for function declarations
      */
     public function __construct(
         string $prefix,
         BuiltInSymbolsInterface $builtInSymbols,
-        string $constantPrefix = ''
+        string $constantPrefix = '',
+        string $functionsPrefix = ''
     ) {
         $this->prefix = $prefix;
         $this->builtInSymbols = $builtInSymbols;
         $this->constantPrefix = $constantPrefix;
+        $this->functionsPrefix = $functionsPrefix;
     }
 
     /**
@@ -64,6 +73,7 @@ class DeclarationVisitor extends NodeVisitorAbstract
     {
         $this->replacedClasses = [];
         $this->replacedConstants = [];
+        $this->replacedFunctions = [];
         $this->inNamespace = false;
         return null;
     }
@@ -98,7 +108,8 @@ class DeclarationVisitor extends NodeVisitorAbstract
         }
 
         return $this->processClassDeclaration($node)
-            ?? $this->processConstantDeclaration($node);
+            ?? $this->processConstantDeclaration($node)
+            ?? $this->processFunctionDeclaration($node);
     }
 
     /**
@@ -149,6 +160,31 @@ class DeclarationVisitor extends NodeVisitorAbstract
         }
 
         return null;
+    }
+
+    /**
+     * Rename function declarations.
+     */
+    protected function processFunctionDeclaration(Node $node): ?Node
+    {
+        if (empty($this->functionsPrefix)) {
+            return null;
+        }
+
+        if (!$node instanceof Function_) {
+            return null;
+        }
+
+        $originalName = $node->name->toString();
+
+        if ($this->builtInSymbols->isBuiltInFunction($originalName)) {
+            return null;
+        }
+
+        $newName = $this->functionsPrefix . $originalName;
+        $this->replacedFunctions[$originalName] = $newName;
+        $node->name = new Node\Identifier($newName);
+        return $node;
     }
 
     /**
@@ -215,5 +251,11 @@ class DeclarationVisitor extends NodeVisitorAbstract
     public function getReplacedConstants(): array
     {
         return $this->replacedConstants;
+    }
+
+    /** @return array<string,string> */
+    public function getReplacedFunctions(): array
+    {
+        return $this->replacedFunctions;
     }
 }

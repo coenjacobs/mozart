@@ -22,6 +22,9 @@ class ParentReplacer
     /** @var array<string,string> */
     protected array $replacedConstants = [];
 
+    /** @var array<string,string> */
+    protected array $replacedFunctions = [];
+
     public function __construct(Mozart $config, Replacer $replacer)
     {
         $this->config   = $config;
@@ -46,6 +49,14 @@ class ParentReplacer
     }
 
     /**
+     * @param array<string,string> $replacedFunctions
+     */
+    public function setReplacedFunctions(array $replacedFunctions): void
+    {
+        $this->replacedFunctions = $replacedFunctions;
+    }
+
+    /**
      * Replaces all occurrences of previously replaced global-scope symbols
      * in the provided directory. This ensures that each package has its parent
      * package's symbols also replaced in its own files.
@@ -55,7 +66,7 @@ class ParentReplacer
      */
     public function replaceParentClassesInDirectory(string $directory): void
     {
-        if (empty($this->replacedClasses) && empty($this->replacedConstants)) {
+        if (empty($this->replacedClasses) && empty($this->replacedConstants) && empty($this->replacedFunctions)) {
             return;
         }
 
@@ -66,7 +77,7 @@ class ParentReplacer
         }
 
         $files = $this->files->getFilesFromPath($directory);
-        $replacer = new NameReplacer($this->replacedClasses, $this->replacedConstants);
+        $replacer = new NameReplacer($this->replacedClasses, $this->replacedConstants, $this->replacedFunctions);
 
         foreach ($files as $file) {
             $targetFile = $file->getPathName();

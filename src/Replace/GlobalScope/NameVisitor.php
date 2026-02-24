@@ -14,7 +14,8 @@ use PhpParser\NodeVisitorAbstract;
  * AST visitor that replaces simple (non-namespaced) global-scope names.
  *
  * Handles class name references (from the class map), constant references
- * (from the constant map), and string literals in existence checks.
+ * (from the constant map), function call references (from the function map),
+ * and string literals in existence checks.
  *
  * Unlike PrefixVisitor which handles namespaced code, this visitor:
  * - Only replaces simple names (no namespace separator)
@@ -41,13 +42,22 @@ class NameVisitor extends NodeVisitorAbstract
     protected array $constantMap;
 
     /**
+     * Map of original function names to their prefixed versions.
+     *
+     * @var array<string,string>
+     */
+    protected array $functionMap;
+
+    /**
      * @param array<string,string> $classMap Map of original => prefixed class names
      * @param array<string,string> $constantMap Map of original => prefixed constant names
+     * @param array<string,string> $functionMap Map of original => prefixed function names
      */
-    public function __construct(array $classMap, array $constantMap = [])
+    public function __construct(array $classMap, array $constantMap = [], array $functionMap = [])
     {
         $this->classMap = $classMap;
         $this->constantMap = $constantMap;
+        $this->functionMap = $functionMap;
     }
 
     /**
@@ -55,9 +65,9 @@ class NameVisitor extends NodeVisitorAbstract
      */
     public function leaveNode(Node $node): ?Node
     {
-        // Handle string literals in existence checks (class_exists, defined, etc.)
+        // Handle function calls: both existence checks and function map replacements
         if ($node instanceof FuncCall) {
-            return $this->processExistenceCheck($node);
+            return $this->processFuncCall($node);
         }
 
         // Handle constant references (e.g. MY_CONST, \MY_CONST)
@@ -130,10 +140,44 @@ class NameVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * Process function calls that check for existence of classes/constants/etc.
+     * Process function call nodes.
+     *
+     * Handles both existence checks (string argument replacement) and
+     * direct function call name replacement from the function map.
+     */
+    protected function processFuncCall(FuncCall $node): ?FuncCall
+    {
+        $modified = false;
+
+        // Check for existence check string arguments first
+        $existenceResult = $this->processExistenceCheck($node);
+        if ($existenceResult !== null) {
+            $modified = true;
+        }
+
+        // Check if the function name itself is in our function map
+        if ($node->name instanceof Name) {
+            $nameStr = $node->name->toString();
+
+            if (!str_contains($nameStr, '\\') && isset($this->functionMap[$nameStr])) {
+                $prefixedName = $this->functionMap[$nameStr];
+
+                $node->name = $node->name->isFullyQualified()
+                    ? new Name\FullyQualified($prefixedName)
+                    : new Name($prefixedName);
+
+                $modified = true;
+            }
+        }
+
+        return $modified ? $node : null;
+    }
+
+    /**
+     * Process function calls that check for existence of classes/constants/functions.
      *
      * Uses ExistenceCheckTrait::parseExistenceCheck() for parsing, then applies
-     * replacement if the value matches a mapped class or constant name.
+     * replacement if the value matches a mapped class, constant, or function name.
      */
     protected function processExistenceCheck(FuncCall $node): ?FuncCall
     {
@@ -148,6 +192,9 @@ class NameVisitor extends NodeVisitorAbstract
                 $modified = true;
             } elseif (isset($this->constantMap[$value])) {
                 $parsed['argNode']->value = $this->constantMap[$value] . $parsed['suffix'];
+                $modified = true;
+            } elseif (isset($this->functionMap[$value])) {
+                $parsed['argNode']->value = $this->functionMap[$value] . $parsed['suffix'];
                 $modified = true;
             }
         }
