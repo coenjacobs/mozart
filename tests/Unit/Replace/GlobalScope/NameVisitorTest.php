@@ -554,4 +554,75 @@ class NameVisitorTest extends TestCase
         $this->assertStringContainsString("class_alias('UnknownClass', 'AnotherClass')", $result);
         $this->assertStringNotContainsString('Prefix_', $result);
     }
+
+    // --- Constant map tests ---
+
+    /**
+     * Helper to process PHP code with a constant map.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param array<string,string> $constantMap Map of original => prefixed constant names
+     * @return string The processed PHP code (without <?php tag)
+     */
+    protected function processCodeWithConstantMap(string $code, array $constantMap): string
+    {
+        $visitor = new NameVisitor([], $constantMap);
+        return $this->processCodeWithVisitor($code, $visitor);
+    }
+
+    #[Test]
+    public function it_replaces_constant_reference_from_constant_map(): void
+    {
+        $code = '$val = MY_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString('MOZART_MY_CONST', $result);
+    }
+
+    #[Test]
+    public function it_replaces_constant_in_defined_check(): void
+    {
+        $code = "if (defined('MY_CONST')) {}";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("defined('MOZART_MY_CONST')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_constant_in_constant_function(): void
+    {
+        $code = "\$val = constant('MY_CONST');";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("constant('MOZART_MY_CONST')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_constant_not_in_map(): void
+    {
+        $code = '$val = OTHER_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString('OTHER_CONST', $result);
+        $this->assertStringNotContainsString('MOZART_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_constant_reference(): void
+    {
+        $code = '$val = Some\\Namespace\\MY_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringNotContainsString('MOZART_MY_CONST', $result);
+    }
 }

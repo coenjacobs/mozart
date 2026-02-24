@@ -312,4 +312,119 @@ PHP;
         $this->assertStringContainsString('class Mozart_MyPolyfillClass', $result['code']);
         $this->assertArrayHasKey('MyPolyfillClass', $result['visitor']->getReplacedClasses());
     }
+
+    // --- Constant prefixing tests ---
+
+    /**
+     * Helper to process PHP code with a constant prefix.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param string $constantPrefix The prefix to apply to constants
+     * @return array{code: string, visitor: DeclarationVisitor}
+     */
+    protected function processCodeWithConstantPrefix(string $code, string $constantPrefix): array
+    {
+        $visitor = new DeclarationVisitor('', $this->builtInSymbols, $constantPrefix);
+        $result = $this->processCodeWithVisitor($code, $visitor);
+        return ['code' => $result, 'visitor' => $visitor];
+    }
+
+    #[Test]
+    public function it_renames_const_declaration_in_global_namespace(): void
+    {
+        $code = 'const MY_CONST = 1;';
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString('MOZART_MY_CONST', $result['code']);
+        $this->assertStringNotContainsString("'MY_CONST'", $result['code']);
+    }
+
+    #[Test]
+    public function it_renames_define_call_in_global_namespace(): void
+    {
+        $code = "define('MY_CONST', 'value');";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString("define('MOZART_MY_CONST'", $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_const_inside_namespace_block(): void
+    {
+        $code = 'namespace MyNamespace; const MY_CONST = 1;';
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringNotContainsString('MOZART_MY_CONST', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_define_inside_namespace_block(): void
+    {
+        $code = "namespace MyNamespace; define('MY_CONST', 'value');";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringNotContainsString('MOZART_MY_CONST', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_rename_built_in_constant(): void
+    {
+        $code = 'const PHP_INT_MAX = 999;';
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringNotContainsString('MOZART_PHP_INT_MAX', $result['code']);
+        $this->assertArrayNotHasKey('PHP_INT_MAX', $result['visitor']->getReplacedConstants());
+    }
+
+    #[Test]
+    public function it_tracks_replaced_constants(): void
+    {
+        $code = 'const MY_CONST = 1;';
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $replaced = $result['visitor']->getReplacedConstants();
+        $this->assertArrayHasKey('MY_CONST', $replaced);
+        $this->assertEquals('MOZART_MY_CONST', $replaced['MY_CONST']);
+    }
+
+    #[Test]
+    public function it_handles_multiple_const_in_one_statement(): void
+    {
+        $code = 'const A = 1, B = 2;';
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString('MOZART_A', $result['code']);
+        $this->assertStringContainsString('MOZART_B', $result['code']);
+        $replaced = $result['visitor']->getReplacedConstants();
+        $this->assertArrayHasKey('A', $replaced);
+        $this->assertArrayHasKey('B', $replaced);
+    }
+
+    #[Test]
+    public function it_does_not_rename_constants_when_prefix_is_empty(): void
+    {
+        $code = 'const MY_CONST = 1;';
+
+        $result = $this->processCodeWithConstantPrefix($code, '');
+
+        $this->assertStringNotContainsString('MOZART_', $result['code']);
+        $this->assertEmpty($result['visitor']->getReplacedConstants());
+    }
+
+    #[Test]
+    public function it_handles_define_inside_if_block(): void
+    {
+        $code = "if (!defined('MY_CONST')) { define('MY_CONST', 'value'); }";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString("define('MOZART_MY_CONST'", $result['code']);
+    }
 }

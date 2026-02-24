@@ -38,6 +38,7 @@ Mozart requires little configuration. All you need to do is tell it where the bu
 
 ## Optional options
 
+- `constant_prefix` defines the prefix applied to global-scope constant declarations (`const` statements and `define()` calls). For example, with a prefix of `CJTP_`, a constant `MY_VERSION` becomes `CJTP_MY_VERSION`. PHP built-in constants are never prefixed. _default: empty (disabled)_.
 - `delete_vendor_directories` is a boolean flag to indicate if the packages' vendor directories should be deleted after being processed. _default: true_.
 - `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
 - `excluded_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.

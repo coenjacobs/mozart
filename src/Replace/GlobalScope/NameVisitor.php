@@ -5,20 +5,21 @@ namespace CoenJacobs\Mozart\Replace\GlobalScope;
 use CoenJacobs\Mozart\Replace\Support\ExistenceCheckTrait;
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
 use PhpParser\Node;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * AST visitor that replaces simple (non-namespaced) class names with prefixed versions.
+ * AST visitor that replaces simple (non-namespaced) global-scope names.
  *
- * This is used to update references to classmap classes (global namespace classes)
- * that have been prefixed during the Mozart replacement process.
+ * Handles class name references (from the class map), constant references
+ * (from the constant map), and string literals in existence checks.
  *
  * Unlike PrefixVisitor which handles namespaced code, this visitor:
- * - Only replaces simple class names (no namespace separator)
- * - Uses a direct mapping of original => prefixed names
- * - Handles string literals in existence checks (class_exists, function_exists, etc.)
+ * - Only replaces simple names (no namespace separator)
+ * - Uses direct mappings of original => prefixed names
+ * - Handles string literals in existence checks (class_exists, defined, etc.)
  */
 class NameVisitor extends NodeVisitorAbstract
 {
@@ -33,11 +34,20 @@ class NameVisitor extends NodeVisitorAbstract
     protected array $classMap;
 
     /**
-     * @param array<string,string> $classMap Map of original => prefixed class names
+     * Map of original constant names to their prefixed versions.
+     *
+     * @var array<string,string>
      */
-    public function __construct(array $classMap)
+    protected array $constantMap;
+
+    /**
+     * @param array<string,string> $classMap Map of original => prefixed class names
+     * @param array<string,string> $constantMap Map of original => prefixed constant names
+     */
+    public function __construct(array $classMap, array $constantMap = [])
     {
         $this->classMap = $classMap;
+        $this->constantMap = $constantMap;
     }
 
     /**
@@ -45,9 +55,14 @@ class NameVisitor extends NodeVisitorAbstract
      */
     public function leaveNode(Node $node): ?Node
     {
-        // Handle string literals in existence checks (class_exists, function_exists, etc.)
+        // Handle string literals in existence checks (class_exists, defined, etc.)
         if ($node instanceof FuncCall) {
             return $this->processExistenceCheck($node);
+        }
+
+        // Handle constant references (e.g. MY_CONST, \MY_CONST)
+        if ($node instanceof ConstFetch) {
+            return $this->processConstFetch($node);
         }
 
         // Only process Name nodes
@@ -84,10 +99,41 @@ class NameVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * Process function calls that check for existence of classes/functions/etc.
+     * Process constant fetch nodes (e.g. MY_CONST, \MY_CONST).
+     */
+    protected function processConstFetch(ConstFetch $node): ?ConstFetch
+    {
+        if (empty($this->constantMap)) {
+            return null;
+        }
+
+        $nameStr = $node->name->toString();
+
+        // Only process simple names (no namespace separator after stripping leading \)
+        if (str_contains($nameStr, '\\')) {
+            return null;
+        }
+
+        if (!isset($this->constantMap[$nameStr])) {
+            return null;
+        }
+
+        $prefixedName = $this->constantMap[$nameStr];
+
+        if ($node->name->isFullyQualified()) {
+            $node->name = new Name\FullyQualified($prefixedName);
+            return $node;
+        }
+
+        $node->name = new Name($prefixedName);
+        return $node;
+    }
+
+    /**
+     * Process function calls that check for existence of classes/constants/etc.
      *
      * Uses ExistenceCheckTrait::parseExistenceCheck() for parsing, then applies
-     * classmap replacement if the value matches a mapped class name.
+     * replacement if the value matches a mapped class or constant name.
      */
     protected function processExistenceCheck(FuncCall $node): ?FuncCall
     {
@@ -95,8 +141,13 @@ class NameVisitor extends NodeVisitorAbstract
         $modified = false;
 
         foreach ($allParsed as $parsed) {
-            if (isset($this->classMap[$parsed['value']])) {
-                $parsed['argNode']->value = $this->classMap[$parsed['value']] . $parsed['suffix'];
+            $value = $parsed['value'];
+
+            if (isset($this->classMap[$value])) {
+                $parsed['argNode']->value = $this->classMap[$value] . $parsed['suffix'];
+                $modified = true;
+            } elseif (isset($this->constantMap[$value])) {
+                $parsed['argNode']->value = $this->constantMap[$value] . $parsed['suffix'];
                 $modified = true;
             }
         }

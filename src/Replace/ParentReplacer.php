@@ -19,6 +19,9 @@ class ParentReplacer
     /** @var array<string,string> */
     protected array $replacedClasses = [];
 
+    /** @var array<string,string> */
+    protected array $replacedConstants = [];
+
     public function __construct(Mozart $config, Replacer $replacer)
     {
         $this->config   = $config;
@@ -35,16 +38,24 @@ class ParentReplacer
     }
 
     /**
-     * Replaces all occurrences of previously replaced classes, in the provided
-     * directory. This to ensure that each package has its parents package
-     * classes also replaced in its own files.
+     * @param array<string,string> $replacedConstants
+     */
+    public function setReplacedConstants(array $replacedConstants): void
+    {
+        $this->replacedConstants = $replacedConstants;
+    }
+
+    /**
+     * Replaces all occurrences of previously replaced global-scope symbols
+     * in the provided directory. This ensures that each package has its parent
+     * package's symbols also replaced in its own files.
      *
      * Uses AST-based replacement to properly handle PHP syntax and avoid
-     * incorrectly replacing class names in string literals or comments.
+     * incorrectly replacing names in string literals or comments.
      */
     public function replaceParentClassesInDirectory(string $directory): void
     {
-        if (count($this->replacedClasses) === 0) {
+        if (empty($this->replacedClasses) && empty($this->replacedConstants)) {
             return;
         }
 
@@ -55,7 +66,7 @@ class ParentReplacer
         }
 
         $files = $this->files->getFilesFromPath($directory);
-        $replacer = new NameReplacer($this->replacedClasses);
+        $replacer = new NameReplacer($this->replacedClasses, $this->replacedConstants);
 
         foreach ($files as $file) {
             $targetFile = $file->getPathName();

@@ -20,6 +20,9 @@ class Replacer
     /** @var array<string,string> */
     protected array $replacedClasses = [];
 
+    /** @var array<string,string> */
+    protected array $replacedConstants = [];
+
     /** @var array<string,bool> */
     protected array $visitedPackages = [];
 
@@ -86,6 +89,10 @@ class Replacer
 
         if ($replacer instanceof GlobalScopeReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
+            $this->replacedConstants = array_merge(
+                $this->replacedConstants,
+                $replacer->getReplacedConstants()
+            );
         }
 
         $this->files->writeFile($targetFile, $contents);
@@ -102,7 +109,11 @@ class Replacer
             return $replacer;
         }
 
-        $replacer = new GlobalScopeReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+        $replacer = new GlobalScopeReplacer(
+            $this->config->getClassmapPrefix(),
+            $this->builtInSymbols,
+            $this->config->getConstantPrefix()
+        );
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -175,7 +186,11 @@ class Replacer
 
             // Use appropriate replacer based on whether file has a namespace
             $detectedNamespace = $autoloader->getDetectedNamespace($file);
-            $replacer = new GlobalScopeReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+            $replacer = new GlobalScopeReplacer(
+                $this->config->getClassmapPrefix(),
+                $this->builtInSymbols,
+                $this->config->getConstantPrefix()
+            );
 
             if ($detectedNamespace !== null) {
                 $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
@@ -188,6 +203,10 @@ class Replacer
 
             if ($replacer instanceof GlobalScopeReplacer) {
                 $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
+                $this->replacedConstants = array_merge(
+                    $this->replacedConstants,
+                    $replacer->getReplacedConstants()
+                );
             }
 
             $this->files->writeFile($targetFile, $contents);
@@ -220,5 +239,13 @@ class Replacer
     public function getReplacedClasses(): array
     {
         return $this->replacedClasses;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function getReplacedConstants(): array
+    {
+        return $this->replacedConstants;
     }
 }

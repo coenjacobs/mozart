@@ -46,30 +46,35 @@ An unqualified name inside a namespace that's being prefixed is skipped, because
 
 **Location:** `src/Replace/GlobalScope/`
 
-Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, and enum names.
+Used for packages with classmap autoloading. Prefixes global-scope class, interface, trait, enum, constant, and function names.
 
 ### Two-pass process
 
 Global-scope replacement requires two passes, unlike namespace replacement which only needs one:
 
 **Pass 1 — Declaration renaming** (`GlobalScopeReplacer` + `DeclarationVisitor`):
-- Traverses each file and renames class/interface/trait/enum declarations in the global namespace
-- Records every rename in a `replacedClasses` map (`original => prefixed`)
+- Traverses each file and renames declarations in the global namespace
+- Class/interface/trait/enum declarations are prefixed with `classmap_prefix`
+- Constant declarations (`const` statements and `define()` calls) are prefixed with `constant_prefix`
+- Records every rename in separate maps (`replacedClasses`, `replacedConstants`)
 - Skips declarations inside namespace blocks (those are handled by namespace replacement)
+- Skips PHP built-in symbols via `isBuiltInType()`, `isBuiltInConstant()`
 
 **Pass 2 — Reference updating** (`NameReplacer` + `NameVisitor`):
 - Runs after all declarations have been renamed
-- Uses the `replacedClasses` map to update references everywhere
+- Uses the collected maps to update references everywhere
 - Called via `ParentReplacer::replaceParentClassesInDirectory()`
-- Only replaces simple (non-namespaced) names that appear in the map
-- `NameReplacer` implements `StringReplacer` (not `AutoloadReplacer`), so it has no `setAutoloader()` — it operates purely on the class map, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `AutoloadReplacer` provides, so using a separate interface keeps that dependency out
+- Only replaces simple (non-namespaced) names that appear in the maps
+- Handles `ConstFetch` nodes for constant references and string arguments in `defined()`/`constant()`
+- `NameReplacer` implements `StringReplacer` (not `AutoloadReplacer`), so it has no `setAutoloader()` — it operates purely on the maps, independent of any autoloader context. The `StringReplacer` interface exists because pass-2 reference replacement is a simple string-map operation: look up a name in the collected renames and substitute it. It doesn't need the autoloader context that `AutoloadReplacer` provides, so using a separate interface keeps that dependency out
 
-This two-pass design exists because you can't know the full set of renamed classes until all declarations have been processed.
+This two-pass design exists because you can't know the full set of renamed symbols until all declarations have been processed.
 
 ### DeclarationVisitor
 
 - Only operates on global namespace (enters namespace blocks with `DONT_TRAVERSE_CHILDREN`)
-- Renames `class`, `interface`, `trait`, and `enum` declarations
+- Renames `class`, `interface`, `trait`, and `enum` declarations (using `classmap_prefix`)
+- Renames `const` statements and `define()` calls (using `constant_prefix`)
 - Uses `createSimpleTraverser()` (no `ParentConnectingVisitor`) to avoid stack overflow on large files
 
 ### NameVisitor

@@ -195,4 +195,31 @@ class GlobalScopeReplacerTest extends TestCase
         $this->assertArrayHasKey('My_Custom_Class', $replaced);
         $this->assertEquals('Mozart_My_Custom_Class', $replaced['My_Custom_Class']);
     }
+
+    // --- Constant prefixing tests ---
+
+    #[Test]
+    public function it_collects_replaced_constants(): void
+    {
+        $contents = '<?php const MY_CONST = 1;';
+        $replacer = new GlobalScopeReplacer('', null, 'MOZART_');
+        $replacer->replace($contents);
+
+        $replaced = $replacer->getReplacedConstants();
+        $this->assertArrayHasKey('MY_CONST', $replaced);
+        $this->assertEquals('MOZART_MY_CONST', $replaced['MY_CONST']);
+    }
+
+    #[Test]
+    public function it_excludes_built_in_constants_from_replaced_constants(): void
+    {
+        $contents = '<?php const PHP_INT_MAX = 999; const MY_CONST = 1;';
+        $replacer = new GlobalScopeReplacer('', null, 'MOZART_');
+        $replacer->replace($contents);
+
+        $replaced = $replacer->getReplacedConstants();
+        $this->assertArrayNotHasKey('PHP_INT_MAX', $replaced);
+        $this->assertArrayHasKey('MY_CONST', $replaced);
+        $this->assertEquals('MOZART_MY_CONST', $replaced['MY_CONST']);
+    }
 }

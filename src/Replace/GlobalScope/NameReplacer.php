@@ -7,7 +7,7 @@ use CoenJacobs\Mozart\Replace\StringReplacer;
 use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
 /**
- * Replaces classmap class names in PHP code.
+ * Replaces global-scope names (classes, constants) in PHP code.
  */
 class NameReplacer implements StringReplacer
 {
@@ -18,26 +18,35 @@ class NameReplacer implements StringReplacer
      */
     protected array $classMap;
 
+    /**
+     * Map of original constant names to their prefixed versions.
+     *
+     * @var array<string,string>
+     */
+    protected array $constantMap;
+
     protected AstUtils $astUtils;
 
     /**
      * @param array<string,string> $classMap Map of original => prefixed class names
+     * @param array<string,string> $constantMap Map of original => prefixed constant names
      */
-    public function __construct(array $classMap)
+    public function __construct(array $classMap, array $constantMap = [])
     {
         $this->classMap = $classMap;
+        $this->constantMap = $constantMap;
         $this->astUtils = new AstUtils();
     }
 
     /**
-     * Replace classmap class names in the given PHP code.
+     * Replace global-scope names in the given PHP code.
      *
      * @param string $contents The PHP code to process
      * @return string The processed PHP code
      */
     public function replace(string $contents): string
     {
-        if (empty($contents) || empty($this->classMap)) {
+        if (empty($contents) || (empty($this->classMap) && empty($this->constantMap))) {
             return $contents;
         }
 
@@ -48,7 +57,7 @@ class NameReplacer implements StringReplacer
             throw new FileOperationException("Failed to parse PHP code: {$error}");
         }
 
-        $visitor = new NameVisitor($this->classMap);
+        $visitor = new NameVisitor($this->classMap, $this->constantMap);
         $traverser = $this->astUtils->createTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
 
