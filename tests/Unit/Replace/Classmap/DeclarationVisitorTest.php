@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
 
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\Classmap\DeclarationVisitor;
 use CoenJacobs\Mozart\Tests\Support\AstProcessingTestTrait;
 use PhpParser\NodeTraverser;
@@ -23,9 +24,23 @@ class DeclarationVisitorTest extends TestCase
      * @param string $prefix The prefix to apply to declarations
      * @return array{code: string, visitor: DeclarationVisitor}
      */
+    private BuiltInSymbols $builtInSymbols;
+
+    protected function setUp(): void
+    {
+        $this->builtInSymbols = new BuiltInSymbols();
+    }
+
+    /**
+     * Helper to process PHP code through the DeclarationVisitor.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param string $prefix The prefix to apply to declarations
+     * @return array{code: string, visitor: DeclarationVisitor}
+     */
     protected function processCode(string $code, string $prefix): array
     {
-        $visitor = new DeclarationVisitor($prefix);
+        $visitor = new DeclarationVisitor($prefix, $this->builtInSymbols);
         $result = $this->processCodeWithVisitor($code, $visitor);
         return ['code' => $result, 'visitor' => $visitor];
     }
@@ -238,7 +253,7 @@ PHP;
     #[Test]
     public function it_resets_replaced_classes_on_each_traversal(): void
     {
-        $visitor = new DeclarationVisitor('Mozart_');
+        $visitor = new DeclarationVisitor('Mozart_', $this->builtInSymbols);
 
         // First traversal
         $code1 = $this->wrapCode('class FirstClass {}');
@@ -261,5 +276,40 @@ PHP;
 
         $this->assertArrayNotHasKey('FirstClass', $visitor->getReplacedClasses());
         $this->assertArrayHasKey('SecondClass', $visitor->getReplacedClasses());
+    }
+
+    #[Test]
+    public function it_does_not_prefix_built_in_class(): void
+    {
+        $code = 'class ValueError {}';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('class ValueError', $result['code']);
+        $this->assertStringNotContainsString('Mozart_ValueError', $result['code']);
+        $this->assertArrayNotHasKey('ValueError', $result['visitor']->getReplacedClasses());
+    }
+
+    #[Test]
+    public function it_does_not_prefix_built_in_interface(): void
+    {
+        $code = 'interface Stringable { public function __toString(): string; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('interface Stringable', $result['code']);
+        $this->assertStringNotContainsString('Mozart_Stringable', $result['code']);
+        $this->assertArrayNotHasKey('Stringable', $result['visitor']->getReplacedClasses());
+    }
+
+    #[Test]
+    public function it_still_prefixes_non_built_in_class(): void
+    {
+        $code = 'class MyPolyfillClass {}';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('class Mozart_MyPolyfillClass', $result['code']);
+        $this->assertArrayHasKey('MyPolyfillClass', $result['visitor']->getReplacedClasses());
     }
 }

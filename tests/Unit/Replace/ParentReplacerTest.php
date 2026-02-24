@@ -7,6 +7,7 @@ namespace CoenJacobs\Mozart\Tests\Unit\Replace;
 use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\ParentReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
 use PHPUnit\Framework\TestCase;
@@ -61,7 +62,7 @@ class ParentReplacerTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'empty_dir');
     }
@@ -71,7 +72,7 @@ class ParentReplacerTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentClassesInDirectory($this->testDir);
     }
@@ -81,7 +82,7 @@ class ParentReplacerTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $parentReplacer = new ParentReplacer($this->config, $replacer);
         $parentReplacer->replaceParentInTree([]);
     }
@@ -102,7 +103,7 @@ class ParentReplacerTest extends TestCase
         $autoloader = new Classmap();
         $autoloader->processConfig(['src/']);
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replacePackageByAutoloader($package, $autoloader);
 
         // Now call replaceParentClassesInDirectory with a non-existent path
@@ -171,7 +172,7 @@ class ParentClass
 }
 PHP);
 
-        $replacer = new Replacer($config);
+        $replacer = new Replacer($config, new BuiltInSymbols());
         $parentReplacer = new ParentReplacer($config, $replacer);
         $parentReplacer->setReplacedClasses(['OrigHelper' => 'Test_OrigHelper']);
 

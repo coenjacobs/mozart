@@ -123,6 +123,16 @@ Special handling for `constant()`, `defined()`, and `is_callable()`: these accep
 
 Also handles concatenation patterns like `constant('Namespace\Class::' . $var)` where the left side of a `.` concatenation ends with `::`.
 
+## Built-in symbol protection
+
+Polyfill packages (e.g., `symfony/polyfill-php80`) define classes, interfaces, and enums that mirror PHP built-ins (`ValueError`, `Stringable`, etc.). Without protection, `DeclarationVisitor` would prefix these declarations, breaking the polyfill's purpose.
+
+Mozart ships a generated database of PHP built-in symbols (`src/PhpSymbols/data/php-symbols.php`) covering PHP 7.4–8.5. The `BuiltInSymbols` class loads this file once and provides O(1) lookups via `isset()`.
+
+The guard sits in `DeclarationVisitor::leaveNode()`: after extracting the original name from a class/interface/trait/enum declaration, it checks `isBuiltInType()` and returns early if the name matches a built-in. This prevents the symbol from entering the `replacedClasses` map, so Pass 2 (`NameVisitor`) naturally skips it too — no changes needed there.
+
+The database is regenerated with `bash tools/generate-php-symbols.sh`, which runs each PHP version via Docker and merges the results. The interface also exposes `isBuiltInFunction()` and `isBuiltInConstant()` for future function and constant prefixing support.
+
 ## Directory guards
 
 Multiple points in the replacement flow need `is_dir()` checks because directories may not exist:

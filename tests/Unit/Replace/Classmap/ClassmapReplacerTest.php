@@ -182,4 +182,17 @@ class ClassmapReplacerTest extends TestCase
 
         $this->assertEquals($contents, $result);
     }
+
+    #[Test]
+    public function it_excludes_built_in_classes_from_replaced_classes(): void
+    {
+        $contents = '<?php class ValueError {} class My_Custom_Class {}';
+        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer->replace($contents);
+
+        $replaced = $replacer->getReplacedClasses();
+        $this->assertArrayNotHasKey('ValueError', $replaced);
+        $this->assertArrayHasKey('My_Custom_Class', $replaced);
+        $this->assertEquals('Mozart_My_Custom_Class', $replaced['My_Custom_Class']);
+    }
 }
