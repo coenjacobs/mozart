@@ -9,6 +9,8 @@
 namespace CoenJacobs\Mozart\Replace\Classmap;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
 use CoenJacobs\Mozart\Replace\AbstractAutoloadReplacer;
 use CoenJacobs\Mozart\Replace\Support\AstUtils;
 
@@ -19,11 +21,14 @@ class ClassmapReplacer extends AbstractAutoloadReplacer
 
     protected string $classmapPrefix;
 
+    protected BuiltInSymbolsInterface $builtInSymbols;
+
     protected AstUtils $astUtils;
 
-    public function __construct(string $classmapPrefix = '')
+    public function __construct(string $classmapPrefix = '', ?BuiltInSymbolsInterface $builtInSymbols = null)
     {
         $this->classmapPrefix = $classmapPrefix;
+        $this->builtInSymbols = $builtInSymbols ?? new BuiltInSymbols();
         $this->astUtils = new AstUtils();
     }
 
@@ -61,7 +66,7 @@ class ClassmapReplacer extends AbstractAutoloadReplacer
             throw new FileOperationException("Failed to parse PHP code: {$error}");
         }
 
-        $visitor = new DeclarationVisitor($this->classmapPrefix);
+        $visitor = new DeclarationVisitor($this->classmapPrefix, $this->builtInSymbols);
         $traverser = $this->astUtils->createSimpleTraverser($visitor);
         $modifiedAst = $traverser->traverse($ast);
 

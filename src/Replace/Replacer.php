@@ -9,6 +9,7 @@ use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
 use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 
@@ -24,10 +25,13 @@ class Replacer
 
     protected FilesHandler $files;
 
-    public function __construct(Mozart $config)
+    protected BuiltInSymbolsInterface $builtInSymbols;
+
+    public function __construct(Mozart $config, BuiltInSymbolsInterface $builtInSymbols)
     {
-        $this->config     = $config;
-        $this->files      = new FilesHandler($config);
+        $this->config         = $config;
+        $this->files          = new FilesHandler($config);
+        $this->builtInSymbols = $builtInSymbols;
     }
 
     /**
@@ -98,7 +102,7 @@ class Replacer
             return $replacer;
         }
 
-        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix());
+        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -171,7 +175,7 @@ class Replacer
 
             // Use appropriate replacer based on whether file has a namespace
             $detectedNamespace = $autoloader->getDetectedNamespace($file);
-            $replacer = new ClassmapReplacer($this->config->getClassmapPrefix());
+            $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
 
             if ($detectedNamespace !== null) {
                 $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());

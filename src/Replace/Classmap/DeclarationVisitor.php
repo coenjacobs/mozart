@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart\Replace\Classmap;
 
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Enum_;
@@ -20,14 +21,17 @@ class DeclarationVisitor extends NodeVisitorAbstract
 {
     protected string $prefix;
 
+    protected BuiltInSymbolsInterface $builtInSymbols;
+
     /** @var array<string,string> Map of original => prefixed names */
     protected array $replacedClasses = [];
 
     protected bool $inNamespace = false;
 
-    public function __construct(string $prefix)
+    public function __construct(string $prefix, BuiltInSymbolsInterface $builtInSymbols)
     {
         $this->prefix = $prefix;
+        $this->builtInSymbols = $builtInSymbols;
     }
 
     /**
@@ -77,6 +81,11 @@ class DeclarationVisitor extends NodeVisitorAbstract
             }
 
             $originalName = $node->name->toString();
+
+            if ($this->builtInSymbols->isBuiltInType($originalName)) {
+                return null;
+            }
+
             $newName = $this->prefix . $originalName;
             $this->replacedClasses[$originalName] = $newName;
             $node->name = new Node\Identifier($newName);
