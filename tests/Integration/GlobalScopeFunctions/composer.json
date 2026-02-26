@@ -1,0 +1,25 @@
+{
+    "require": {
+        "mustangostang/spyc": "^0.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mozart\\TestProject\\": "src/"
+        }
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "Mozart\\TestProject\\Dependencies",
+            "dep_directory": "/src/dependencies/",
+            "classmap_directory": "/classes/",
+            "classmap_prefix": "MozartTest_",
+            "functions_prefix": "mozarttest_",
+            "packages": [
+                "mustangostang/spyc"
+            ],
+            "excluded_packages": [],
+            "override_autoload": {},
+            "delete_vendor_directories": true
+        }
+    }
+}
