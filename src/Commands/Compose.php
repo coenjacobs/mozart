@@ -6,6 +6,7 @@ use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\ParentReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
 
@@ -61,7 +62,8 @@ class Compose
         }
 
         $mover = new Mover($config);
-        $replacer = new Replacer($config);
+        $builtInSymbols = new BuiltInSymbols();
+        $replacer = new Replacer($config, $builtInSymbols);
 
         $mover->deleteTargetDirs($packages);
         $mover->movePackages($packages);

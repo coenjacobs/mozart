@@ -8,6 +8,7 @@ use CoenJacobs\Mozart\Config\Classmap;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
+use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
@@ -64,7 +65,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace('Original\\Namespace');
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $result = $replacer->getReplacerByAutoloader($autoloader);
 
         $this->assertInstanceOf(NamespaceReplacer::class, $result);
@@ -76,7 +77,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Classmap();
         $autoloader->processConfig(['path/to/files']);
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $result = $replacer->getReplacerByAutoloader($autoloader);
 
         $this->assertInstanceOf(ClassmapReplacer::class, $result);
@@ -94,7 +95,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace('Test\\Namespace');
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replacePackageByAutoloader($package, $autoloader);
     }
 
@@ -103,7 +104,7 @@ class ReplacerTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replacePackages([]);
     }
 
@@ -115,7 +116,7 @@ class ReplacerTest extends TestCase
         $package = new Package();
         $package->name = 'test/package';
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replacePackage($package);
     }
 
@@ -127,7 +128,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace('Test\\Namespace');
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replaceInFile('nonexistent/file.php', $autoloader);
     }
 
@@ -140,7 +141,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace('Test\\Namespace');
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replaceInFile($filePath, $autoloader);
 
         $this->assertSame('', file_get_contents($filePath));
@@ -155,7 +156,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Classmap();
         $autoloader->processConfig(['src/']);
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replacePackageByAutoloader($package, $autoloader);
 
         $this->assertEmpty($replacer->getReplacedClasses());
@@ -169,7 +170,7 @@ class ReplacerTest extends TestCase
         $autoloader = new Psr4();
         $autoloader->setNamespace('Nonexistent\\Namespace');
 
-        $replacer = new Replacer($this->config);
+        $replacer = new Replacer($this->config, new BuiltInSymbols());
         $replacer->replaceInDirectory($autoloader, $this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
     }
 
@@ -194,7 +195,7 @@ class ReplacerTest extends TestCase
         $packageA->registerDependency($packageC);
 
         $replacer = $this->getMockBuilder(Replacer::class)
-            ->setConstructorArgs([$this->config])
+            ->setConstructorArgs([$this->config, new BuiltInSymbols()])
             ->onlyMethods(['replacePackage'])
             ->getMock();
 
