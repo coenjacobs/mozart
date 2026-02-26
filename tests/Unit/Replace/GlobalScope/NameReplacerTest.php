@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace\GlobalScope;
 
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
-use CoenJacobs\Mozart\Replace\Classmap\NameReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\NameReplacer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for the NameReplacer class (Classmap\NameReplacer).
+ * Tests for the NameReplacer class (GlobalScope\NameReplacer).
  *
  * This tests the orchestrator class that uses NameVisitor to replace
  * class name references in PHP code.

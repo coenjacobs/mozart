@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit\Replace;
 
-use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
-use CoenJacobs\Mozart\Replace\Classmap\NameReplacer as ClassmapNameReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\NameReplacer as GlobalScopeNameReplacer;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +60,7 @@ PHP;
 
         $this->assertGreaterThan(100000, strlen($largeContent), 'Test file should be larger than 100KB');
 
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($largeContent);
 
         // Verify the class was renamed
@@ -101,7 +101,7 @@ PHP;
         $this->assertGreaterThan(100000, strlen($content), 'Test file should be larger than 100KB');
 
         $classMap = ['TargetClass' => 'Mozart_TargetClass'];
-        $replacer = new ClassmapNameReplacer($classMap);
+        $replacer = new GlobalScopeNameReplacer($classMap);
         $result = $replacer->replace($content);
 
         // Verify class references were replaced
@@ -118,7 +118,7 @@ PHP;
 
         $this->assertGreaterThan(200000, strlen($largeContent), 'Test file should be larger than 200KB');
 
-        $replacer = new ClassmapReplacer('Prefix_');
+        $replacer = new GlobalScopeReplacer('Prefix_');
         $result = $replacer->replace($largeContent);
 
         $this->assertStringContainsString('class Prefix_VeryLargeClass', $result);
@@ -129,7 +129,7 @@ PHP;
     {
         $largeContent = $this->generateLargePhpFile(120000, 'StructureTestClass');
 
-        $replacer = new ClassmapReplacer('Mozart_');
+        $replacer = new GlobalScopeReplacer('Mozart_');
         $result = $replacer->replace($largeContent);
 
         // Count methods in original and result
@@ -173,7 +173,7 @@ PHP;
 
         $content .= "}\n";
 
-        $replacer = new ClassmapNameReplacer($classes);
+        $replacer = new GlobalScopeNameReplacer($classes);
         $result = $replacer->replace($content);
 
         // Verify several class references were replaced

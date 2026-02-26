@@ -99,7 +99,7 @@ The PHP version matrix works via the `PHP_VERSION` build arg passed to Docker.
 Add to `tests/Unit/`, mirroring the `src/` directory structure.
 
 - Namespace: `CoenJacobs\Mozart\Tests\Unit\...`
-- Example: a test for `src/Replace/Classmap/NameVisitor.php` goes in `tests/Unit/Replace/Classmap/NameVisitorTest.php`
+- Example: a test for `src/Replace/GlobalScope/NameVisitor.php` goes in `tests/Unit/Replace/GlobalScope/NameVisitorTest.php`
 
 ### Integration tests
 
@@ -147,9 +147,9 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | Issue | Test location | What it prevents |
 |---|---|---|
 | #75 | `NamespaceReplacerTest` | `use ... as` alias handling |
-| #81 | `ClassmapReplacerTest` | Class declaration replacement |
+| #81 | `GlobalScopeReplacerTest` | Class declaration replacement |
 | #89 | `Integration/MoverFileOnce` | Duplicate "file already exists" errors |
-| #93 | `ClassmapReplacerTest` | Namespace-aware class replacement |
+| #93 | `GlobalScopeReplacerTest` | Namespace-aware class replacement |
 | #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
 | #209 | `FilesHandlerTest` | Restrictive file permissions (0700/0600) from Flysystem's default private visibility |

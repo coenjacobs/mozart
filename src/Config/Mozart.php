@@ -15,6 +15,8 @@ class Mozart
     public string $depDirectory;
     public string $classmapDir;
     public string $classmapPrefix;
+    public string $constantPrefix = '';
+    public string $functionsPrefix = '';
 
     /** @var string[] */
     public array $packages = [];
@@ -50,6 +52,22 @@ class Mozart
     public function setClassmapPrefix(string $classmapPrefix): void
     {
         $this->classmapPrefix = $classmapPrefix;
+    }
+
+    /**
+     * Set the prefix for global-scope constant renaming.
+     */
+    public function setConstantPrefix(string $constantPrefix): void
+    {
+        $this->constantPrefix = $constantPrefix;
+    }
+
+    /**
+     * Set the prefix for global-scope function renaming.
+     */
+    public function setFunctionsPrefix(string $functionsPrefix): void
+    {
+        $this->functionsPrefix = $functionsPrefix;
     }
 
     /**
@@ -139,6 +157,22 @@ class Mozart
     public function getClassmapPrefix(): string
     {
         return $this->classmapPrefix;
+    }
+
+    /**
+     * Get the prefix for global-scope constant renaming.
+     */
+    public function getConstantPrefix(): string
+    {
+        return $this->constantPrefix;
+    }
+
+    /**
+     * Get the prefix for global-scope function renaming.
+     */
+    public function getFunctionsPrefix(): string
+    {
+        return $this->functionsPrefix;
     }
 
     public function getOverrideAutoload(): OverrideAutoload

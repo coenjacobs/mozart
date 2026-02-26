@@ -12,7 +12,7 @@ Each Composer package can have multiple autoloader types defined in its `compose
 |---|---|---|---|---|
 | PSR-4 | `Config\Psr4` | `dep_directory` | `NamespaceReplacer` | `NamespaceAutoloader` |
 | PSR-0 | `Config\Psr0` | `dep_directory` | `NamespaceReplacer` | `NamespaceAutoloader` |
-| Classmap | `Config\Classmap` | `classmap_directory` | `ClassmapReplacer` | `AbstractAutoloader` |
+| Classmap | `Config\Classmap` | `classmap_directory` | `GlobalScopeReplacer` | `AbstractAutoloader` |
 | Files | `Config\Files` | Both (depends on file) | Either (depends on file) | `AbstractAutoloader` |
 
 ## Processing order
@@ -70,7 +70,7 @@ Handles packages that define classmap autoloading. The config can contain both d
 
 **File discovery:** Directories are scanned recursively for all files. Individual `.php` files are found by name within the package directory. Non-existent directories are skipped.
 
-**Replacement:** Uses `ClassmapReplacer` which only renames class/interface/trait declarations in the global namespace. See [Replace Pipeline](replace-pipeline.md) for the two-pass process.
+**Replacement:** Uses `GlobalScopeReplacer` which only renames class/interface/trait declarations in the global namespace. See [Replace Pipeline](replace-pipeline.md) for the two-pass process.
 
 ## Files
 
@@ -87,7 +87,7 @@ The most complex autoloader type. Handles Composer's `files` autoloading:
 **Complexity:** Unlike the other types, the Files autoloader can't assume anything about the content of each file. Each file might be:
 
 - A namespaced file (has a `namespace` declaration) — routed to `dep_directory`, processed with `NamespaceReplacer`
-- A global-scope file (no namespace) — routed to `classmap_directory`, processed with `ClassmapReplacer`
+- A global-scope file (no namespace) — routed to `classmap_directory`, processed with `GlobalScopeReplacer`
 
 **Namespace detection:** `Files::getDetectedNamespace()` parses each file's AST to find a `Namespace_` node. Results are cached in `$detectedNamespaces`.
 

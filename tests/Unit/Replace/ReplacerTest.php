@@ -9,7 +9,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
-use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
 use PHPUnit\Framework\TestCase;
@@ -80,7 +80,7 @@ class ReplacerTest extends TestCase
         $replacer = new Replacer($this->config, new BuiltInSymbols());
         $result = $replacer->getReplacerByAutoloader($autoloader);
 
-        $this->assertInstanceOf(ClassmapReplacer::class, $result);
+        $this->assertInstanceOf(GlobalScopeReplacer::class, $result);
     }
 
     /** @test */

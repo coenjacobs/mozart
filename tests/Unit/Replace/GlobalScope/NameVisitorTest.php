@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CoenJacobs\Mozart\Tests\Unit\Replace\Classmap;
+namespace CoenJacobs\Mozart\Tests\Unit\Replace\GlobalScope;
 
-use CoenJacobs\Mozart\Replace\Classmap\NameVisitor;
+use CoenJacobs\Mozart\Replace\GlobalScope\NameVisitor;
 use CoenJacobs\Mozart\Tests\Support\AstProcessingTestTrait;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -155,13 +155,13 @@ class NameVisitorTest extends TestCase
     public function it_does_not_modify_class_declaration_name(): void
     {
         // The NameVisitor should not modify the class declaration itself
-        // That's handled by ClassmapReplacer
+        // That's handled by GlobalScopeReplacer
         $code = 'class MyClass {}';
         $classMap = ['MyClass' => 'Prefix_MyClass'];
 
         $result = $this->processCode($code, $classMap);
 
-        // The class declaration name should stay as-is (ClassmapReplacer handles this)
+        // The class declaration name should stay as-is (GlobalScopeReplacer handles this)
         $this->assertStringContainsString('class MyClass', $result);
     }
 
@@ -553,5 +553,149 @@ class NameVisitorTest extends TestCase
 
         $this->assertStringContainsString("class_alias('UnknownClass', 'AnotherClass')", $result);
         $this->assertStringNotContainsString('Prefix_', $result);
+    }
+
+    // --- Constant map tests ---
+
+    /**
+     * Helper to process PHP code with a constant map.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param array<string,string> $constantMap Map of original => prefixed constant names
+     * @return string The processed PHP code (without <?php tag)
+     */
+    protected function processCodeWithConstantMap(string $code, array $constantMap): string
+    {
+        $visitor = new NameVisitor([], $constantMap);
+        return $this->processCodeWithVisitor($code, $visitor);
+    }
+
+    #[Test]
+    public function it_replaces_constant_reference_from_constant_map(): void
+    {
+        $code = '$val = MY_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString('MOZART_MY_CONST', $result);
+    }
+
+    #[Test]
+    public function it_replaces_constant_in_defined_check(): void
+    {
+        $code = "if (defined('MY_CONST')) {}";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("defined('MOZART_MY_CONST')", $result);
+    }
+
+    #[Test]
+    public function it_replaces_constant_in_constant_function(): void
+    {
+        $code = "\$val = constant('MY_CONST');";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("constant('MOZART_MY_CONST')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_constant_not_in_map(): void
+    {
+        $code = '$val = OTHER_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString('OTHER_CONST', $result);
+        $this->assertStringNotContainsString('MOZART_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_constant_reference(): void
+    {
+        $code = '$val = Some\\Namespace\\MY_CONST;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringNotContainsString('MOZART_MY_CONST', $result);
+    }
+
+    // --- Function map tests ---
+
+    /**
+     * Helper to process PHP code with a function map.
+     *
+     * @param string $code The PHP code to process (without <?php tag)
+     * @param array<string,string> $functionMap Map of original => prefixed function names
+     * @return string The processed PHP code (without <?php tag)
+     */
+    protected function processCodeWithFunctionMap(string $code, array $functionMap): string
+    {
+        $visitor = new NameVisitor([], [], $functionMap);
+        return $this->processCodeWithVisitor($code, $visitor);
+    }
+
+    #[Test]
+    public function it_replaces_function_call_from_function_map(): void
+    {
+        $code = 'my_helper();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString('mozart_my_helper()', $result);
+    }
+
+    #[Test]
+    public function it_replaces_function_name_in_function_exists(): void
+    {
+        $code = "if (function_exists('my_helper')) {}";
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString("function_exists('mozart_my_helper')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_function_call_not_in_map(): void
+    {
+        $code = 'other_func();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString('other_func()', $result);
+        $this->assertStringNotContainsString('mozart_', $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_namespaced_function_call(): void
+    {
+        $code = 'Some\\Namespace\\my_helper();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringNotContainsString('mozart_my_helper', $result);
+    }
+
+    #[Test]
+    public function it_does_not_rename_the_existence_check_function_itself(): void
+    {
+        $code = "if (function_exists('my_helper')) {}";
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        // function_exists itself should NOT be renamed
+        $this->assertStringContainsString('function_exists(', $result);
+        $this->assertStringNotContainsString('mozart_function_exists', $result);
     }
 }

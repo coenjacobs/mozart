@@ -10,7 +10,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbolsInterface;
-use CoenJacobs\Mozart\Replace\Classmap\ClassmapReplacer;
+use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 
 class Replacer
@@ -19,6 +19,12 @@ class Replacer
 
     /** @var array<string,string> */
     protected array $replacedClasses = [];
+
+    /** @var array<string,string> */
+    protected array $replacedConstants = [];
+
+    /** @var array<string,string> */
+    protected array $replacedFunctions = [];
 
     /** @var array<string,bool> */
     protected array $visitedPackages = [];
@@ -84,8 +90,16 @@ class Replacer
         $replacer = $this->getReplacerByAutoloader($autoloader);
         $contents = $replacer->replace($contents);
 
-        if ($replacer instanceof ClassmapReplacer) {
+        if ($replacer instanceof GlobalScopeReplacer) {
             $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
+            $this->replacedConstants = array_merge(
+                $this->replacedConstants,
+                $replacer->getReplacedConstants()
+            );
+            $this->replacedFunctions = array_merge(
+                $this->replacedFunctions,
+                $replacer->getReplacedFunctions()
+            );
         }
 
         $this->files->writeFile($targetFile, $contents);
@@ -102,7 +116,12 @@ class Replacer
             return $replacer;
         }
 
-        $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+        $replacer = new GlobalScopeReplacer(
+            $this->config->getClassmapPrefix(),
+            $this->builtInSymbols,
+            $this->config->getConstantPrefix(),
+            $this->config->getFunctionsPrefix()
+        );
         $replacer->setAutoloader($autoloader);
         return $replacer;
     }
@@ -147,7 +166,7 @@ class Replacer
     /**
      * Handle replacement for Files autoloader entries.
      *
-     * Files with namespaces use NamespaceReplacer, files without use ClassmapReplacer.
+     * Files with namespaces use NamespaceReplacer, files without use GlobalScopeReplacer.
      */
     protected function replaceFilesAutoloader(Files $autoloader): void
     {
@@ -175,7 +194,12 @@ class Replacer
 
             // Use appropriate replacer based on whether file has a namespace
             $detectedNamespace = $autoloader->getDetectedNamespace($file);
-            $replacer = new ClassmapReplacer($this->config->getClassmapPrefix(), $this->builtInSymbols);
+            $replacer = new GlobalScopeReplacer(
+                $this->config->getClassmapPrefix(),
+                $this->builtInSymbols,
+                $this->config->getConstantPrefix(),
+                $this->config->getFunctionsPrefix()
+            );
 
             if ($detectedNamespace !== null) {
                 $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
@@ -186,8 +210,16 @@ class Replacer
 
             $contents = $replacer->replace($contents);
 
-            if ($replacer instanceof ClassmapReplacer) {
+            if ($replacer instanceof GlobalScopeReplacer) {
                 $this->replacedClasses = array_merge($this->replacedClasses, $replacer->getReplacedClasses());
+                $this->replacedConstants = array_merge(
+                    $this->replacedConstants,
+                    $replacer->getReplacedConstants()
+                );
+                $this->replacedFunctions = array_merge(
+                    $this->replacedFunctions,
+                    $replacer->getReplacedFunctions()
+                );
             }
 
             $this->files->writeFile($targetFile, $contents);
@@ -220,5 +252,21 @@ class Replacer
     public function getReplacedClasses(): array
     {
         return $this->replacedClasses;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function getReplacedConstants(): array
+    {
+        return $this->replacedConstants;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function getReplacedFunctions(): array
+    {
+        return $this->replacedFunctions;
     }
 }
