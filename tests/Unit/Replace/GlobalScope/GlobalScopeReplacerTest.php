@@ -196,6 +196,34 @@ class GlobalScopeReplacerTest extends TestCase
         $this->assertEquals('Mozart_My_Custom_Class', $replaced['My_Custom_Class']);
     }
 
+    #[Test]
+    public function it_replaces_enum_declarations(): void
+    {
+        $contents = '<?php enum Status { case Active; }';
+        $replacer = new GlobalScopeReplacer('Mozart_');
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('enum Mozart_Status', $result);
+    }
+
+    #[Test]
+    public function it_replaces_backed_enum_declarations(): void
+    {
+        $contents = '<?php enum Color: string { case Red = \'red\'; }';
+        $replacer = new GlobalScopeReplacer('Mozart_');
+        $result = $replacer->replace($contents);
+        $this->assertStringContainsString('enum Mozart_Color', $result);
+    }
+
+    #[Test]
+    public function it_stores_replaced_enum_names(): void
+    {
+        $contents = '<?php enum Status { case Active; }';
+        $replacer = new GlobalScopeReplacer('Mozart_');
+        $replacer->replace($contents);
+        $this->assertArrayHasKey('Status', $replacer->getReplacedClasses());
+        $this->assertEquals('Mozart_Status', $replacer->getReplacedClasses()['Status']);
+    }
+
     // --- Constant prefixing tests ---
 
     #[Test]

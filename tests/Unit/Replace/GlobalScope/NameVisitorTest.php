@@ -410,6 +410,17 @@ class NameVisitorTest extends TestCase
     }
 
     #[Test]
+    public function it_replaces_enum_name_in_case_access(): void
+    {
+        $code = '$val = MyEnum::Active;';
+        $classMap = ['MyEnum' => 'Prefix_MyEnum'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString('Prefix_MyEnum::Active', $result);
+    }
+
+    #[Test]
     public function it_replaces_class_name_in_method_exists(): void
     {
         $code = "if (method_exists('MyClass', 'myMethod')) {}";

@@ -228,6 +228,16 @@ PHP;
     }
 
     #[Test]
+    public function it_renames_enum_implementing_interface(): void
+    {
+        $code = 'enum Status implements HasLabel { case Active; }';
+
+        $result = $this->processCode($code, 'Mozart_');
+
+        $this->assertStringContainsString('enum Mozart_Status implements HasLabel', $result['code']);
+    }
+
+    #[Test]
     public function it_does_not_rename_enum_inside_namespace_block(): void
     {
         $code = 'namespace MyNamespace; enum Status { case Active; }';
