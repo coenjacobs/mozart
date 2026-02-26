@@ -55,6 +55,22 @@ class Mozart
     }
 
     /**
+     * Set the prefix for global-scope constant renaming.
+     */
+    public function setConstantPrefix(string $constantPrefix): void
+    {
+        $this->constantPrefix = $constantPrefix;
+    }
+
+    /**
+     * Set the prefix for global-scope function renaming.
+     */
+    public function setFunctionsPrefix(string $functionsPrefix): void
+    {
+        $this->functionsPrefix = $functionsPrefix;
+    }
+
+    /**
      * @return string[]
      */
     public function getPackages(): array
