@@ -14,7 +14,17 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
     public function __construct(?string $dataFile = null)
     {
         $dataFile = $dataFile ?? __DIR__ . '/data/php-symbols.php';
-        $this->symbols = require $dataFile;
+        $symbols = require $dataFile;
+
+        // Lowercase keys for case-insensitive lookups (PHP symbols are case-insensitive
+        // except constants). Constants stay as-is.
+        $symbols['classes'] = array_change_key_case($symbols['classes'], CASE_LOWER);
+        $symbols['interfaces'] = array_change_key_case($symbols['interfaces'], CASE_LOWER);
+        $symbols['traits'] = array_change_key_case($symbols['traits'], CASE_LOWER);
+        $symbols['enums'] = array_change_key_case($symbols['enums'], CASE_LOWER);
+        $symbols['functions'] = array_change_key_case($symbols['functions'], CASE_LOWER);
+
+        $this->symbols = $symbols;
     }
 
     /**
@@ -22,7 +32,7 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
      */
     public function isBuiltInClass(string $name): bool
     {
-        return isset($this->symbols['classes'][$name]);
+        return isset($this->symbols['classes'][strtolower($name)]);
     }
 
     /**
@@ -30,7 +40,7 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
      */
     public function isBuiltInInterface(string $name): bool
     {
-        return isset($this->symbols['interfaces'][$name]);
+        return isset($this->symbols['interfaces'][strtolower($name)]);
     }
 
     /**
@@ -38,7 +48,7 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
      */
     public function isBuiltInTrait(string $name): bool
     {
-        return isset($this->symbols['traits'][$name]);
+        return isset($this->symbols['traits'][strtolower($name)]);
     }
 
     /**
@@ -46,7 +56,7 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
      */
     public function isBuiltInEnum(string $name): bool
     {
-        return isset($this->symbols['enums'][$name]);
+        return isset($this->symbols['enums'][strtolower($name)]);
     }
 
     /**
@@ -65,7 +75,7 @@ class BuiltInSymbols implements BuiltInSymbolsInterface
      */
     public function isBuiltInFunction(string $name): bool
     {
-        return isset($this->symbols['functions'][$name]);
+        return isset($this->symbols['functions'][strtolower($name)]);
     }
 
     /**

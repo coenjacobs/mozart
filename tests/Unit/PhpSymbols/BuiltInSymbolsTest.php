@@ -86,6 +86,30 @@ class BuiltInSymbolsTest extends TestCase
     }
 
     #[Test]
+    public function it_recognizes_built_in_class_with_different_casing(): void
+    {
+        $this->assertTrue($this->symbols->isBuiltInClass('stdclass'));
+        $this->assertTrue($this->symbols->isBuiltInClass('STDCLASS'));
+        $this->assertTrue($this->symbols->isBuiltInClass('exception'));
+    }
+
+    #[Test]
+    public function it_recognizes_built_in_function_with_different_casing(): void
+    {
+        $this->assertTrue($this->symbols->isBuiltInFunction('STRLEN'));
+        $this->assertTrue($this->symbols->isBuiltInFunction('Array_Map'));
+        $this->assertTrue($this->symbols->isBuiltInFunction('CLASS_EXISTS'));
+    }
+
+    #[Test]
+    public function it_does_not_recognize_constant_with_different_casing(): void
+    {
+        // Constants are case-sensitive
+        $this->assertFalse($this->symbols->isBuiltInConstant('php_eol'));
+        $this->assertFalse($this->symbols->isBuiltInConstant('php_int_max'));
+    }
+
+    #[Test]
     public function it_accepts_custom_data_file_path(): void
     {
         $customFile = __DIR__ . '/fixtures/custom-symbols.php';

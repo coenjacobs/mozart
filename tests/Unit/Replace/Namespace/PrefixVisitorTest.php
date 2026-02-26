@@ -704,4 +704,37 @@ class_alias(\'Invoker\\Invoker\', \'Invoker\\LegacyInvoker\');';
             $result
         );
     }
+
+    // --- Case-insensitive namespace matching tests ---
+
+    #[Test]
+    public function it_prefixes_namespace_with_different_casing(): void
+    {
+        $code = '<?php namespace invoker;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('namespace MyPlugin\\Dependencies\\invoker;', $result);
+    }
+
+    #[Test]
+    public function it_prefixes_use_statement_with_different_casing(): void
+    {
+        $code = '<?php use INVOKER\\Invoker;';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use MyPlugin\\Dependencies\\INVOKER\\Invoker;', $result);
+    }
+
+    #[Test]
+    public function it_recognizes_class_exists_with_mixed_case_function_name(): void
+    {
+        $code = '<?php
+if (Class_Exists(\'Invoker\\Invoker\')) {}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "Class_Exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            $result
+        );
+    }
 }

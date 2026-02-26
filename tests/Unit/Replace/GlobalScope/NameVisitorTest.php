@@ -709,4 +709,51 @@ class NameVisitorTest extends TestCase
         $this->assertStringContainsString('function_exists(', $result);
         $this->assertStringNotContainsString('mozart_function_exists', $result);
     }
+
+    // --- Case-insensitive lookup tests ---
+
+    #[Test]
+    public function it_replaces_class_reference_with_different_casing(): void
+    {
+        $code = 'function test(myclass $var) {}';
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString('Prefix_MyClass $var', $result);
+    }
+
+    #[Test]
+    public function it_replaces_function_call_with_different_casing(): void
+    {
+        $code = 'MY_HELPER();';
+        $functionMap = ['my_helper' => 'mozart_my_helper'];
+
+        $result = $this->processCodeWithFunctionMap($code, $functionMap);
+
+        $this->assertStringContainsString('mozart_my_helper()', $result);
+    }
+
+    #[Test]
+    public function it_replaces_class_exists_with_mixed_case_function_name(): void
+    {
+        $code = "if (Class_Exists('MyClass')) {}";
+        $classMap = ['MyClass' => 'Prefix_MyClass'];
+
+        $result = $this->processCode($code, $classMap);
+
+        $this->assertStringContainsString("Class_Exists('Prefix_MyClass')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_constant_with_different_casing(): void
+    {
+        $code = '$val = my_const;';
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        // Constants are case-sensitive — different casing should NOT match
+        $this->assertStringNotContainsString('MOZART_MY_CONST', $result);
+    }
 }

@@ -270,24 +270,24 @@ class PrefixVisitor extends NodeVisitorAbstract
     {
         $namespace = trim($namespace, '\\');
 
-        // Check if it already has the prefix
-        if (str_starts_with($namespace, $this->prefix . '\\')) {
+        // Check if it already has the prefix (case-insensitive)
+        if (strncasecmp($namespace, $this->prefix . '\\', strlen($this->prefix) + 1) === 0) {
             return false;
         }
 
-        // Check if it's exactly the prefix
-        if ($namespace === $this->prefix) {
+        // Check if it's exactly the prefix (case-insensitive)
+        if (strcasecmp($namespace, $this->prefix) === 0) {
             return false;
         }
 
         foreach ($this->targetNamespaces as $target) {
-            // Exact match
-            if ($namespace === $target) {
+            // Exact match (case-insensitive)
+            if (strcasecmp($namespace, $target) === 0) {
                 return true;
             }
 
-            // Starts with target namespace (sub-namespace)
-            if (str_starts_with($namespace, $target . '\\')) {
+            // Starts with target namespace (sub-namespace, case-insensitive)
+            if (strncasecmp($namespace, $target . '\\', strlen($target) + 1) === 0) {
                 return true;
             }
         }
