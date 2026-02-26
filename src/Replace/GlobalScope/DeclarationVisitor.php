@@ -215,7 +215,7 @@ class DeclarationVisitor extends NodeVisitorAbstract
      */
     protected function processDefineCall(FuncCall $node): ?FuncCall
     {
-        if (!$node->name instanceof Name || $node->name->toString() !== 'define') {
+        if (!$node->name instanceof Name || strtolower($node->name->toString()) !== 'define') {
             return null;
         }
 

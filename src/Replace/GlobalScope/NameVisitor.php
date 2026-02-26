@@ -35,6 +35,13 @@ class NameVisitor extends NodeVisitorAbstract
     protected array $classMap;
 
     /**
+     * Lowercase-keyed version of classMap for case-insensitive lookups.
+     *
+     * @var array<string,string>
+     */
+    protected array $classMapLower;
+
+    /**
      * Map of original constant names to their prefixed versions.
      *
      * @var array<string,string>
@@ -49,6 +56,13 @@ class NameVisitor extends NodeVisitorAbstract
     protected array $functionMap;
 
     /**
+     * Lowercase-keyed version of functionMap for case-insensitive lookups.
+     *
+     * @var array<string,string>
+     */
+    protected array $functionMapLower;
+
+    /**
      * @param array<string,string> $classMap Map of original => prefixed class names
      * @param array<string,string> $constantMap Map of original => prefixed constant names
      * @param array<string,string> $functionMap Map of original => prefixed function names
@@ -56,8 +70,10 @@ class NameVisitor extends NodeVisitorAbstract
     public function __construct(array $classMap, array $constantMap = [], array $functionMap = [])
     {
         $this->classMap = $classMap;
+        $this->classMapLower = array_change_key_case($classMap, CASE_LOWER);
         $this->constantMap = $constantMap;
         $this->functionMap = $functionMap;
+        $this->functionMapLower = array_change_key_case($functionMap, CASE_LOWER);
     }
 
     /**
@@ -93,13 +109,14 @@ class NameVisitor extends NodeVisitorAbstract
             return null;
         }
 
-        // Check if this name is in our classmap
-        if (!isset($this->classMap[$nameStr])) {
+        // Check if this name is in our classmap (case-insensitive)
+        $nameLower = strtolower($nameStr);
+        if (!isset($this->classMapLower[$nameLower])) {
             return null;
         }
 
         // Replace with the prefixed version
-        $prefixedName = $this->classMap[$nameStr];
+        $prefixedName = $this->classMapLower[$nameLower];
 
         if ($node->isFullyQualified()) {
             return new Name\FullyQualified($prefixedName);
@@ -159,8 +176,9 @@ class NameVisitor extends NodeVisitorAbstract
         if ($node->name instanceof Name) {
             $nameStr = $node->name->toString();
 
-            if (!str_contains($nameStr, '\\') && isset($this->functionMap[$nameStr])) {
-                $prefixedName = $this->functionMap[$nameStr];
+            $nameLower = strtolower($nameStr);
+            if (!str_contains($nameStr, '\\') && isset($this->functionMapLower[$nameLower])) {
+                $prefixedName = $this->functionMapLower[$nameLower];
 
                 $node->name = $node->name->isFullyQualified()
                     ? new Name\FullyQualified($prefixedName)
@@ -186,15 +204,16 @@ class NameVisitor extends NodeVisitorAbstract
 
         foreach ($allParsed as $parsed) {
             $value = $parsed['value'];
+            $valueLower = strtolower($value);
 
-            if (isset($this->classMap[$value])) {
-                $parsed['argNode']->value = $this->classMap[$value] . $parsed['suffix'];
+            if (isset($this->classMapLower[$valueLower])) {
+                $parsed['argNode']->value = $this->classMapLower[$valueLower] . $parsed['suffix'];
                 $modified = true;
             } elseif (isset($this->constantMap[$value])) {
                 $parsed['argNode']->value = $this->constantMap[$value] . $parsed['suffix'];
                 $modified = true;
-            } elseif (isset($this->functionMap[$value])) {
-                $parsed['argNode']->value = $this->functionMap[$value] . $parsed['suffix'];
+            } elseif (isset($this->functionMapLower[$valueLower])) {
+                $parsed['argNode']->value = $this->functionMapLower[$valueLower] . $parsed['suffix'];
                 $modified = true;
             }
         }

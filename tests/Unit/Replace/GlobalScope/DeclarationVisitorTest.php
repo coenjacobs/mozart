@@ -507,4 +507,14 @@ PHP;
         $this->assertStringNotContainsString('mozart_', $result['code']);
         $this->assertEmpty($result['visitor']->getReplacedFunctions());
     }
+
+    #[Test]
+    public function it_recognizes_uppercase_define_call(): void
+    {
+        $code = "DEFINE('MY_CONST', 'value');";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString("DEFINE('MOZART_MY_CONST'", $result['code']);
+    }
 }

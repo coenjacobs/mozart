@@ -99,7 +99,7 @@ trait ExistenceCheckTrait
             'class_alias'      => [0, 1],
         ];
 
-        return $map[$functionName] ?? null;
+        return $map[strtolower($functionName)] ?? null;
     }
 
     /**
@@ -107,7 +107,7 @@ trait ExistenceCheckTrait
      */
     private function supportsDoubleColon(string $functionName): bool
     {
-        return in_array($functionName, ['constant', 'defined', 'is_callable'], true);
+        return in_array(strtolower($functionName), ['constant', 'defined', 'is_callable'], true);
     }
 
     /**
