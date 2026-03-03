@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart;
 
+use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use stdClass;
 
@@ -35,5 +36,21 @@ class PackageFactory
 
         $this->cache[$path] = $package;
         return $package;
+    }
+
+    /**
+     * Return the Mozart config from the package's extra.mozart block,
+     * or a fresh empty config when the block is absent. Running the
+     * command is the opt-in — no extra.mozart block is required.
+     */
+    public function resolveConfig(Package $package): Mozart
+    {
+        $extra = $package->getExtra();
+
+        if (!empty($extra) && !empty($extra->getMozart())) {
+            return $extra->getMozart();
+        }
+
+        return new Mozart();
     }
 }

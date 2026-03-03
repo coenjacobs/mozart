@@ -29,7 +29,7 @@ class Config
         $factory = new PackageFactory();
         $package = $factory->createPackage($composerFile);
 
-        $config = $this->resolveConfig($package);
+        $config = $factory->resolveConfig($package);
 
         $snapshot = $this->snapshot($config);
         $config->applyDefaults($package);
@@ -138,20 +138,5 @@ class Config
         }
 
         return '(inferred)';
-    }
-
-    /**
-     * Return the Mozart config from the package's extra.mozart block,
-     * or a fresh empty config when the block is absent.
-     */
-    private function resolveConfig(Package $package): Mozart
-    {
-        $extra = $package->getExtra();
-
-        if (!empty($extra) && !empty($extra->getMozart())) {
-            return $extra->getMozart();
-        }
-
-        return new Mozart();
     }
 }
