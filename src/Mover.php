@@ -22,6 +22,9 @@ class Mover
     /** @var array<string> */
     protected array $movedFiles = [];
 
+    /** @var array<string> Target paths of files moved from Files autoloaders. */
+    protected array $fileTargets = [];
+
     public function __construct(Mozart $config)
     {
         $this->config = $config;
@@ -159,6 +162,10 @@ class Mover
         $targetFile = $autoloader->getTargetFilePath($file);
         $this->copyFile($file, $targetFile);
 
+        if ($autoloader instanceof Files) {
+            $this->fileTargets[] = $targetFile;
+        }
+
         $this->movedFiles[] = $file->getRealPath();
     }
 
@@ -168,6 +175,19 @@ class Mover
             str_replace($this->config->getWorkingDir(), '', $file->getPathname()),
             $targetFile
         );
+    }
+
+    /**
+     * Get target paths of files moved from Files autoloaders.
+     *
+     * These files need eager loading (require_once) because they may define
+     * functions or execute initialization code that can't be autoloaded.
+     *
+     * @return array<string>
+     */
+    public function getFilesAutoloaderTargets(): array
+    {
+        return $this->fileTargets;
     }
 
     /**
