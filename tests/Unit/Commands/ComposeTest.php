@@ -6,6 +6,7 @@ namespace CoenJacobs\Mozart\Tests\Unit\Commands;
 
 use CoenJacobs\Mozart\Commands\Compose;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
+use CoenJacobs\Mozart\Exceptions\MozartException;
 use PHPUnit\Framework\TestCase;
 
 class ComposeTest extends TestCase
@@ -71,7 +72,7 @@ class ComposeTest extends TestCase
         // Zero-config resolves settings from the package name. The command
         // proceeds but the autoloader generator fails because there is no
         // vendor/composer/ClassLoader.php in the temp directory.
-        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
+        $this->expectException(MozartException::class);
 
         $compose->execute();
     }
@@ -89,7 +90,7 @@ class ComposeTest extends TestCase
 
         // Same as above: zero-config resolves, but autoloader generation
         // fails without vendor/composer/ClassLoader.php.
-        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
+        $this->expectException(MozartException::class);
 
         $compose->execute();
     }
@@ -110,7 +111,7 @@ class ComposeTest extends TestCase
 
         // Same as above: zero-config resolves, but autoloader generation
         // fails without vendor/composer/ClassLoader.php.
-        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
+        $this->expectException(MozartException::class);
 
         $compose->execute();
     }
