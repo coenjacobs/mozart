@@ -208,6 +208,24 @@ class ComposeTest extends TestCase
         if (file_exists($composer_json)) {
             unlink($composer_json);
         }
+
+        // Clean up any output directories created by a partial compose run
+        // (e.g. the autoloader generator may create vendor-prefixed/ before
+        // an error aborts execution).
+        $vendorPrefixed = __DIR__ . '/vendor-prefixed';
+        if (is_dir($vendorPrefixed)) {
+            $this->removeDirectory($vendorPrefixed);
+        }
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public static function tearDownAfterClass(): void
