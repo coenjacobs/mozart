@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit\Autoload;
 
+use CoenJacobs\Mozart\Autoload\AutoloaderFileWriter;
 use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
@@ -295,16 +296,17 @@ class AutoloaderGeneratorTest extends TestCase
     #[Test]
     public function it_computes_relative_paths_correctly(): void
     {
-        $generator = new AutoloaderGenerator($this->config);
+        $filesHandler = new FilesHandler($this->config);
+        $writer = new AutoloaderFileWriter($filesHandler, $this->config->getDepDirectory(), 'testhash');
 
         $this->assertEquals(
             '../file.php',
-            $generator->computeRelativePath('src/dependencies/composer', 'src/dependencies/file.php')
+            $writer->computeRelativePath('src/dependencies/composer', 'src/dependencies/file.php')
         );
 
         $this->assertEquals(
             '../../../classes/pkg/File.php',
-            $generator->computeRelativePath('src/dependencies/composer', 'classes/pkg/File.php')
+            $writer->computeRelativePath('src/dependencies/composer', 'classes/pkg/File.php')
         );
     }
 
