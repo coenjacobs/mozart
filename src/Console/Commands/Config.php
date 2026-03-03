@@ -66,8 +66,10 @@ class Config extends Command
         $this->printSetting($output, 'classmap_prefix', $config->classmapPrefix, $sources['classmap_prefix']);
         $this->printOptionalSetting($output, 'constant_prefix', $config->constantPrefix);
         $this->printOptionalSetting($output, 'functions_prefix', $config->functionsPrefix);
-        $this->printBoolSetting($output, 'generate_autoloader', $config->generateAutoloader);
-        $this->printBoolSetting($output, 'delete_vendor_dirs', $config->deleteVendorDir);
+        $autoloaderSource = $sources['generate_autoloader'];
+        $this->printBoolSetting($output, 'generate_autoloader', $config->generateAutoloader, $autoloaderSource);
+        $deleteSource = $sources['delete_vendor_directories'];
+        $this->printBoolSetting($output, 'delete_vendor_dirs', $config->deleteVendorDir, $deleteSource);
         $this->printListSetting($output, 'packages', $config->getPackages(), '(all require dependencies)');
         $this->printListSetting($output, 'excluded_packages', $config->getExcludedPackages(), '(none)');
     }
@@ -109,15 +111,16 @@ class Config extends Command
     }
 
     /**
-     * Print a boolean setting with its default annotation.
+     * Print a boolean setting with its source annotation.
      */
     private function printBoolSetting(
         OutputInterface $output,
         string $name,
-        bool $value
+        bool $value,
+        string $source
     ): void {
         $display = $value ? 'true' : 'false';
-        $this->printSetting($output, $name, $display, '(default)');
+        $this->printSetting($output, $name, $display, $source);
     }
 
     /**

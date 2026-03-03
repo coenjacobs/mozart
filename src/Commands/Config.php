@@ -42,22 +42,24 @@ class Config
      * Capture raw values before defaults are applied, so we can determine
      * which values were explicitly set by the user.
      *
-     * @return array<string, string>
+     * @return array<string, string|bool>
      */
     private function snapshot(Mozart $config): array
     {
         return [
-            'dep_namespace'      => $config->depNamespace,
-            'dep_directory'      => $config->depDirectory,
-            'classmap_directory' => $config->classmapDir,
-            'classmap_prefix'    => $config->classmapPrefix,
+            'dep_namespace'            => $config->depNamespace,
+            'dep_directory'            => $config->depDirectory,
+            'classmap_directory'       => $config->classmapDir,
+            'classmap_prefix'          => $config->classmapPrefix,
+            'generate_autoloader'      => $config->generateAutoloader,
+            'delete_vendor_directories' => $config->deleteVendorDir,
         ];
     }
 
     /**
      * Build source annotations describing where each resolved value came from.
      *
-     * @param array<string, string> $snapshot
+     * @param array<string, string|bool> $snapshot
      * @return array<string, string>
      */
     private function buildSources(array $snapshot, Mozart $config, Package $package): array
@@ -76,13 +78,21 @@ class Config
 
         $sources['classmap_prefix'] = $this->classmapPrefixSource($snapshot, $config);
 
+        $sources['generate_autoloader'] = $snapshot['generate_autoloader'] !== true
+            ? '(explicit)'
+            : '(default)';
+
+        $sources['delete_vendor_directories'] = $snapshot['delete_vendor_directories'] !== true
+            ? '(explicit)'
+            : '(default)';
+
         return $sources;
     }
 
     /**
      * Determine source annotation for the classmap_directory setting.
      *
-     * @param array<string, string> $snapshot
+     * @param array<string, string|bool> $snapshot
      */
     private function classmapDirSource(array $snapshot, Mozart $config): string
     {
@@ -100,7 +110,7 @@ class Config
     /**
      * Determine source annotation for the classmap_prefix setting.
      *
-     * @param array<string, string> $snapshot
+     * @param array<string, string|bool> $snapshot
      */
     private function classmapPrefixSource(array $snapshot, Mozart $config): string
     {
