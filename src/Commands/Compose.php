@@ -33,14 +33,19 @@ class Compose
         $factory = new PackageFactory();
         $package = $factory->createPackage($composerFile);
 
-        if (! $package->isValidMozartConfig() || empty($package->getExtra())) {
+        if (empty($package->getExtra()) || empty($package->getExtra()->getMozart())) {
             throw new ConfigurationException('Mozart config not readable in composer.json at extra->mozart');
         }
 
         $config = $package->getExtra()->getMozart();
+        $config->applyDefaults($package);
 
-        if (empty($config)) {
-            throw new ConfigurationException('Mozart config not readable in composer.json at extra->mozart');
+        if (! $config->isValidMozartConfig()) {
+            $missing = $config->getMissingConfigFields();
+            throw new ConfigurationException(
+                'Mozart configuration is incomplete. Could not determine: '
+                . implode(', ', $missing) . '. Set these explicitly in extra.mozart.'
+            );
         }
 
         $config->setWorkingDir($this->workingDir);
