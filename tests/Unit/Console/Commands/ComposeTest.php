@@ -84,9 +84,10 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra is absent, instead of "Undefined property:
-     * stdClass::$extra" a better message should be written to the
-     * OutputInterface.
+     * When composer.json->extra is absent, zero-config resolves settings
+     * from the package name. The command proceeds but may fail during
+     * execution (e.g. no vendor directory). The error is written to
+     * OutputInterface, not thrown.
      *
      * @test
      */
@@ -99,7 +100,7 @@ class ComposeTest extends TestCase
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
-        $outputInterfaceMock->expects($this->exactly(1))
+        $outputInterfaceMock->expects($this->atLeastOnce())
                             ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
@@ -143,9 +144,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra->mozart is absent, instead of "Undefined
-     * property: stdClass::$mozart" a better message should be written to the
-     * OutputInterface.
+     * When composer.json->extra->mozart is absent (typo in key name),
+     * zero-config resolves settings from the package name. The command
+     * proceeds but may fail during execution.
      *
      * @test
      */
@@ -158,7 +159,7 @@ class ComposeTest extends TestCase
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
-        $outputInterfaceMock->expects($this->exactly(1))
+        $outputInterfaceMock->expects($this->atLeastOnce())
                             ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
@@ -172,9 +173,9 @@ class ComposeTest extends TestCase
     }
 
     /**
-     * When composer.json->extra->mozart is malformed, instead of "Undefined
-     * property: stdClass::$mozart" a better message should be written to the
-     * OutputInterface.
+     * When composer.json->extra->mozart is an empty array, JsonMapper maps
+     * it to a Mozart object with default values. Zero-config then resolves
+     * settings from the package name.
      *
      * @test
      */
@@ -187,7 +188,7 @@ class ComposeTest extends TestCase
         $inputInterfaceMock = $this->createMock(InputInterface::class);
         $outputInterfaceMock = $this->createMock(OutputInterface::class);
 
-        $outputInterfaceMock->expects($this->exactly(1))
+        $outputInterfaceMock->expects($this->atLeastOnce())
                             ->method('writeln');
 
         new class( $inputInterfaceMock, $outputInterfaceMock ) extends Compose {
@@ -208,6 +209,24 @@ class ComposeTest extends TestCase
         if (file_exists($composer_json)) {
             unlink($composer_json);
         }
+
+        // Clean up any output directories created by a partial compose run
+        // (e.g. the autoloader generator may create vendor-prefixed/ before
+        // an error aborts execution).
+        $vendorPrefixed = __DIR__ . '/vendor-prefixed';
+        if (is_dir($vendorPrefixed)) {
+            $this->removeDirectory($vendorPrefixed);
+        }
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public static function tearDownAfterClass(): void

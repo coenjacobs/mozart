@@ -84,15 +84,18 @@ class MoverTest extends TestCase
     {
         $mover = new Mover($this->config);
 
-        if (!file_exists($this->testsWorkingDir . $this->config->getDepDirectory())) {
-            mkdir($this->testsWorkingDir . $this->config->getDepDirectory());
+        $depPath = $this->config->getWorkingDir() . $this->config->getDepDirectory();
+        $classmapPath = $this->config->getWorkingDir() . $this->config->getClassmapDirectory();
+
+        if (!file_exists($depPath)) {
+            mkdir($depPath);
         }
-        if (!file_exists($this->testsWorkingDir . $this->config->getClassmapDirectory())) {
-            mkdir($this->testsWorkingDir . $this->config->getClassmapDirectory());
+        if (!file_exists($classmapPath)) {
+            mkdir($classmapPath);
         }
 
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getDepDirectory());
-        $this->assertDirectoryExists($this->testsWorkingDir . $this->config->getClassmapDirectory());
+        $this->assertDirectoryExists($depPath);
+        $this->assertDirectoryExists($classmapPath);
 
         $packages = array();
 
