@@ -8,9 +8,10 @@ Mozart can run as a PHAR, a global Composer package, or a project dependency. Al
 
 ```
 bin/mozart  →  Console\Application  →  Console\Commands\Compose  →  Commands\Compose
+                                    →  Console\Commands\Config   →  Commands\Config
 ```
 
-`bin/mozart` detects whether it's running inside a PHAR or from source, and resolves the Composer autoloader accordingly (trying CWD vendor, global install paths, then local paths). `Console\Commands\Compose` registers a shutdown handler that catches memory exhaustion errors and prints a helpful message pointing to `docs/memory.md`, then delegates to `Commands\Compose::execute()`.
+`bin/mozart` detects whether it's running inside a PHAR or from source, and resolves the Composer autoloader accordingly (trying CWD vendor, global install paths, then local paths). `Console\Commands\Compose` registers a shutdown handler that catches memory exhaustion errors and prints a helpful message pointing to `docs/memory.md`, then delegates to `Commands\Compose::execute()`. `Console\Commands\Config` delegates to `Commands\Config::execute()`, which loads the configuration, applies defaults, and prints each resolved value with a source annotation.
 
 ## Execution flow
 
@@ -53,10 +54,13 @@ Mozart config lives in the consuming project's `composer.json` under `extra.moza
 
 | Key | Required | Description |
 |---|---|---|
-| `dep_namespace` | Yes | Prefix added to namespaces (e.g., `MyPlugin\Dependencies`) |
-| `dep_directory` | Yes | Where namespaced files are copied to (e.g., `lib/`) |
-| `classmap_prefix` | Yes | Prefix added to global class names (e.g., `MP_`) |
-| `classmap_directory` | Yes | Where classmap files are copied to (e.g., `classes/`) |
+| `dep_namespace` | No (has default) | Prefix added to namespaces. Inferred from PSR-4 autoload or package name + `\Dependencies`. |
+| `dep_directory` | No (has default) | Where namespaced files are copied to. Default: `vendor-prefixed/`. |
+| `classmap_prefix` | No (has default) | Prefix added to global class names. Derived from `dep_namespace` with `\` → `_`. |
+| `classmap_directory` | No (has default) | Where classmap files are copied to. Default: same as `dep_directory`. |
+| `constant_prefix` | No | Prefix for global-scope constants. Default: empty (disabled). |
+| `functions_prefix` | No | Prefix for global-scope functions. Default: empty (disabled). |
+| `generate_autoloader` | No | Generate Composer-compatible autoloader. Default: `true`. |
 | `packages` | No | Limit which packages are processed. If empty, all `require` dependencies are processed. |
 | `excluded_packages` | No | Packages to skip entirely during replacement |
 | `override_autoload` | No | Override the autoloader configuration for specific packages |

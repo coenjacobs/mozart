@@ -44,7 +44,18 @@ docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart com
 See [docs/installation.md](docs/installation.md) for all installation methods (Docker, PHAR, Composer).
 
 ## Configuration
-Mozart requires little configuration. All you need to do is tell it where the bundled dependencies are going to be stored and what namespace they should be put inside. This configuration needs to be done in the `extra` property of your `composer.json` file:
+
+Mozart configuration lives in the `extra` property of your `composer.json` file. All core settings have smart defaults, so a minimal configuration is just an empty block:
+
+```json
+"extra": {
+    "mozart": {}
+}
+```
+
+When your project has a PSR-4 autoload entry, Mozart infers everything it needs: the dependency namespace, target directories, and classmap prefix. You can verify the resolved configuration with `mozart config`.
+
+For full control, you can set every option explicitly:
 
 ```json
 "extra": {
@@ -53,6 +64,9 @@ Mozart requires little configuration. All you need to do is tell it where the bu
         "dep_directory": "/src/Dependencies/",
         "classmap_directory": "/classes/dependencies/",
         "classmap_prefix": "CJTP_",
+        "constant_prefix": "CJTP_",
+        "functions_prefix": "cjtp_",
+        "generate_autoloader": true,
         "packages": [
             "pimple/pimple"
         ],
@@ -71,21 +85,24 @@ Mozart requires little configuration. All you need to do is tell it where the bu
 },
 ```
 
-The following configuration values are required:
+The core settings and their defaults:
 
-- `dep_namespace` defines the root namespace that each package will be put in. Example: Should the package we're loading be using the `Pimple` namespace, then the package will be put inside the `CoenJacobs\\TestProject\\Dependencies\\Pimple` namespace, when using the configuration example above.
-- `dep_directory` defines the directory the files of the package will be stored in. Note that the directory needs to correspond to the namespace being used in your autoloader and the namespace defined for the bundled packages. Best results are achieved when your projects are using the [PSR-4 autoloader specification](http://www.php-fig.org/psr/psr-4/).
-- `classmap_directory` defines the directory files that are being autoloaded through a classmap, will be stored in. Note that this directory needs to be autoloaded by a classmap in your projects autoloader.
-- `classmap_prefix` defines the prefix that will be applied to all classes inside the classmap of the package you bundle. Say a class named `Pimple` and the defined prefix of `CJTP_` will result in the class name `CJTP_Pimple`.
+- `dep_namespace` — root namespace for bundled packages. _Default: inferred from your PSR-4 autoload namespace + `\Dependencies`, or from the package name._
+- `dep_directory` — target directory for namespaced package files. _Default: `vendor-prefixed/`._
+- `classmap_directory` — target directory for classmap package files. _Default: same as `dep_directory`._
+- `classmap_prefix` — prefix applied to classmap class names. _Default: derived from `dep_namespace` with `\` replaced by `_`._
+- `constant_prefix` — prefix for global-scope constants. _Default: empty (disabled)._
+- `functions_prefix` — prefix for global-scope functions. _Default: empty (disabled)._
+- `generate_autoloader` — generate a Composer-compatible autoloader for prefixed dependencies. _Default: `true`._
 
-See [docs/configuration.md](docs/configuration.md) for optional configuration, the full dependency tree caveat, and autoloader setup.
+See [docs/configuration.md](docs/configuration.md) for the full configuration reference with defaults and inference logic.
 
 ## Further reading
 
 | Document | Description |
 |---|---|
 | [docs/installation.md](docs/installation.md) | All installation methods: Docker, PHAR, Composer |
-| [docs/configuration.md](docs/configuration.md) | Full configuration reference: required and optional options |
+| [docs/configuration.md](docs/configuration.md) | Full configuration reference with defaults and inference |
 | [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts, configuring your project's autoloader |
 | [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, multi-architecture support |
 | [docs/background.md](docs/background.md) | Why Mozart was created and how it compares to PHP-Scoper |
