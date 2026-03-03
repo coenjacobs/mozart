@@ -9,6 +9,7 @@ use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class ConfigMapperTest extends TestCase
@@ -37,5 +38,34 @@ class ConfigMapperTest extends TestCase
         $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
         $this->assertInstanceOf(OverrideAutoload::class, $package->getExtra()->getMozart()->getOverrideAutoload());
         $this->assertCount(4, $package->autoload->getAutoloaders());
+    }
+
+    #[Test]
+    public function it_maps_generate_autoloader_from_json_config(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+            'generate_autoloader' => true,
+        ]));
+
+        $this->assertTrue($result->getGenerateAutoloader());
+    }
+
+    #[Test]
+    public function it_defaults_generate_autoloader_to_false(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+        ]));
+
+        $this->assertFalse($result->getGenerateAutoloader());
     }
 }
