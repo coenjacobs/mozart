@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart\Console;
 
 use CoenJacobs\Mozart\Console\Commands\Compose;
+use CoenJacobs\Mozart\Console\Commands\Config;
 use Symfony\Component\Console\Application as BaseApplication;
 
 class Application extends BaseApplication
@@ -16,5 +17,8 @@ class Application extends BaseApplication
 
         $composeCommand = new Compose();
         $this->add($composeCommand);
+
+        $configCommand = new Config();
+        $this->add($configCommand);
     }
 }
