@@ -1,10 +1,12 @@
 # Configuration
 
-Mozart configuration lives in the `extra` property of your `composer.json` file. All core settings have smart defaults, so getting started requires very little setup.
+Mozart potentially requires zero configuration. When your project has a PSR-4 autoload entry or a package name in `composer.json`, running `mozart compose` is enough — no `extra.mozart` block needed. Running the command is the opt-in.
 
-## Minimal configuration
+If you want to customize the behavior, add an `extra.mozart` block to your `composer.json`. All core settings have smart defaults, so even an empty block works.
 
-If your project has a PSR-4 autoload entry, an empty Mozart block is enough:
+## Zero configuration
+
+If your project has a PSR-4 autoload entry, Mozart infers everything it needs:
 
 ```json
 {
@@ -13,10 +15,15 @@ If your project has a PSR-4 autoload entry, an empty Mozart block is enough:
         "psr-4": {
             "MyVendor\\MyPlugin\\": "src/"
         }
-    },
-    "extra": {
-        "mozart": {}
     }
+}
+```
+
+Running `mozart compose` on this project works without any `extra.mozart` block. You can also add an empty block if you prefer being explicit about Mozart usage:
+
+```json
+"extra": {
+    "mozart": {}
 }
 ```
 

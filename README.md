@@ -35,7 +35,7 @@ This happens across the full dependency tree — namespace declarations, `use` s
 
 ## Installation
 
-Mozart brings its own dependencies to the table and that potentially introduces its own problems (yes, I realise how meta that is, for a package like this). That's why installing Mozart in isolation, either through the Docker container, the available PHAR file or installing Mozart as a global dependency with Composer is preferred. In all cases, the [configuration](#configuration) still needs to be placed in the `composer.json` file of the project itself.
+Mozart brings its own dependencies to the table and that potentially introduces its own problems (yes, I realise how meta that is, for a package like this). That's why installing Mozart in isolation, either through the Docker container, the available PHAR file or installing Mozart as a global dependency with Composer is preferred.
 
 ```
 docker run --rm -it -v ${PWD}:/project/ coenjacobs/mozart /mozart/bin/mozart compose
@@ -45,7 +45,9 @@ See [docs/installation.md](docs/installation.md) for all installation methods (D
 
 ## Configuration
 
-Mozart configuration lives in the `extra` property of your `composer.json` file. All core settings have smart defaults, so a minimal configuration is just an empty block:
+Mozart potentially requires zero configuration. When your project has a PSR-4 autoload entry or a package name in `composer.json`, Mozart infers everything it needs: the dependency namespace, target directories, and classmap prefix. Just run `mozart compose` and it works.
+
+If you want to customize the behavior, add an `extra.mozart` block to your `composer.json`. Even an empty block is valid — Mozart fills in every setting it can infer:
 
 ```json
 "extra": {
@@ -53,7 +55,7 @@ Mozart configuration lives in the `extra` property of your `composer.json` file.
 }
 ```
 
-When your project has a PSR-4 autoload entry, Mozart infers everything it needs: the dependency namespace, target directories, and classmap prefix. You can verify the resolved configuration with `mozart config`.
+You can verify the resolved configuration with `mozart config`.
 
 For full control, you can set every option explicitly:
 

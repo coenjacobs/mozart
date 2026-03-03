@@ -113,7 +113,7 @@ class ConfigTest extends TestCase
     }
 
     #[Test]
-    public function it_throws_when_mozart_config_missing(): void
+    public function it_resolves_zero_config_from_package_name(): void
     {
         $composerJson = [
             'name' => 'test/project',
@@ -126,9 +126,15 @@ class ConfigTest extends TestCase
         );
 
         $command = new Config($this->testDir);
+        $result = $command->execute();
 
-        $this->expectException(ConfigurationException::class);
-        $command->execute();
+        $config = $result['config'];
+        $this->assertSame('Test\\Project\\Dependencies', $config->depNamespace);
+        $this->assertSame('vendor-prefixed/', $config->depDirectory);
+
+        $sources = $result['sources'];
+        $this->assertStringContainsString('inferred from package name', $sources['dep_namespace']);
+        $this->assertSame('(default)', $sources['dep_directory']);
     }
 
     #[Test]

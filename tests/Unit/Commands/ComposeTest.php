@@ -58,7 +58,7 @@ class ComposeTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_when_mozart_config_missing(): void
+    public function it_runs_with_zero_config_when_extra_mozart_missing(): void
     {
         $composerJson = [
             'name' => 'test/package',
@@ -68,14 +68,16 @@ class ComposeTest extends TestCase
 
         $compose = new Compose($this->testDir);
 
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('Mozart config not readable in composer.json at extra->mozart');
+        // Zero-config resolves settings from the package name. The command
+        // proceeds but the autoloader generator fails because there is no
+        // vendor/composer/ClassLoader.php in the temp directory.
+        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
 
         $compose->execute();
     }
 
     /** @test */
-    public function it_throws_exception_when_extra_missing(): void
+    public function it_runs_with_zero_config_when_extra_absent(): void
     {
         $composerJson = [
             'name' => 'test/package',
@@ -85,13 +87,15 @@ class ComposeTest extends TestCase
 
         $compose = new Compose($this->testDir);
 
-        $this->expectException(ConfigurationException::class);
+        // Same as above: zero-config resolves, but autoloader generation
+        // fails without vendor/composer/ClassLoader.php.
+        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
 
         $compose->execute();
     }
 
     /** @test */
-    public function it_throws_exception_when_mozart_config_empty(): void
+    public function it_runs_with_zero_config_when_mozart_null(): void
     {
         $composerJson = [
             'name' => 'test/package',
@@ -104,8 +108,26 @@ class ComposeTest extends TestCase
 
         $compose = new Compose($this->testDir);
 
+        // Same as above: zero-config resolves, but autoloader generation
+        // fails without vendor/composer/ClassLoader.php.
+        $this->expectException(\CoenJacobs\Mozart\Exceptions\MozartException::class);
+
+        $compose->execute();
+    }
+
+    /** @test */
+    public function it_fails_validation_when_namespace_cannot_be_inferred(): void
+    {
+        // A package without a name or PSR-4 autoload cannot infer dep_namespace
+        $composerJson = [
+            'require' => [],
+        ];
+        file_put_contents($this->testDir . DIRECTORY_SEPARATOR . 'composer.json', json_encode($composerJson));
+
+        $compose = new Compose($this->testDir);
+
         $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('Mozart config not readable in composer.json at extra->mozart');
+        $this->expectExceptionMessage('Could not determine');
 
         $compose->execute();
     }

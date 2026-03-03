@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart\Commands;
 
 use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
+use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -33,11 +34,7 @@ class Compose
         $factory = new PackageFactory();
         $package = $factory->createPackage($composerFile);
 
-        if (empty($package->getExtra()) || empty($package->getExtra()->getMozart())) {
-            throw new ConfigurationException('Mozart config not readable in composer.json at extra->mozart');
-        }
-
-        $config = $package->getExtra()->getMozart();
+        $config = $this->resolveConfig($package);
         $config->applyDefaults($package);
 
         if (! $config->isValidMozartConfig()) {
@@ -90,5 +87,21 @@ class Compose
         if ($config->getDeleteVendorDirectories()) {
             $mover->deletePackageVendorDirectories();
         }
+    }
+
+    /**
+     * Return the Mozart config from the package's extra.mozart block,
+     * or a fresh empty config when the block is absent. Running the
+     * command is the opt-in — no extra.mozart block is required.
+     */
+    private function resolveConfig(\CoenJacobs\Mozart\Config\Package $package): Mozart
+    {
+        $extra = $package->getExtra();
+
+        if (!empty($extra) && !empty($extra->getMozart())) {
+            return $extra->getMozart();
+        }
+
+        return new Mozart();
     }
 }

@@ -5,7 +5,6 @@ namespace CoenJacobs\Mozart\Commands;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
-use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFactory;
 
 class Config
@@ -30,11 +29,7 @@ class Config
         $factory = new PackageFactory();
         $package = $factory->createPackage($composerFile);
 
-        if (empty($package->getExtra()) || empty($package->getExtra()->getMozart())) {
-            throw new ConfigurationException('Mozart config not readable in composer.json at extra->mozart');
-        }
-
-        $config = $package->getExtra()->getMozart();
+        $config = $this->resolveConfig($package);
 
         $snapshot = $this->snapshot($config);
         $config->applyDefaults($package);
@@ -143,5 +138,20 @@ class Config
         }
 
         return '(inferred)';
+    }
+
+    /**
+     * Return the Mozart config from the package's extra.mozart block,
+     * or a fresh empty config when the block is absent.
+     */
+    private function resolveConfig(Package $package): Mozart
+    {
+        $extra = $package->getExtra();
+
+        if (!empty($extra) && !empty($extra->getMozart())) {
+            return $extra->getMozart();
+        }
+
+        return new Mozart();
     }
 }

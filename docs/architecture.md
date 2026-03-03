@@ -18,7 +18,7 @@ bin/mozart  →  Console\Application  →  Console\Commands\Compose  →  Comman
 `Commands\Compose::execute()` drives the entire flow:
 
 ```
-1. Load config     - Read composer.json, extract extra.mozart settings
+1. Load config     - Read composer.json, extract extra.mozart or create empty config, apply defaults
 2. Find packages   - Resolve which packages to process (filtered or all)
 3. Resolve tree    - Flatten dependency tree via PackageFinder (BFS)
 4. Move files      - Copy package files to dep_directory / classmap_directory
