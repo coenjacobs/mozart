@@ -116,6 +116,37 @@ All autoloaders implement:
 - `getSearchNamespace()` — Return the namespace to search for (throws on Classmap/Files)
 - `getOutputDir($basePath, $autoloadPath)` — Combines a base directory with an autoload-specific path (e.g., `dep_directory` + namespace path), converting backslashes to `DIRECTORY_SEPARATOR`
 
+## Generated autoloader
+
+When `generate_autoloader` is enabled, Mozart generates a Composer-compatible autoloader inside `dep_directory/` after all packages have been moved and prefixed. This autoloader handles PSR-4, classmap, and files autoloading for the prefixed dependencies.
+
+**Output structure:**
+
+```
+dep_directory/
+├── autoload.php                  # Entry point: require_once this file
+├── composer/
+│   ├── ClassLoader.php           # Copied from vendor/composer/
+│   ├── autoload_real.php         # Bootstrap with unique init class
+│   ├── autoload_static.php       # Static arrays (OPcache-friendly)
+│   ├── autoload_classmap.php     # FQCN → file path
+│   ├── autoload_psr4.php         # Namespace prefix → directory
+│   ├── autoload_files.php        # Files for eager loading (if any)
+│   └── LICENSE                   # Composer's MIT license
+└── ... (dependency files)
+```
+
+**How it works:**
+
+- **PSR-4:** A single entry maps `dep_namespace\` → `dep_directory/`, covering all namespaced packages.
+- **Classmap:** Scans both `dep_directory/` and `classmap_directory/` using `composer/class-map-generator` to find all class/interface/trait/enum declarations.
+- **Files:** Tracks files from `files` autoloaders during the move phase. These need eager loading (`require_once`) because they may define functions or execute initialization code.
+- **Conflict prevention:** Uses `md5(dep_namespace)` to generate unique class names (`MozartAutoloaderInit{hash}`), preventing conflicts when multiple Mozart-processed plugins coexist.
+
+**Execution order:** Autoloader generation happens after replacement (so classmap scanning finds prefixed names) and before vendor deletion (so `ClassLoader.php` can be copied from `vendor/composer/`).
+
+**Overlap with project autoloader:** Users who already have PSR-4/classmap entries in their project's `composer.json` can keep them. PHP's `spl_autoload_register` supports multiple autoloaders; whichever finds the class first wins. Both point to the same files.
+
 ## Nested vendor directories
 
 `FilesHandler::getFilesFromPath()` uses Symfony Finder with `->exclude('vendor')` to avoid descending into nested vendor directories. Without this, a package that contains its own `vendor/` directory (e.g., from a committed lock file) would have those nested dependencies incorrectly processed.
