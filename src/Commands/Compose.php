@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart\Commands;
 
+use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -75,6 +76,11 @@ class Compose
         $parentReplacer->setReplacedFunctions($replacer->getReplacedFunctions());
         $parentReplacer->replaceParentInTree($packages);
         $parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
+
+        if ($config->getGenerateAutoloader()) {
+            $generator = new AutoloaderGenerator($config);
+            $generator->generate($mover->getFilesAutoloaderTargets());
+        }
 
         if ($config->getDeleteVendorDirectories()) {
             $mover->deletePackageVendorDirectories();

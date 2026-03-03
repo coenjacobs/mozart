@@ -33,6 +33,7 @@ All project documentation lives in `docs/`. Read the relevant file before workin
 - **Classmap replacement is two-pass**: declarations are renamed first, then references are updated using the collected rename map. See [docs/replace-pipeline.md](docs/replace-pipeline.md).
 - **Files autoloader** is the most complex autoloader type — each file is inspected individually to determine if it's namespaced or global-scope. See [docs/autoloaders.md](docs/autoloaders.md).
 - **Agent-agnostic setup uses `.agents/` as source of truth** — tool-specific directories (`.claude/`, `.opencode/`) are symlinks to `.agents/`, so all tools share the same rules, commands, and configuration. See the [Agent setup](#agent-setup) section below.
+- **Autoloader generation** runs after replacement and before vendor deletion — it needs prefixed names in the scanned files and access to `vendor/composer/ClassLoader.php`. See [docs/autoloaders.md](docs/autoloaders.md).
 - **After resolving a non-trivial bug or discovering non-obvious behavior**, run `/learned` to capture the lesson in the right doc file before moving on.
 
 ## Rules

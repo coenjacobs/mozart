@@ -22,7 +22,8 @@ Mozart requires little configuration. All you need to do is tell it where the bu
                 ]
             }
         },
-        "delete_vendor_directories": true
+        "delete_vendor_directories": true,
+        "generate_autoloader": true
     }
 },
 ```
@@ -44,6 +45,7 @@ Mozart requires little configuration. All you need to do is tell it where the bu
 - `packages` is an optional array that defines the packages to be processed by Mozart. The array requires the slugs of packages in the same format as provided in your `composer.json`. Mozart will automatically rewrite dependencies of these packages as well. You don't need to add dependencies of these packages to the list. If this field is absent, all packages listed under composer require will be included.
 - `excluded_packages` is an optional array that defines the packages to be excluded from the processing performed by Mozart. This is useful if some of the packages in the `packages` array define dependent packages whose namespaces you want to keep unchanged. The array requires the slugs of the packages, as in the case of the `packages` array.
 - `override_autoload` a dictionary, keyed with the package names, of autoload settings to replace those in the original packages' `composer.json` `autoload` property.
+- `generate_autoloader` is a boolean flag to generate a Composer-compatible autoloader inside `dep_directory` for all prefixed dependencies. When enabled, Mozart produces an `autoload.php` entry point and a `composer/` directory with PSR-4, classmap, and files autoloader support. Include it with `require_once __DIR__ . '/dep_directory/autoload.php';`. This replaces the need to manually configure autoloading in your project's `composer.json`. _default: false_.
 
 ## After running Mozart
 

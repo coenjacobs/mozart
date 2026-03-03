@@ -25,6 +25,7 @@ class Mozart
     public array $excludedPackages = [];
 
     public OverrideAutoload $overrideAutoload;
+    public bool $generateAutoloader = false;
     public bool $deleteVendorDir = true;
 
     public string $workingDir = '';
@@ -99,6 +100,14 @@ class Mozart
         $this->overrideAutoload = new OverrideAutoload($object);
     }
 
+    /**
+     * Enable or disable autoloader generation for prefixed dependencies.
+     */
+    public function setGenerateAutoloader(bool $generateAutoloader): void
+    {
+        $this->generateAutoloader = $generateAutoloader;
+    }
+
     public function setDeleteVendorDir(bool $deleteVendorDir): void
     {
         $this->deleteVendorDir = $deleteVendorDir;
@@ -136,6 +145,14 @@ class Mozart
     {
         $dir = str_replace('/', DIRECTORY_SEPARATOR, $this->classmapDir);
         return trim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Check whether autoloader generation is enabled.
+     */
+    public function getGenerateAutoloader(): bool
+    {
+        return $this->generateAutoloader;
     }
 
     public function getDeleteVendorDirectories(): bool
