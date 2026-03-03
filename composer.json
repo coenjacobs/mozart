@@ -13,6 +13,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "composer/class-map-generator": "^1.7",
         "league/flysystem": "^3.0",
         "league/flysystem-local": "^3.0",
         "netresearch/jsonmapper": "^4.4",
