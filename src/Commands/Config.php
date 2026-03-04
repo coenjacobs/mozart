@@ -31,9 +31,11 @@ class Config
 
         $config = $factory->resolveConfig($package);
 
+        $rawMozart = $this->extractRawMozart($composerFile);
+
         $snapshot = $this->snapshot($config);
         $config->applyDefaults($package);
-        $sources = $this->buildSources($snapshot, $config, $package);
+        $sources = $this->buildSources($snapshot, $config, $package, $rawMozart);
 
         return ['config' => $config, 'sources' => $sources];
     }
@@ -62,8 +64,12 @@ class Config
      * @param array<string, string|bool> $snapshot
      * @return array<string, string>
      */
-    private function buildSources(array $snapshot, Mozart $config, Package $package): array
-    {
+    private function buildSources(
+        array $snapshot,
+        Mozart $config,
+        Package $package,
+        ?\stdClass $rawMozart
+    ): array {
         $sources = [];
 
         $sources['dep_directory'] = !empty($snapshot['dep_directory'])
@@ -78,11 +84,13 @@ class Config
 
         $sources['classmap_prefix'] = $this->classmapPrefixSource($snapshot, $config);
 
-        $sources['generate_autoloader'] = $snapshot['generate_autoloader'] !== true
+        $sources['generate_autoloader'] = $rawMozart !== null
+            && property_exists($rawMozart, 'generate_autoloader')
             ? '(explicit)'
             : '(default)';
 
-        $sources['delete_vendor_directories'] = $snapshot['delete_vendor_directories'] !== true
+        $sources['delete_vendor_directories'] = $rawMozart !== null
+            && property_exists($rawMozart, 'delete_vendor_directories')
             ? '(explicit)'
             : '(default)';
 
@@ -123,6 +131,27 @@ class Config
         }
 
         return '(not set)';
+    }
+
+    /**
+     * Extract the raw extra.mozart stdClass from the composer.json file,
+     * before JsonMapper processes it. Returns null when the block is absent.
+     */
+    private function extractRawMozart(string $composerFile): ?\stdClass
+    {
+        $contents = file_get_contents($composerFile);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        $decoded = json_decode($contents);
+
+        if (!$decoded instanceof \stdClass) {
+            return null;
+        }
+
+        return $decoded->extra->mozart ?? null;
     }
 
     /**
