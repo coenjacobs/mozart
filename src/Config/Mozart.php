@@ -27,7 +27,7 @@ class Mozart
 
     public OverrideAutoload $overrideAutoload;
     public bool $generateAutoloader = true;
-    public bool $deleteVendorDir = true;
+    public bool $deleteVendorDirs = true;
 
     public string $workingDir = '';
 
@@ -109,9 +109,12 @@ class Mozart
         $this->generateAutoloader = $generateAutoloader;
     }
 
-    public function setDeleteVendorDir(bool $deleteVendorDir): void
+    /**
+     * Enable or disable deletion of vendor directories after processing.
+     */
+    public function setDeleteVendorDirectories(bool $deleteVendorDirs): void
     {
-        $this->deleteVendorDir = $deleteVendorDir;
+        $this->deleteVendorDirs = $deleteVendorDirs;
     }
 
     public function isValidMozartConfig(): bool
@@ -249,7 +252,7 @@ class Mozart
 
     public function getDeleteVendorDirectories(): bool
     {
-        return $this->deleteVendorDir;
+        return $this->deleteVendorDirs;
     }
 
     public function getDependencyNamespace(): string

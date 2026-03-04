@@ -69,7 +69,7 @@ Mozart Configuration (resolved from composer.json)
   constant_prefix:        (not set)
   functions_prefix:       (not set)
   generate_autoloader:    true                        (default)
-  delete_vendor_dirs:     true                        (default)
+  delete_vendor_directories: true                     (default)
   packages:               (all require dependencies)
   excluded_packages:      (none)
 ```

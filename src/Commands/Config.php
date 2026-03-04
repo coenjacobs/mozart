@@ -52,7 +52,7 @@ class Config
             'classmap_directory'       => $config->classmapDir,
             'classmap_prefix'          => $config->classmapPrefix,
             'generate_autoloader'      => $config->generateAutoloader,
-            'delete_vendor_directories' => $config->deleteVendorDir,
+            'delete_vendor_directories' => $config->deleteVendorDirs,
         ];
     }
 
