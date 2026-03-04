@@ -24,4 +24,37 @@ class ConfigMapperTest extends TestCase
         $this->assertInstanceOf(Mozart::class, $package->getExtra()->getMozart());
         $this->assertCount(4, $package->autoload->getAutoloaders());
     }
+
+    /**
+     * @test
+     */
+    public function it_respects_explicit_delete_vendor_directories_false(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+            'delete_vendor_directories' => false,
+        ]));
+
+        $this->assertFalse($result->getDeleteVendorDirectories());
+    }
+
+    /**
+     * @test
+     */
+    public function it_defaults_delete_vendor_directories_to_true(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+        ]));
+
+        $this->assertTrue($result->getDeleteVendorDirectories());
+    }
 }
