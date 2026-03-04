@@ -23,7 +23,7 @@ class Mozart
     public array $excludedPackages = [];
 
     public OverrideAutoload $overrideAutoload;
-    public bool $deleteVendorDir = true;
+    public bool $deleteVendorDirs = true;
 
     public string $workingDir = '';
 
@@ -81,9 +81,9 @@ class Mozart
         $this->overrideAutoload = new OverrideAutoload($object);
     }
 
-    public function setDeleteVendorDir(bool $deleteVendorDir): void
+    public function setDeleteVendorDirectories(bool $deleteVendorDirs): void
     {
-        $this->deleteVendorDir = $deleteVendorDir;
+        $this->deleteVendorDirs = $deleteVendorDirs;
     }
 
     public function isValidMozartConfig(): bool
@@ -122,7 +122,7 @@ class Mozart
 
     public function getDeleteVendorDirectories(): bool
     {
-        return $this->deleteVendorDir;
+        return $this->deleteVendorDirs;
     }
 
     public function getDependencyNamespace(): string
