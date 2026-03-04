@@ -10,6 +10,11 @@ use CoenJacobs\Mozart\PackageFactory;
 class Config
 {
     private string $workingDir;
+    /**
+     * The raw extra.mozart stdClass from composer.json, before JsonMapper
+     * processes it. Used to detect which keys the user explicitly set.
+     */
+    private ?\stdClass $raw = null;
 
     public function __construct(string $workingDir)
     {
@@ -30,6 +35,8 @@ class Config
         $package = $factory->createPackage($composerFile);
 
         $config = $factory->resolveConfig($package);
+
+        $this->raw = $this->extractRawMozart($composerFile);
 
         $snapshot = $this->snapshot($config);
         $config->applyDefaults($package);
@@ -78,11 +85,13 @@ class Config
 
         $sources['classmap_prefix'] = $this->classmapPrefixSource($snapshot, $config);
 
-        $sources['generate_autoloader'] = $snapshot['generate_autoloader'] !== true
+        $sources['generate_autoloader'] = $this->raw !== null
+            && property_exists($this->raw, 'generate_autoloader')
             ? '(explicit)'
             : '(default)';
 
-        $sources['delete_vendor_directories'] = $snapshot['delete_vendor_directories'] !== true
+        $sources['delete_vendor_directories'] = $this->raw !== null
+            && property_exists($this->raw, 'delete_vendor_directories')
             ? '(explicit)'
             : '(default)';
 
@@ -123,6 +132,27 @@ class Config
         }
 
         return '(not set)';
+    }
+
+    /**
+     * Extract the raw extra.mozart stdClass from the composer.json file,
+     * before JsonMapper processes it. Returns null when the block is absent.
+     */
+    private function extractRawMozart(string $composerFile): ?\stdClass
+    {
+        $contents = file_get_contents($composerFile);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        $decoded = json_decode($contents);
+
+        if (!$decoded instanceof \stdClass) {
+            return null;
+        }
+
+        return $decoded->extra->mozart ?? null;
     }
 
     /**

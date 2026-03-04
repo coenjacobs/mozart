@@ -138,6 +138,106 @@ class ConfigTest extends TestCase
     }
 
     #[Test]
+    public function it_marks_explicit_true_booleans_as_explicit(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'extra' => [
+                'mozart' => [
+                    'generate_autoloader' => true,
+                    'delete_vendor_directories' => true,
+                ],
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $sources = $result['sources'];
+
+        $this->assertSame('(explicit)', $sources['generate_autoloader']);
+        $this->assertSame('(explicit)', $sources['delete_vendor_directories']);
+    }
+
+    #[Test]
+    public function it_marks_explicit_false_booleans_as_explicit(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'extra' => [
+                'mozart' => [
+                    'generate_autoloader' => false,
+                    'delete_vendor_directories' => false,
+                ],
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $sources = $result['sources'];
+
+        $this->assertSame('(explicit)', $sources['generate_autoloader']);
+        $this->assertSame('(explicit)', $sources['delete_vendor_directories']);
+    }
+
+    #[Test]
+    public function it_marks_omitted_booleans_as_default(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'extra' => [
+                'mozart' => new \stdClass(),
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $sources = $result['sources'];
+
+        $this->assertSame('(default)', $sources['generate_autoloader']);
+        $this->assertSame('(default)', $sources['delete_vendor_directories']);
+    }
+
+    #[Test]
+    public function it_marks_booleans_as_default_when_no_extra_mozart_block(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'require' => [],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $sources = $result['sources'];
+
+        $this->assertSame('(default)', $sources['generate_autoloader']);
+        $this->assertSame('(default)', $sources['delete_vendor_directories']);
+    }
+
+    #[Test]
     public function it_infers_namespace_source_from_package_name(): void
     {
         $composerJson = [
