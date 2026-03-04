@@ -10,6 +10,11 @@ use CoenJacobs\Mozart\PackageFactory;
 class Config
 {
     private string $workingDir;
+    /**
+     * The raw extra.mozart stdClass from composer.json, before JsonMapper
+     * processes it. Used to detect which keys the user explicitly set.
+     */
+    private ?\stdClass $raw = null;
 
     public function __construct(string $workingDir)
     {
@@ -31,11 +36,11 @@ class Config
 
         $config = $factory->resolveConfig($package);
 
-        $rawMozart = $this->extractRawMozart($composerFile);
+        $this->raw = $this->extractRawMozart($composerFile);
 
         $snapshot = $this->snapshot($config);
         $config->applyDefaults($package);
-        $sources = $this->buildSources($snapshot, $config, $package, $rawMozart);
+        $sources = $this->buildSources($snapshot, $config, $package);
 
         return ['config' => $config, 'sources' => $sources];
     }
@@ -64,12 +69,8 @@ class Config
      * @param array<string, string|bool> $snapshot
      * @return array<string, string>
      */
-    private function buildSources(
-        array $snapshot,
-        Mozart $config,
-        Package $package,
-        ?\stdClass $rawMozart
-    ): array {
+    private function buildSources(array $snapshot, Mozart $config, Package $package): array
+    {
         $sources = [];
 
         $sources['dep_directory'] = !empty($snapshot['dep_directory'])
@@ -84,13 +85,13 @@ class Config
 
         $sources['classmap_prefix'] = $this->classmapPrefixSource($snapshot, $config);
 
-        $sources['generate_autoloader'] = $rawMozart !== null
-            && property_exists($rawMozart, 'generate_autoloader')
+        $sources['generate_autoloader'] = $this->raw !== null
+            && property_exists($this->raw, 'generate_autoloader')
             ? '(explicit)'
             : '(default)';
 
-        $sources['delete_vendor_directories'] = $rawMozart !== null
-            && property_exists($rawMozart, 'delete_vendor_directories')
+        $sources['delete_vendor_directories'] = $this->raw !== null
+            && property_exists($this->raw, 'delete_vendor_directories')
             ? '(explicit)'
             : '(default)';
 
