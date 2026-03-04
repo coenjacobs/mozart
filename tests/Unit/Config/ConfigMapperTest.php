@@ -259,6 +259,62 @@ class ConfigMapperTest extends TestCase
         $this->assertNotContains('dep_directory', $missing);
     }
 
+    #[Test]
+    public function it_respects_explicit_delete_vendor_directories_false(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+            'delete_vendor_directories' => false,
+        ]));
+
+        $this->assertFalse($result->getDeleteVendorDirectories());
+    }
+
+    #[Test]
+    public function it_defaults_delete_vendor_directories_to_true(): void
+    {
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'dep_namespace' => 'Test\\Dependencies',
+            'dep_directory' => '/deps/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => 'Test_',
+        ]));
+
+        $this->assertTrue($result->getDeleteVendorDirectories());
+    }
+
+    #[Test]
+    public function it_preserves_explicit_delete_vendor_directories_false_after_defaults(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'delete_vendor_directories' => false,
+        ]));
+        $result->applyDefaults($package);
+
+        $this->assertFalse($result->getDeleteVendorDirectories());
+        $this->assertTrue($result->isValidMozartConfig());
+    }
+
+    #[Test]
+    public function it_defaults_delete_vendor_directories_to_true_after_defaults(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode(new \stdClass()));
+        $result->applyDefaults($package);
+
+        $this->assertTrue($result->getDeleteVendorDirectories());
+    }
+
     /**
      * Create a Package with a PSR-4 autoloader for testing.
      */

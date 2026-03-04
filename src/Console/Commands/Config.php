@@ -69,7 +69,7 @@ class Config extends Command
         $autoloaderSource = $sources['generate_autoloader'];
         $this->printBoolSetting($output, 'generate_autoloader', $config->generateAutoloader, $autoloaderSource);
         $deleteSource = $sources['delete_vendor_directories'];
-        $this->printBoolSetting($output, 'delete_vendor_dirs', $config->deleteVendorDir, $deleteSource);
+        $this->printBoolSetting($output, 'delete_vendor_directories', $config->deleteVendorDirs, $deleteSource);
         $this->printListSetting($output, 'packages', $config->getPackages(), '(all require dependencies)');
         $this->printListSetting($output, 'excluded_packages', $config->getExcludedPackages(), '(none)');
     }
