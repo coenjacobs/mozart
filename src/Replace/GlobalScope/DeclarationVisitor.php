@@ -231,6 +231,11 @@ class DeclarationVisitor extends NodeVisitorAbstract
 
         $originalName = $firstArg->value;
 
+        // Skip namespaced constants — they already have collision avoidance
+        if (str_contains($originalName, '\\')) {
+            return null;
+        }
+
         if ($this->builtInSymbols->isBuiltInConstant($originalName)) {
             return null;
         }
