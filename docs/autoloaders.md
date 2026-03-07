@@ -93,9 +93,11 @@ The most complex autoloader type. Handles Composer's `files` autoloading:
 
 **PSR overlap handling:** Files that are already inside a PSR-4 or PSR-0 path from the same package are skipped (`isInsidePsrPath()`). This prevents duplicate processing when a file is listed in both `files` and covered by a PSR-4 path.
 
-**Target path determination:** `Files::getTargetFilePath()` routes based on detected namespace:
-- Namespaced file → `dep_directory/{namespace path}/{filename}`
-- Global file → `classmap_directory/{package name}/{filename}`
+**Target path determination:** `Files::getTargetFilePath()` routes based on detected namespace, preserving the source-relative directory to avoid basename collisions:
+- Namespaced file → `dep_directory/{namespace path}/{relative dir}/{filename}`
+- Global file → `classmap_directory/{package name}/{relative dir}/{filename}`
+
+The `{relative dir}` is the directory portion of the file's path within the package (e.g. `src` for `src/helpers.php`). Files at the package root have no extra directory segment. This prevents two files with the same basename from different directories (e.g. `src/helpers.php` and `lib/helpers.php`) from silently overwriting each other.
 
 ## Autoloader class hierarchy
 
