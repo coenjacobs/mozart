@@ -97,7 +97,9 @@ class ConfigMapperTest extends TestCase
         $this->assertSame('vendor-prefixed/', $result->depDirectory);
         $this->assertSame('vendor-prefixed/', $result->classmapDir);
         $this->assertSame('MyPlugin\\Dependencies', $result->depNamespace);
-        $this->assertSame('MyPlugin_Dependencies_', $result->classmapPrefix);
+        $this->assertSame('MyPlugin_', $result->classmapPrefix);
+        $this->assertSame('MYPLUGIN_', $result->constantPrefix);
+        $this->assertSame('myplugin_', $result->functionsPrefix);
     }
 
     #[Test]
@@ -115,7 +117,7 @@ class ConfigMapperTest extends TestCase
         $result->applyDefaults($package);
 
         $this->assertSame('CoenJacobs\\MyPlugin\\Dependencies', $result->depNamespace);
-        $this->assertSame('CoenJacobs_MyPlugin_Dependencies_', $result->classmapPrefix);
+        $this->assertSame('CoenJacobs_MyPlugin_', $result->classmapPrefix);
     }
 
     #[Test]
@@ -227,7 +229,7 @@ class ConfigMapperTest extends TestCase
         $result = $config->loadFromString(json_encode(new \stdClass()));
         $result->applyDefaults($package);
 
-        $this->assertSame('MyPlugin_Dependencies_', $result->classmapPrefix);
+        $this->assertSame('MyPlugin_', $result->classmapPrefix);
     }
 
     #[Test]
@@ -313,6 +315,73 @@ class ConfigMapperTest extends TestCase
         $result->applyDefaults($package);
 
         $this->assertTrue($result->getDeleteVendorDirectories());
+    }
+
+    #[Test]
+    public function it_defaults_constant_prefix_from_classmap_prefix(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode(new \stdClass()));
+        $result->applyDefaults($package);
+
+        $this->assertSame('MYPLUGIN_', $result->constantPrefix);
+    }
+
+    #[Test]
+    public function it_defaults_functions_prefix_from_classmap_prefix(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode(new \stdClass()));
+        $result->applyDefaults($package);
+
+        $this->assertSame('myplugin_', $result->functionsPrefix);
+    }
+
+    #[Test]
+    public function it_preserves_explicit_constant_prefix(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'constant_prefix' => 'MY_CUSTOM_',
+        ]));
+        $result->applyDefaults($package);
+
+        $this->assertSame('MY_CUSTOM_', $result->constantPrefix);
+    }
+
+    #[Test]
+    public function it_preserves_explicit_functions_prefix(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode([
+            'functions_prefix' => 'my_custom_',
+        ]));
+        $result->applyDefaults($package);
+
+        $this->assertSame('my_custom_', $result->functionsPrefix);
+    }
+
+    #[Test]
+    public function it_derives_both_prefixes_from_inferred_classmap_prefix(): void
+    {
+        $package = new Package();
+        $package->name = 'coen-jacobs/my-plugin';
+
+        $config = new Mozart();
+        $result = $config->loadFromString(json_encode(new \stdClass()));
+        $result->applyDefaults($package);
+
+        $this->assertSame('CoenJacobs_MyPlugin_', $result->classmapPrefix);
+        $this->assertSame('COENJACOBS_MYPLUGIN_', $result->constantPrefix);
+        $this->assertSame('coenjacobs_myplugin_', $result->functionsPrefix);
     }
 
     /**

@@ -73,12 +73,14 @@ class ConfigTest extends TestCase
         $this->assertSame('TestProject\\Dependencies', $config->depNamespace);
         $this->assertSame('vendor-prefixed/', $config->depDirectory);
         $this->assertSame('vendor-prefixed/', $config->classmapDir);
-        $this->assertSame('TestProject_Dependencies_', $config->classmapPrefix);
+        $this->assertSame('TestProject_', $config->classmapPrefix);
 
         $this->assertStringContainsString('inferred from PSR-4', $sources['dep_namespace']);
         $this->assertSame('(default)', $sources['dep_directory']);
         $this->assertStringContainsString('default', $sources['classmap_directory']);
         $this->assertSame('(derived from dep_namespace)', $sources['classmap_prefix']);
+        $this->assertSame('(derived from classmap_prefix)', $sources['constant_prefix']);
+        $this->assertSame('(derived from classmap_prefix)', $sources['functions_prefix']);
     }
 
     #[Test]
@@ -235,6 +237,110 @@ class ConfigTest extends TestCase
 
         $this->assertSame('(default)', $sources['generate_autoloader']);
         $this->assertSame('(default)', $sources['delete_vendor_directories']);
+    }
+
+    #[Test]
+    public function it_marks_derived_constant_prefix(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'autoload' => [
+                'psr-4' => [
+                    'TestProject\\' => 'src/',
+                ],
+            ],
+            'extra' => [
+                'mozart' => new \stdClass(),
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertSame('TESTPROJECT_', $result['config']->constantPrefix);
+        $this->assertSame('(derived from classmap_prefix)', $result['sources']['constant_prefix']);
+    }
+
+    #[Test]
+    public function it_marks_derived_functions_prefix(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'autoload' => [
+                'psr-4' => [
+                    'TestProject\\' => 'src/',
+                ],
+            ],
+            'extra' => [
+                'mozart' => new \stdClass(),
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertSame('testproject_', $result['config']->functionsPrefix);
+        $this->assertSame('(derived from classmap_prefix)', $result['sources']['functions_prefix']);
+    }
+
+    #[Test]
+    public function it_marks_explicit_constant_prefix(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'extra' => [
+                'mozart' => [
+                    'dep_namespace' => 'Custom\\Ns',
+                    'constant_prefix' => 'MY_CUSTOM_',
+                ],
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertSame('MY_CUSTOM_', $result['config']->constantPrefix);
+        $this->assertSame('(explicit)', $result['sources']['constant_prefix']);
+    }
+
+    #[Test]
+    public function it_marks_explicit_functions_prefix(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'extra' => [
+                'mozart' => [
+                    'dep_namespace' => 'Custom\\Ns',
+                    'functions_prefix' => 'my_custom_',
+                ],
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertSame('my_custom_', $result['config']->functionsPrefix);
+        $this->assertSame('(explicit)', $result['sources']['functions_prefix']);
     }
 
     #[Test]
