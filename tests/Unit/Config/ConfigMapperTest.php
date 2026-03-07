@@ -25,6 +25,7 @@ class ConfigMapperTest extends TestCase
         $this->loader = new ConfigLoader();
         $this->defaults = new ConfigDefaultsResolver();
     }
+
     /** @test */
     public function it_creates_a_valid_config_object_based_on_composer_file(): void
     {
@@ -370,6 +371,21 @@ class ConfigMapperTest extends TestCase
         $this->assertSame('CoenJacobs_MyPlugin_', $result->classmapPrefix);
         $this->assertSame('COENJACOBS_MYPLUGIN_', $result->constantPrefix);
         $this->assertSame('coenjacobs_myplugin_', $result->functionsPrefix);
+    }
+
+    #[Test]
+    public function it_derives_constant_and_functions_prefix_from_explicit_classmap_prefix(): void
+    {
+        $package = $this->createPackageWithPsr4('MyPlugin\\');
+
+        $result = $this->loader->fromString(json_encode([
+            'classmap_prefix' => 'CustomPrefix_',
+        ]), Mozart::class);
+        $this->defaults->apply($result, $package);
+
+        $this->assertSame('CustomPrefix_', $result->classmapPrefix);
+        $this->assertSame('CUSTOMPREFIX_', $result->constantPrefix);
+        $this->assertSame('customprefix_', $result->functionsPrefix);
     }
 
     /**
