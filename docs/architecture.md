@@ -72,12 +72,12 @@ Config loading follows this path:
 
 ```
 composer.json  →  PackageFactory::createPackage()
-                    →  Package::loadFromFile()        (ReadsConfig trait)
-                    →  JsonMapper::map()              (JSON → PHP objects)
+                    →  ConfigLoader::fromFile()       (JSON → PHP objects)
+                    →  JsonMapper::map()
                     →  Package.extra.mozart → Mozart config object
 ```
 
-The `ReadsConfig` trait (used by both `Package` and `Mozart`) provides `loadFromFile()` → `loadFromString()` → `loadFromStdClass()`, all ultimately delegating to `netresearch/jsonmapper` for mapping JSON to typed PHP objects.
+`ConfigLoader` provides `fromFile()` → `fromString()` → `mapToClass()`, all ultimately delegating to `netresearch/jsonmapper` for mapping JSON to typed PHP objects. The loader accepts a target class name, so the same class serves both `Package` and `Mozart` deserialization.
 
 `PackageFactory` creates `Package` objects and **caches them by file path**. This means the same package won't be parsed twice when it appears in multiple dependency chains (diamond dependencies). It also applies `override_autoload` settings at creation time, replacing a package's autoload config before any processing.
 

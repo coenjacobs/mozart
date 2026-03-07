@@ -5,15 +5,12 @@ namespace CoenJacobs\Mozart\Config;
 use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Config\Autoload;
 use CoenJacobs\Mozart\Config\Extra;
-use CoenJacobs\Mozart\Config\ReadsConfig;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFinder;
 use stdClass;
 
 class Package
 {
-    use ReadsConfig;
-
     /** @var Package[] */
     public array $dependencies = [];
 

@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart\Commands;
 
 use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
+use CoenJacobs\Mozart\Config\ConfigDefaultsResolver;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -34,7 +35,7 @@ class Compose
         $package = $factory->createPackage($composerFile);
 
         $config = $factory->resolveConfig($package);
-        $config->applyDefaults($package);
+        (new ConfigDefaultsResolver())->apply($config, $package);
 
         if (! $config->isValidMozartConfig()) {
             $missing = $config->getMissingConfigFields();

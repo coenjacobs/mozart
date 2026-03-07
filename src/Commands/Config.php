@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart\Commands;
 
+use CoenJacobs\Mozart\Config\ConfigDefaultsResolver;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
@@ -39,7 +40,7 @@ class Config
         $this->raw = $this->extractRawMozart($composerFile);
 
         $snapshot = $this->snapshot($config);
-        $config->applyDefaults($package);
+        (new ConfigDefaultsResolver())->apply($config, $package);
         $sources = $this->buildSources($snapshot, $config, $package);
 
         return ['config' => $config, 'sources' => $sources];
