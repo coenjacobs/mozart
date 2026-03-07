@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit;
 
+use CoenJacobs\Mozart\Config\ConfigLoader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -51,8 +52,8 @@ class MoverTest extends TestCase
             ),
         );
 
-        $mozart = new Mozart();
-        $this->config = $mozart->loadFromString(json_encode($configArgs));
+        $loader = new ConfigLoader();
+        $this->config = $loader->fromString(json_encode($configArgs), Mozart::class);
         $this->config->setWorkingDir($this->testsWorkingDir);
     }
 

@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
  * Uses mustangostang/spyc as a real-world package that defines global-scope
  * functions and a class via a files autoloader. Unlike the GlobalScopeFunctions
  * test, this fixture does NOT set functions_prefix or constant_prefix
- * explicitly — they are derived from classmap_prefix by applyDefaults().
+ * explicitly — they are derived from classmap_prefix by ConfigDefaultsResolver.
  *
  * The PSR-4 namespace TestProject\ produces:
  *   classmap_prefix  = TestProject_
