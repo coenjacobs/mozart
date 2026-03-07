@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart\Commands;
 
+use CoenJacobs\Mozart\Config\ConfigDefaultsResolver;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
@@ -39,7 +40,7 @@ class Config
         $this->raw = $this->extractRawMozart($composerFile);
 
         $snapshot = $this->snapshot($config);
-        $config->applyDefaults($package);
+        (new ConfigDefaultsResolver())->apply($config, $package);
         $sources = $this->buildSources($snapshot, $config, $package);
 
         return ['config' => $config, 'sources' => $sources];
@@ -58,6 +59,8 @@ class Config
             'dep_directory'            => $config->depDirectory,
             'classmap_directory'       => $config->classmapDir,
             'classmap_prefix'          => $config->classmapPrefix,
+            'constant_prefix'          => $config->constantPrefix,
+            'functions_prefix'         => $config->functionsPrefix,
             'generate_autoloader'      => $config->generateAutoloader,
             'delete_vendor_directories' => $config->deleteVendorDirs,
         ];
@@ -84,6 +87,16 @@ class Config
             : $this->inferNamespaceSource($package, $config->depNamespace);
 
         $sources['classmap_prefix'] = $this->classmapPrefixSource($snapshot, $config);
+
+        $sources['constant_prefix'] = $this->derivedPrefixSource(
+            (string) $snapshot['constant_prefix'],
+            $config->constantPrefix
+        );
+
+        $sources['functions_prefix'] = $this->derivedPrefixSource(
+            (string) $snapshot['functions_prefix'],
+            $config->functionsPrefix
+        );
 
         $sources['generate_autoloader'] = $this->raw !== null
             && property_exists($this->raw, 'generate_autoloader')
@@ -129,6 +142,25 @@ class Config
 
         if (!empty($config->classmapPrefix)) {
             return '(derived from dep_namespace)';
+        }
+
+        return '(not set)';
+    }
+
+    /**
+     * Determine source annotation for a prefix derived from classmap_prefix.
+     *
+     * @param string $snapshotValue The value before defaults were applied.
+     * @param string $resolvedValue The value after defaults were applied.
+     */
+    private function derivedPrefixSource(string $snapshotValue, string $resolvedValue): string
+    {
+        if (!empty($snapshotValue)) {
+            return '(explicit)';
+        }
+
+        if (!empty($resolvedValue)) {
+            return '(derived from classmap_prefix)';
         }
 
         return '(not set)';

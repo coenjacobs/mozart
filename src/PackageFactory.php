@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart;
 
+use CoenJacobs\Mozart\Config\ConfigLoader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use stdClass;
@@ -10,15 +11,23 @@ class PackageFactory
 {
     /** @var array <string,Package> */
     private array $cache = [];
+    private ConfigLoader $loader;
 
+    public function __construct()
+    {
+        $this->loader = new ConfigLoader();
+    }
+
+    /**
+     * Create a Package instance from a composer.json file path.
+     */
     public function createPackage(string $path, ?stdClass $overrideAutoload = null): Package
     {
         if (isset($this->cache[$path])) {
             return $this->cache[$path];
         }
 
-        $package = new Package();
-        $package = $package->loadFromFile($path);
+        $package = $this->loader->fromFile($path, Package::class);
 
         // Extract directory name from the composer.json file path
         $packageDir = dirname($path);

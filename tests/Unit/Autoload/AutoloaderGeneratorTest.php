@@ -6,6 +6,7 @@ namespace CoenJacobs\Mozart\Tests\Unit\Autoload;
 
 use CoenJacobs\Mozart\Autoload\AutoloaderFileWriter;
 use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
+use CoenJacobs\Mozart\Config\ConfigLoader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\FilesHandler;
@@ -33,8 +34,8 @@ class AutoloaderGeneratorTest extends TestCase
             'classmap_prefix' => 'MyPlugin_',
         ];
 
-        $mozart = new Mozart();
-        $this->config = $mozart->loadFromString(json_encode($configArgs));
+        $loader = new ConfigLoader();
+        $this->config = $loader->fromString(json_encode($configArgs), Mozart::class);
         $this->config->setWorkingDir($this->testsWorkingDir);
 
         // Create output directories

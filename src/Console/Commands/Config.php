@@ -64,8 +64,8 @@ class Config extends Command
         $this->printSetting($output, 'dep_directory', $config->depDirectory, $sources['dep_directory']);
         $this->printSetting($output, 'classmap_directory', $config->classmapDir, $sources['classmap_directory']);
         $this->printSetting($output, 'classmap_prefix', $config->classmapPrefix, $sources['classmap_prefix']);
-        $this->printOptionalSetting($output, 'constant_prefix', $config->constantPrefix);
-        $this->printOptionalSetting($output, 'functions_prefix', $config->functionsPrefix);
+        $this->printSetting($output, 'constant_prefix', $config->constantPrefix, $sources['constant_prefix']);
+        $this->printSetting($output, 'functions_prefix', $config->functionsPrefix, $sources['functions_prefix']);
         $autoloaderSource = $sources['generate_autoloader'];
         $this->printBoolSetting($output, 'generate_autoloader', $config->generateAutoloader, $autoloaderSource);
         $deleteSource = $sources['delete_vendor_directories'];
@@ -92,22 +92,6 @@ class Config extends Command
         }
 
         $output->writeln(rtrim($line));
-    }
-
-    /**
-     * Print an optional string setting, showing "(not set)" when empty.
-     */
-    private function printOptionalSetting(
-        OutputInterface $output,
-        string $name,
-        string $value
-    ): void {
-        if (empty($value)) {
-            $this->printSetting($output, $name, '(not set)', '');
-            return;
-        }
-
-        $this->printSetting($output, $name, $value, '(explicit)');
     }
 
     /**

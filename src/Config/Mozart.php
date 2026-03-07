@@ -5,13 +5,10 @@ namespace CoenJacobs\Mozart\Config;
 use stdClass;
 use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
-use CoenJacobs\Mozart\Config\Psr4;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 
 class Mozart
 {
-    use ReadsConfig;
-
     public string $depNamespace = '';
     public string $depDirectory = '';
     public string $classmapDir = '';
@@ -131,33 +128,6 @@ class Mozart
     }
 
     /**
-     * Fill empty configuration properties with sensible defaults, using
-     * information from the root package when available. Properties that
-     * already have explicit values are never overwritten.
-     *
-     * Derivation order matters: dep_directory -> classmap_directory ->
-     * dep_namespace -> classmap_prefix.
-     */
-    public function applyDefaults(Package $package): void
-    {
-        if (empty($this->depDirectory)) {
-            $this->depDirectory = 'vendor-prefixed/';
-        }
-
-        if (empty($this->classmapDir)) {
-            $this->classmapDir = $this->depDirectory;
-        }
-
-        if (empty($this->depNamespace)) {
-            $this->depNamespace = $this->inferDepNamespace($package);
-        }
-
-        if (empty($this->classmapPrefix)) {
-            $this->classmapPrefix = $this->deriveClassmapPrefix($this->depNamespace);
-        }
-    }
-
-    /**
      * Return the names of required configuration fields that are still empty.
      *
      * @return string[]
@@ -179,46 +149,6 @@ class Mozart
         }
 
         return $missing;
-    }
-
-    /**
-     * Infer the dependency namespace from the root package's PSR-4 autoload
-     * entry or, failing that, from the package name.
-     */
-    private function inferDepNamespace(Package $package): string
-    {
-        foreach ($package->getAutoloaders() as $autoloader) {
-            if ($autoloader instanceof Psr4) {
-                $namespace = $autoloader->getSearchNamespace();
-                if (!empty($namespace)) {
-                    return $namespace . '\\Dependencies';
-                }
-            }
-        }
-
-        if (isset($package->name) && !empty($package->name) && str_contains($package->name, '/')) {
-            $parts = explode('/', $package->name);
-            $converted = array_map(function (string $part): string {
-                return str_replace(' ', '', ucwords(str_replace('-', ' ', $part)));
-            }, $parts);
-
-            return implode('\\', $converted) . '\\Dependencies';
-        }
-
-        return '';
-    }
-
-    /**
-     * Derive a classmap prefix from a namespace by replacing backslashes
-     * with underscores.
-     */
-    private function deriveClassmapPrefix(string $namespace): string
-    {
-        if (empty($namespace)) {
-            return '';
-        }
-
-        return str_replace('\\', '_', trim($namespace, '\\')) . '_';
     }
 
     public function isExcludedPackage(Package $package): bool
