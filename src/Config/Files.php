@@ -20,6 +20,9 @@ class Files extends AbstractAutoloader
     /** @var array<string, string|null> Cache of detected namespaces per file */
     protected array $detectedNamespaces = [];
 
+    /** @var array<string, string> Maps file real path to its relative directory within the package */
+    protected array $fileRelativeDirs = [];
+
     /**
      * @inheritdoc
      */
@@ -70,6 +73,9 @@ class Files extends AbstractAutoloader
                 if ($relativePath === $expectedPath) {
                     $filePath = $foundFile->getRealPath();
                     $filesToMove[$filePath] = $foundFile;
+
+                    $relativeDir = dirname($relativePath);
+                    $this->fileRelativeDirs[$filePath] = ($relativeDir === '.') ? '' : $relativeDir;
                 }
             }
         }
@@ -109,17 +115,22 @@ class Files extends AbstractAutoloader
 
         $namespace = $this->getDetectedNamespace($file);
 
+        $relativeDir = $this->getRelativeDir($file);
+        $dirSuffix = ($relativeDir !== '')
+            ? DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativeDir)
+            : '';
+
         if ($namespace !== null) {
             // File has a namespace - put it in dep_directory following namespace path
             $namespacePath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
             return $this->fileHandler->getConfig()->getDepDirectory()
-                . $namespacePath . DIRECTORY_SEPARATOR . $file->getFilename();
+                . $namespacePath . $dirSuffix . DIRECTORY_SEPARATOR . $file->getFilename();
         }
 
         // File is global scope - put it in classmap_directory with package name
         $packageName = str_replace('/', DIRECTORY_SEPARATOR, $this->getPackage()->getDirectoryName());
         return $this->fileHandler->getConfig()->getClassmapDirectory()
-            . $packageName . DIRECTORY_SEPARATOR . $file->getFilename();
+            . $packageName . $dirSuffix . DIRECTORY_SEPARATOR . $file->getFilename();
     }
 
     /**
@@ -174,5 +185,17 @@ class Files extends AbstractAutoloader
     public function hasNamespace(SplFileInfo $file): bool
     {
         return $this->getDetectedNamespace($file) !== null;
+    }
+
+    /**
+     * Get the relative directory for a file within its package.
+     *
+     * Returns the directory portion of the file's path relative to the package
+     * root (e.g. "src" for "src/helpers.php"), or an empty string if the file
+     * is at the package root.
+     */
+    protected function getRelativeDir(SplFileInfo $file): string
+    {
+        return $this->fileRelativeDirs[$file->getRealPath()] ?? '';
     }
 }
