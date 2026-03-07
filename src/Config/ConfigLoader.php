@@ -9,8 +9,8 @@ use stdClass;
 /**
  * Deserialise JSON configuration into typed config objects (Mozart, Package).
  *
- * Accepts files, raw JSON strings, associative arrays, or stdClass instances
- * and maps them onto the target class using JsonMapper.
+ * Accepts files or raw JSON strings and maps them onto the target class
+ * using JsonMapper.
  */
 class ConfigLoader
 {
@@ -51,49 +51,10 @@ class ConfigLoader
     {
         $config = json_decode($json);
 
-        if ($config === null) {
+        if (! $config instanceof stdClass) {
             throw new ConfigurationException('Could not read config from provided string.');
         }
 
-        return $this->mapToClass($config, $targetClass);
-    }
-
-    /**
-     * Load configuration from an associative array.
-     *
-     * @template T of object
-     * @param array<mixed> $config
-     * @param class-string<T> $targetClass Fully-qualified class to map onto.
-     * @return T
-     * @throws ConfigurationException If the array cannot be encoded or mapped.
-     */
-    public function fromArray(array $config, string $targetClass): object
-    {
-        $encoded = json_encode($config);
-
-        if (! $encoded) {
-            throw new ConfigurationException('Could not read config from provided array.');
-        }
-
-        $decoded = json_decode($encoded, false);
-
-        if (! $decoded) {
-            throw new ConfigurationException('Could not read config from provided array.');
-        }
-
-        return $this->mapToClass($decoded, $targetClass);
-    }
-
-    /**
-     * Load configuration from a stdClass instance.
-     *
-     * @template T of object
-     * @param class-string<T> $targetClass Fully-qualified class to map onto.
-     * @return T
-     * @throws ConfigurationException If mapping fails.
-     */
-    public function fromStdClass(stdClass $config, string $targetClass): object
-    {
         return $this->mapToClass($config, $targetClass);
     }
 
