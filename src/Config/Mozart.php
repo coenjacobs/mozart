@@ -8,6 +8,9 @@ use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ */
 class Mozart
 {
     use ReadsConfig;
@@ -136,7 +139,7 @@ class Mozart
      * already have explicit values are never overwritten.
      *
      * Derivation order matters: dep_directory -> classmap_directory ->
-     * dep_namespace -> classmap_prefix.
+     * dep_namespace -> classmap_prefix -> constant_prefix -> functions_prefix.
      */
     public function applyDefaults(Package $package): void
     {
@@ -148,12 +151,24 @@ class Mozart
             $this->classmapDir = $this->depDirectory;
         }
 
-        if (empty($this->depNamespace)) {
-            $this->depNamespace = $this->inferDepNamespace($package);
+        $depNamespaceWasEmpty = empty($this->depNamespace);
+        $rootNamespace = $this->inferRootNamespace($package);
+
+        if ($depNamespaceWasEmpty && !empty($rootNamespace)) {
+            $this->depNamespace = $rootNamespace . '\\Dependencies';
         }
 
         if (empty($this->classmapPrefix)) {
-            $this->classmapPrefix = $this->deriveClassmapPrefix($this->depNamespace);
+            $prefixSource = $depNamespaceWasEmpty ? $rootNamespace : $this->depNamespace;
+            $this->classmapPrefix = $this->namespaceToPrefixString($prefixSource);
+        }
+
+        if (empty($this->constantPrefix)) {
+            $this->constantPrefix = strtoupper($this->classmapPrefix);
+        }
+
+        if (empty($this->functionsPrefix)) {
+            $this->functionsPrefix = strtolower($this->classmapPrefix);
         }
     }
 
@@ -182,16 +197,29 @@ class Mozart
     }
 
     /**
-     * Infer the dependency namespace from the root package's PSR-4 autoload
-     * entry or, failing that, from the package name.
+     * Convert a namespace string to a flat prefix by replacing backslashes
+     * with underscores and appending a trailing underscore.
      */
-    private function inferDepNamespace(Package $package): string
+    private function namespaceToPrefixString(string $namespace): string
+    {
+        $trimmed = trim($namespace, '\\');
+
+        return $trimmed === '' ? '' : str_replace('\\', '_', $trimmed) . '_';
+    }
+
+    /**
+     * Infer the root namespace from the package's PSR-4 autoload entry or,
+     * failing that, from the package name. Used by applyDefaults() to derive
+     * dep_namespace (with \Dependencies appended) and classmap_prefix (as a
+     * flat underscore-separated prefix).
+     */
+    private function inferRootNamespace(Package $package): string
     {
         foreach ($package->getAutoloaders() as $autoloader) {
             if ($autoloader instanceof Psr4) {
                 $namespace = $autoloader->getSearchNamespace();
                 if (!empty($namespace)) {
-                    return $namespace . '\\Dependencies';
+                    return $namespace;
                 }
             }
         }
@@ -202,23 +230,10 @@ class Mozart
                 return str_replace(' ', '', ucwords(str_replace('-', ' ', $part)));
             }, $parts);
 
-            return implode('\\', $converted) . '\\Dependencies';
+            return implode('\\', $converted);
         }
 
         return '';
-    }
-
-    /**
-     * Derive a classmap prefix from a namespace by replacing backslashes
-     * with underscores.
-     */
-    private function deriveClassmapPrefix(string $namespace): string
-    {
-        if (empty($namespace)) {
-            return '';
-        }
-
-        return str_replace('\\', '_', trim($namespace, '\\')) . '_';
     }
 
     public function isExcludedPackage(Package $package): bool
