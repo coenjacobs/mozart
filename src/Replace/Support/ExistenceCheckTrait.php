@@ -14,7 +14,7 @@ use PhpParser\Node\Scalar\String_;
  *
  * Handles functions that accept fully-qualified class, function, or constant names as string
  * arguments: function_exists(), class_exists(), interface_exists(), trait_exists(), enum_exists(),
- * constant(), defined(), method_exists(), property_exists(), is_a(), is_subclass_of(),
+ * constant(), defined(), define(), method_exists(), property_exists(), is_a(), is_subclass_of(),
  * is_callable(), class_alias()
  */
 trait ExistenceCheckTrait
@@ -91,6 +91,7 @@ trait ExistenceCheckTrait
             'enum_exists'      => [0],
             'constant'         => [0],
             'defined'          => [0],
+            'define'           => [0],
             'method_exists'    => [0],
             'property_exists'  => [0],
             'is_callable'      => [0],
