@@ -517,4 +517,36 @@ PHP;
 
         $this->assertStringContainsString("DEFINE('MOZART_MY_CONST'", $result['code']);
     }
+
+    #[Test]
+    public function it_does_not_prefix_namespaced_define_constant(): void
+    {
+        $code = "define('Vendor\\\\MY_CONST', 1);";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString("'Vendor\\\\MY_CONST'", $result['code']);
+        $this->assertStringNotContainsString('MOZART_', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_prefix_deeply_namespaced_define_constant(): void
+    {
+        $code = "define('Vendor\\\\Sub\\\\MY_CONST', 1);";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertStringContainsString("'Vendor\\\\Sub\\\\MY_CONST'", $result['code']);
+        $this->assertStringNotContainsString('MOZART_', $result['code']);
+    }
+
+    #[Test]
+    public function it_does_not_track_namespaced_define_constant_in_replaced_map(): void
+    {
+        $code = "define('Vendor\\\\MY_CONST', 1);";
+
+        $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
+
+        $this->assertEmpty($result['visitor']->getReplacedConstants());
+    }
 }

@@ -637,6 +637,29 @@ class NameVisitorTest extends TestCase
         $this->assertStringNotContainsString('MOZART_MY_CONST', $result);
     }
 
+    #[Test]
+    public function it_replaces_constant_in_define_call(): void
+    {
+        $code = "define('MY_CONST', 'value');";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("define('MOZART_MY_CONST'", $result);
+    }
+
+    #[Test]
+    public function it_does_not_replace_unmapped_constant_in_define_call(): void
+    {
+        $code = "define('OTHER_CONST', 'value');";
+        $constantMap = ['MY_CONST' => 'MOZART_MY_CONST'];
+
+        $result = $this->processCodeWithConstantMap($code, $constantMap);
+
+        $this->assertStringContainsString("define('OTHER_CONST'", $result);
+        $this->assertStringNotContainsString('MOZART_', $result);
+    }
+
     // --- Function map tests ---
 
     /**
