@@ -15,7 +15,7 @@ class Mover
     protected Mozart $config;
     protected FilesHandler $files;
 
-    /** @var array<string> */
+    /** @var array<string, string> Package names mapped to installed directory names. */
     protected array $movedPackages = [];
 
     /** @var array<string> */
@@ -125,14 +125,14 @@ class Mover
             }
         }
 
-        if (!in_array($package->getDirectoryName(), $this->movedPackages)) {
-            $this->movedPackages[] = $package->getDirectoryName();
+        if (!isset($this->movedPackages[$package->getName()])) {
+            $this->movedPackages[$package->getName()] = $package->getDirectoryName();
         }
     }
 
     private function shouldPackageBeMoved(Package $package): bool
     {
-        if (in_array($package->getDirectoryName(), $this->movedPackages)) {
+        if (isset($this->movedPackages[$package->getName()])) {
             return false;
         }
 
@@ -167,11 +167,20 @@ class Mover
      * Deletes all the packages that are moved from the /vendor/ directory to
      * prevent packages that are prefixed/namespaced from being used or
      * influencing the output of the code. They just need to be gone.
+     *
+     * @param string[] $preservedPackages Package names that should remain in
+     * vendor because non-processed installed packages still depend on them.
      */
-    public function deletePackageVendorDirectories(): void
+    public function deletePackageVendorDirectories(array $preservedPackages = []): void
     {
-        foreach ($this->movedPackages as $movedPackage) {
-            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $movedPackage;
+        $preservedLookup = array_fill_keys($preservedPackages, true);
+
+        foreach ($this->movedPackages as $packageName => $packageDirectory) {
+            if (isset($preservedLookup[$packageName])) {
+                continue;
+            }
+
+            $packageDir = 'vendor' . DIRECTORY_SEPARATOR . $packageDirectory;
             if (!is_dir($packageDir) || is_link($packageDir)) {
                 continue;
             }

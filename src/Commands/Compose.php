@@ -2,6 +2,7 @@
 
 namespace CoenJacobs\Mozart\Commands;
 
+use CoenJacobs\Mozart\Composer\InstalledPackageDependencyGraph;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -69,7 +70,25 @@ class Compose
         $replacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 
         if ($config->getDeleteVendorDirectories()) {
-            $mover->deletePackageVendorDirectories();
+            $processedPackages = $this->getProcessedPackageNames($packages, $config);
+            $dependencyGraph = new InstalledPackageDependencyGraph($this->workingDir);
+
+            $mover->deletePackageVendorDirectories(
+                $dependencyGraph->getSharedProcessedPackages($processedPackages)
+            );
         }
+    }
+
+    /**
+     * @param array<int, \CoenJacobs\Mozart\Config\Package> $packages
+     * @return string[]
+     */
+    private function getProcessedPackageNames(array $packages, \CoenJacobs\Mozart\Config\Mozart $config): array
+    {
+        return array_values(array_unique(array_map(function (\CoenJacobs\Mozart\Config\Package $package): string {
+            return $package->getName();
+        }, array_filter($packages, function (\CoenJacobs\Mozart\Config\Package $package) use ($config): bool {
+            return !$config->isExcludedPackage($package);
+        }))));
     }
 }
