@@ -41,6 +41,14 @@ $parentReplacer->replaceParentInTree($packages);
 $parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 
 if ($config->getDeleteVendorDirectories()) {
+    $processedPackages = array_values(array_unique(array_map(function (Package $package): string {
+        return $package->getName();
+    }, array_filter($packages, function (Package $package) use ($config): bool {
+        return ! $config->isExcludedPackage($package);
+    }))));
+
+    $dependencyGraph = new InstalledPackageDependencyGraph($config->getWorkingDir());
+    $sharedProcessedPackages = $dependencyGraph->getSharedProcessedPackages($processedPackages);
     $mover->deletePackageVendorDirectories($sharedProcessedPackages);
 }
 ```
