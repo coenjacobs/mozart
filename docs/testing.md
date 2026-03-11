@@ -153,3 +153,4 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
 | #209 | `FilesHandlerTest` | Restrictive file permissions (0700/0600) from Flysystem's default private visibility |
+| #355 | `Unit/Composer/InstalledPackageDependencyGraphTest` + `Integration/SharedDependencyPreservation` | Shared processed dependencies being deleted from `vendor/` even though non-processed installed packages still require them |
