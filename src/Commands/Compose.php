@@ -3,6 +3,8 @@
 namespace CoenJacobs\Mozart\Commands;
 
 use CoenJacobs\Mozart\Composer\InstalledPackageDependencyGraph;
+use CoenJacobs\Mozart\Config\Mozart;
+use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Mover;
 use CoenJacobs\Mozart\PackageFactory;
@@ -80,15 +82,17 @@ class Compose
     }
 
     /**
-     * @param array<int, \CoenJacobs\Mozart\Config\Package> $packages
+     * @param Package[] $packages
      * @return string[]
      */
-    private function getProcessedPackageNames(array $packages, \CoenJacobs\Mozart\Config\Mozart $config): array
+    private function getProcessedPackageNames(array $packages, Mozart $config): array
     {
-        return array_values(array_unique(array_map(function (\CoenJacobs\Mozart\Config\Package $package): string {
+        $packages = array_filter($packages, function (Package $package) use ($config): bool {
+            return ! $config->isExcludedPackage($package);
+        });
+
+        return array_values(array_unique(array_map(function (Package $package): string {
             return $package->getName();
-        }, array_filter($packages, function (\CoenJacobs\Mozart\Config\Package $package) use ($config): bool {
-            return !$config->isExcludedPackage($package);
-        }))));
+        }, $packages)));
     }
 }
