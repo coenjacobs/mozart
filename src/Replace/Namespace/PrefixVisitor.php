@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart\Replace\Namespace;
 
 use CoenJacobs\Mozart\Replace\Support\ExistenceCheckTrait;
 use CoenJacobs\Mozart\Replace\Support\NameNodeContextTrait;
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -96,6 +97,8 @@ class PrefixVisitor extends NodeVisitorAbstract
      */
     public function leaveNode(Node $node): ?Node
     {
+        $this->processDocComment($node);
+
         // Handle namespace declarations - prefix them
         if ($node instanceof Namespace_ && $node->name !== null) {
             if ($this->shouldPrefixNamespace($node->name->toString())) {
@@ -124,6 +127,29 @@ class PrefixVisitor extends NodeVisitorAbstract
     }
 
     /**
+     * Prefix matching fully-qualified class-like names inside PHPDoc comments.
+     */
+    protected function processDocComment(Node $node): void
+    {
+        $docComment = $node->getDocComment();
+        if ($docComment === null) {
+            return;
+        }
+
+        $updatedText = preg_replace_callback(
+            '/(?<![A-Za-z0-9_$\\\\-])\\\\?[A-Za-z_][A-Za-z0-9_]*(?:\\\\[A-Za-z_][A-Za-z0-9_]*)+/',
+            fn(array $matches): string => $this->prefixPhpDocName($matches[0]),
+            $docComment->getText()
+        );
+
+        if ($updatedText === null || $updatedText === $docComment->getText()) {
+            return;
+        }
+
+        $node->setDocComment($this->createDocComment($docComment, $updatedText));
+    }
+
+    /**
      * Process a use statement - prefix if needed and track aliases.
      */
     protected function processUseStatement(Use_ $node): ?Use_
@@ -146,6 +172,20 @@ class PrefixVisitor extends NodeVisitorAbstract
         }
 
         return $modified ? $node : null;
+    }
+
+    /**
+     * Prefix a PHPDoc class-like name when it directly references a target namespace.
+     */
+    protected function prefixPhpDocName(string $name): string
+    {
+        $resolvedName = $this->resolvePhpDocName($name);
+        if ($resolvedName === null || !$this->shouldPrefixNamespace($resolvedName)) {
+            return $name;
+        }
+
+        $prefixedName = $this->prefix . '\\' . $resolvedName;
+        return str_starts_with($name, '\\') ? '\\' . $prefixedName : $prefixedName;
     }
 
     /**
@@ -261,6 +301,45 @@ class PrefixVisitor extends NodeVisitorAbstract
         }
 
         return $nameStr;
+    }
+
+    /**
+     * Resolve a PHPDoc class-like name to the namespace it directly targets.
+     */
+    protected function resolvePhpDocName(string $name): ?string
+    {
+        $nameStr = ltrim($name, '\\');
+
+        if (str_starts_with($name, '\\')) {
+            return $nameStr;
+        }
+
+        if (!str_contains($nameStr, '\\')) {
+            return null;
+        }
+
+        $parts = explode('\\', $nameStr);
+        if (isset($this->aliases[$parts[0]])) {
+            return null;
+        }
+
+        return $nameStr;
+    }
+
+    /**
+     * Preserve source locations when updating a doc comment.
+     */
+    protected function createDocComment(Doc $docComment, string $text): Doc
+    {
+        return new Doc(
+            $text,
+            $docComment->getStartLine(),
+            $docComment->getStartFilePos(),
+            $docComment->getStartTokenPos(),
+            $docComment->getEndLine(),
+            $docComment->getEndFilePos(),
+            $docComment->getEndTokenPos()
+        );
     }
 
     /**
