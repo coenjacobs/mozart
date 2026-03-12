@@ -135,4 +135,6 @@ These are the primary settings that control how Mozart transforms your dependenc
 
 ## After running Mozart
 
-It is recommended to dump the autoloader after Mozart has finished running, in case there are new classes or namespaces generated that aren't included in the autoloader yet. See [usage.md](usage.md) for how to automate this with Composer scripts and how to configure your project's autoloader.
+With the default `generate_autoloader: true`, include the generated `dep_directory/autoload.php` from your plugin bootstrap and no additional Composer autoload wiring is required.
+
+If you disable `generate_autoloader`, configure your project's Composer autoload entries for `dep_directory` and `classmap_directory`, then run `composer dump-autoload` after Mozart finishes. See [usage.md](usage.md) for both integration paths.
