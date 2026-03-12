@@ -862,6 +862,62 @@ class NameVisitorTest extends TestCase
         $this->assertStringNotContainsString('Mozart_Helpers', $result);
     }
 
+    #[Test]
+    public function it_routes_all_three_maps_in_a_single_mixed_snippet(): void
+    {
+        $code = <<<'PHP'
+$instance = new Helpers();
+$value = HELPERS;
+helpers();
+$classExists = class_exists('Helpers');
+$defined = defined('HELPERS');
+$constant = constant('HELPERS');
+$functionExists = function_exists('helpers');
+PHP;
+
+        $result = $this->processCodeWithMaps(
+            $code,
+            ['Helpers' => 'Mozart_Helpers'],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $this->assertStringContainsString('new Mozart_Helpers()', $result);
+        $this->assertStringContainsString('$value = MOZART_HELPERS;', $result);
+        $this->assertStringContainsString('mozart_helpers();', $result);
+        $this->assertStringContainsString("class_exists('Mozart_Helpers')", $result);
+        $this->assertStringContainsString("defined('MOZART_HELPERS')", $result);
+        $this->assertStringContainsString("constant('MOZART_HELPERS')", $result);
+        $this->assertStringContainsString("function_exists('mozart_helpers')", $result);
+        $this->assertStringNotContainsString("defined('Mozart_Helpers')", $result);
+        $this->assertStringNotContainsString("constant('Mozart_Helpers')", $result);
+        $this->assertStringNotContainsString("function_exists('Mozart_Helpers')", $result);
+    }
+
+    #[Test]
+    public function it_keeps_suffix_based_existence_checks_in_class_context_with_all_maps(): void
+    {
+        $code = <<<'PHP'
+$defined = defined('Helpers::CONST_NAME');
+$constant = constant('Helpers::CONST_NAME');
+$callable = is_callable('Helpers::method');
+PHP;
+
+        $result = $this->processCodeWithMaps(
+            $code,
+            ['Helpers' => 'Mozart_Helpers'],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $this->assertStringContainsString("defined('Mozart_Helpers::CONST_NAME')", $result);
+        $this->assertStringContainsString("constant('Mozart_Helpers::CONST_NAME')", $result);
+        $this->assertStringContainsString("is_callable('Mozart_Helpers::method')", $result);
+        $this->assertStringNotContainsString("defined('MOZART_HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("constant('MOZART_HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("is_callable('mozart_helpers::method')", $result);
+    }
+
     // --- Case-insensitive lookup tests ---
 
     #[Test]
