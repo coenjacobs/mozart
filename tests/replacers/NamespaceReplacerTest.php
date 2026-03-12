@@ -127,4 +127,33 @@ class NamespaceReplacerTest extends TestCase
 
         $this->assertEquals($expected, $replacer->replace($contents));
     }
+
+    /** @test */
+    #[Test]
+    public function it_replaces_fully_qualified_class_names_in_phpdoc(): void
+    {
+        $contents = <<<'PHP'
+class Downloadable
+{
+    /**
+     * @return \Test\Test\AttachmentDownload
+     * @throws \Test\Test\ApiException
+     */
+    public function download()
+    {
+    }
+}
+PHP;
+
+        $replaced = $this->replacer->replace($contents);
+
+        $this->assertStringContainsString(
+            '@return \My\Mozart\Prefix\Test\Test\AttachmentDownload',
+            $replaced
+        );
+        $this->assertStringContainsString(
+            '@throws \My\Mozart\Prefix\Test\Test\ApiException',
+            $replaced
+        );
+    }
 }
