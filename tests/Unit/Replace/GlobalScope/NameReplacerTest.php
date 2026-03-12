@@ -241,6 +241,25 @@ class Consumer {
     }
 
     #[Test]
+    public function it_uses_symbol_specific_maps_when_names_collide(): void
+    {
+        $code = "<?php\nhelpers();\n\$defined = defined('HELPERS');";
+
+        $replacer = new NameReplacer(
+            ['Helpers' => 'Mozart_Helpers'],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $result = $replacer->replace($code);
+
+        $this->assertStringContainsString('mozart_helpers();', $result);
+        $this->assertStringContainsString("defined('MOZART_HELPERS')", $result);
+        $this->assertStringNotContainsString('Mozart_Helpers();', $result);
+        $this->assertStringNotContainsString("defined('Mozart_Helpers')", $result);
+    }
+
+    #[Test]
     public function it_handles_catch_blocks(): void
     {
         $code = '<?php
