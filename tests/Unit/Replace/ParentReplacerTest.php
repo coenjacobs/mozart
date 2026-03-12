@@ -353,4 +353,64 @@ PHP);
         $this->assertStringContainsString("constant('TEST_LEGACY_FLAG')", $result);
     }
 
+    /**
+     * @test
+     */
+    public function it_propagates_namespaced_files_autoloader_symbols_to_parent_packages(): void
+    {
+        $config = $this->createRelativeConfig();
+        $child = $this->createFilesPackage('php-di/php-di', ['src/functions.php']);
+        $parent = $this->createPsr4Package('parent/package', 'Parent\\Lib\\', ['src/']);
+
+        $vendorChildDir = $this->testDir . DIRECTORY_SEPARATOR . 'vendor'
+            . DIRECTORY_SEPARATOR . 'php-di' . DIRECTORY_SEPARATOR . 'php-di'
+            . DIRECTORY_SEPARATOR . 'src';
+        mkdir($vendorChildDir, 0777, true);
+
+        file_put_contents($vendorChildDir . DIRECTORY_SEPARATOR . 'functions.php', <<<'PHP'
+<?php
+
+namespace DI;
+
+function value(): void
+{
+}
+PHP);
+
+        $parentDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps'
+            . DIRECTORY_SEPARATOR . 'Parent' . DIRECTORY_SEPARATOR . 'Lib';
+        mkdir($parentDir, 0777, true);
+
+        $parentFile = $parentDir . DIRECTORY_SEPARATOR . 'ParentClass.php';
+        file_put_contents($parentFile, <<<'PHP'
+<?php
+
+namespace Parent\Lib;
+
+use function DI\value;
+
+class ParentClass
+{
+    public function boot(): void
+    {
+        if (function_exists('DI\\value')) {
+            value();
+        }
+    }
+}
+PHP);
+
+        $replacer = new Replacer($config, new BuiltInSymbols());
+        $parentReplacer = new ParentReplacer($config, $replacer);
+
+        $this->replaceParentPackageInWorkingDirectory($parentReplacer, $child, $parent);
+
+        $result = file_get_contents($parentFile);
+
+        $this->assertStringContainsString('use function Test\Namespace\DI\value;', $result);
+        $this->assertStringContainsString("function_exists('Test\\\\Namespace\\\\DI\\\\value')", $result);
+        $this->assertStringNotContainsString('use function DI\value;', $result);
+        $this->assertStringNotContainsString("function_exists('DI\\\\value')", $result);
+    }
+
 }
