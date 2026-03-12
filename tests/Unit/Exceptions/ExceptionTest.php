@@ -8,12 +8,13 @@ use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
 use CoenJacobs\Mozart\Exceptions\MozartException;
 use Exception;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 class ExceptionTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function mozart_exception_is_throwable(): void
     {
         $exception = new MozartException('Test message');
@@ -22,7 +23,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('Test message', $exception->getMessage());
     }
 
-    /** @test */
+    #[Test]
     public function configuration_exception_extends_mozart_exception(): void
     {
         $exception = new ConfigurationException('Config error');
@@ -31,7 +32,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('Config error', $exception->getMessage());
     }
 
-    /** @test */
+    #[Test]
     public function file_operation_exception_extends_mozart_exception(): void
     {
         $exception = new FileOperationException('File error');
@@ -40,7 +41,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('File error', $exception->getMessage());
     }
 
-    /** @test */
+    #[Test]
     public function exceptions_can_have_previous_exception(): void
     {
         $previous = new RuntimeException('Previous error');

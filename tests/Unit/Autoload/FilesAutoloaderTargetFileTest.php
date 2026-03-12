@@ -6,6 +6,7 @@ use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class FilesAutoloaderTargetFileTest extends TestCase
@@ -27,7 +28,7 @@ class FilesAutoloaderTargetFileTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_produces_distinct_paths_for_same_basename_global_files(): void
     {
         // Set up: vendor/acme/pkg/src/helpers.php and vendor/acme/pkg/lib/helpers.php
@@ -93,7 +94,7 @@ class FilesAutoloaderTargetFileTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_produces_distinct_paths_for_same_basename_namespaced_files(): void
     {
         // Set up: vendor/acme/pkg/src/bootstrap.php and vendor/acme/pkg/lib/bootstrap.php
@@ -159,7 +160,7 @@ class FilesAutoloaderTargetFileTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_add_extra_path_for_root_level_file(): void
     {
         // Set up: vendor/acme/pkg/helpers.php (at package root, no subdirectory)
@@ -201,7 +202,7 @@ class FilesAutoloaderTargetFileTest extends TestCase
         $this->assertEquals($expected, $targetPath);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_subdirectory_for_single_file_in_subdirectory(): void
     {
         // Set up: vendor/acme/pkg/src/helpers.php
@@ -245,7 +246,7 @@ class FilesAutoloaderTargetFileTest extends TestCase
         $this->assertEquals($expected, $targetPath);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_nested_subdirectories(): void
     {
         // Set up: vendor/acme/pkg/src/utils/deep/helpers.php

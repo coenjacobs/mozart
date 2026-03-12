@@ -26,7 +26,7 @@ class ConfigMapperTest extends TestCase
         $this->defaults = new ConfigDefaultsResolver();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_a_valid_config_object_based_on_composer_file(): void
     {
         $finder = new PackageFinder();
@@ -39,7 +39,7 @@ class ConfigMapperTest extends TestCase
         $this->assertCount(4, $package->autoload->getAutoloaders());
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_a_valid_config_object_based_on_composer_file_without_override(): void
     {
         $finder = new PackageFinder();

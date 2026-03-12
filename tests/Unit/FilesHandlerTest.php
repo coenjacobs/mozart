@@ -12,6 +12,7 @@ use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToWriteFile;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class FilesHandlerTest extends TestCase
@@ -53,7 +54,7 @@ class FilesHandlerTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_read_existing_file(): void
     {
         $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'test.txt';
@@ -66,7 +67,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals($content, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_reading_nonexistent_file(): void
     {
         $handler = new FilesHandler($this->config);
@@ -77,7 +78,7 @@ class FilesHandlerTest extends TestCase
         $handler->readFile('nonexistent.txt');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_write_file(): void
     {
         $filePath = 'test_write.txt';
@@ -90,7 +91,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals($content, file_get_contents($this->testDir . DIRECTORY_SEPARATOR . $filePath));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_directory(): void
     {
         $dirPath = 'test_directory';
@@ -101,7 +102,7 @@ class FilesHandlerTest extends TestCase
         $this->assertDirectoryExists($this->testDir . DIRECTORY_SEPARATOR . $dirPath);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_directory(): void
     {
         $dirPath = 'test_directory';
@@ -113,7 +114,7 @@ class FilesHandlerTest extends TestCase
         $this->assertDirectoryDoesNotExist($this->testDir . DIRECTORY_SEPARATOR . $dirPath);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_directory_is_empty(): void
     {
         $emptyDir = 'empty_dir';
@@ -128,7 +129,7 @@ class FilesHandlerTest extends TestCase
         $this->assertFalse($handler->isDirectoryEmpty($nonEmptyDir));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_files_from_path(): void
     {
         $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
@@ -147,7 +148,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals(2, $fileCount);
     }
 
-    /** @test */
+    #[Test]
     public function it_excludes_vendor_directory_from_get_files_from_path(): void
     {
         $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
@@ -169,7 +170,7 @@ class FilesHandlerTest extends TestCase
         $this->assertNotContains('file2.php', $filePaths);
     }
 
-    /** @test */
+    #[Test]
     public function it_excludes_vendor_directory_from_get_file(): void
     {
         $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
@@ -191,7 +192,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals(1, $fileCount);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_specific_file_by_name(): void
     {
         $subDir = $this->testDir . DIRECTORY_SEPARATOR . 'subdir';
@@ -211,7 +212,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals(1, $fileCount);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_copy_file(): void
     {
         $sourceFile = 'source.txt';
@@ -226,7 +227,7 @@ class FilesHandlerTest extends TestCase
         $this->assertEquals($content, file_get_contents($this->testDir . DIRECTORY_SEPARATOR . $destFile));
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_config(): void
     {
         $handler = new FilesHandler($this->config);
@@ -234,7 +235,7 @@ class FilesHandlerTest extends TestCase
         $this->assertSame($this->config, $handler->getConfig());
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_directories_with_public_permissions(): void
     {
         $handler = new FilesHandler($this->config);
@@ -249,7 +250,7 @@ class FilesHandlerTest extends TestCase
         ));
     }
 
-    /** @test */
+    #[Test]
     public function it_writes_files_with_public_permissions(): void
     {
         $handler = new FilesHandler($this->config);
@@ -264,7 +265,7 @@ class FilesHandlerTest extends TestCase
         ));
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_nested_directories_with_public_permissions(): void
     {
         $handler = new FilesHandler($this->config);
@@ -289,7 +290,7 @@ class FilesHandlerTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_writing_fails(): void
     {
         $filesystem = $this->createMock(Filesystem::class);
@@ -304,7 +305,7 @@ class FilesHandlerTest extends TestCase
         $handler->writeFile('test.txt', 'content');
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_copy_fails(): void
     {
         $filesystem = $this->createMock(Filesystem::class);
@@ -319,7 +320,7 @@ class FilesHandlerTest extends TestCase
         $handler->copyFile('source.txt', 'dest.txt');
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_creating_directory_fails(): void
     {
         $filesystem = $this->createMock(Filesystem::class);
@@ -334,7 +335,7 @@ class FilesHandlerTest extends TestCase
         $handler->createDirectory('test_dir');
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_deleting_directory_fails(): void
     {
         $filesystem = $this->createMock(Filesystem::class);

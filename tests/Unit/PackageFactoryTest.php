@@ -6,6 +6,7 @@ namespace CoenJacobs\Mozart\Tests\Unit;
 
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class PackageFactoryTest extends TestCase
@@ -43,7 +44,7 @@ class PackageFactoryTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_package_from_file(): void
     {
         $composerJson = [
@@ -60,7 +61,7 @@ class PackageFactoryTest extends TestCase
         $this->assertEquals('test/package', $package->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_caches_packages(): void
     {
         $composerJson = [
@@ -77,7 +78,7 @@ class PackageFactoryTest extends TestCase
         $this->assertSame($package1, $package2);
     }
 
-    /** @test */
+    #[Test]
     public function it_applies_override_autoload_when_provided(): void
     {
         $composerJson = [
@@ -103,7 +104,7 @@ class PackageFactoryTest extends TestCase
         // without exposing more methods. The fact that it doesn't throw is sufficient.
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_null_override_autoload(): void
     {
         $composerJson = [

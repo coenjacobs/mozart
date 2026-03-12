@@ -10,6 +10,7 @@ use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\ParentReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -126,7 +127,7 @@ class ParentReplacerTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_directory_for_parent_classes(): void
     {
         $this->expectNotToPerformAssertions();
@@ -136,7 +137,7 @@ class ParentReplacerTest extends TestCase
         $parentReplacer->replaceParentClassesInDirectory($this->testDir . DIRECTORY_SEPARATOR . 'empty_dir');
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_no_replaced_classes(): void
     {
         $this->expectNotToPerformAssertions();
@@ -146,7 +147,7 @@ class ParentReplacerTest extends TestCase
         $parentReplacer->replaceParentClassesInDirectory($this->testDir);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_packages_for_replace_parent_in_tree(): void
     {
         $this->expectNotToPerformAssertions();
@@ -156,7 +157,7 @@ class ParentReplacerTest extends TestCase
         $parentReplacer->replaceParentInTree([]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_parent_classes_in_nonexistent_directory(): void
     {
         $this->expectNotToPerformAssertions();
@@ -184,9 +185,8 @@ class ParentReplacerTest extends TestCase
     /**
      * Regression test for #215: replaceParentPackage() must process all
      * autoloader combinations, not just the first one.
-     *
-     * @test
      */
+    #[Test]
     public function it_processes_all_autoloader_combinations_for_parent_replacement(): void
     {
         // Use relative dep/classmap directories (matching production config)
@@ -260,9 +260,8 @@ PHP);
      * Regression test for #325: parent files-autoloader entries that declare a
      * namespace are moved into dep_directory and must be updated there during
      * pass 2.
-     *
-     * @test
      */
+    #[Test]
     public function it_replaces_namespaced_parent_files_autoloader_targets_in_dep_directory(): void
     {
         $config = $this->createRelativeConfig();
@@ -307,9 +306,7 @@ PHP;
         $this->assertStringNotContainsString('\OrigHelper', $result);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_propagates_constant_and_function_replacements_to_parent_packages(): void
     {
         $config = $this->createRelativeConfig();
@@ -353,9 +350,7 @@ PHP);
         $this->assertStringContainsString("constant('TEST_LEGACY_FLAG')", $result);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_propagates_namespaced_files_autoloader_symbols_to_parent_packages(): void
     {
         $config = $this->createRelativeConfig();
