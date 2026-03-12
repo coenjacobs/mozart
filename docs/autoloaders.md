@@ -143,7 +143,10 @@ dep_directory/
 - **PSR-4:** A single entry maps `dep_namespace\` → `dep_directory/`, covering all namespaced packages.
 - **Classmap:** Scans both `dep_directory/` and `classmap_directory/` using `composer/class-map-generator` to find all class/interface/trait/enum declarations.
 - **Files:** Tracks files from `files` autoloaders during the move phase. These need eager loading (`require_once`) because they may define functions or execute initialization code.
+- **Files identifiers:** `autoload.files` entries are keyed by a hash of the normalized target path plus the generated autoloader hash. This keeps eager-loaded files stable across Windows/Unix path separators and prevents collisions when multiple Mozart-bundled plugins move the same file to the same relative path.
 - **Conflict prevention:** Uses `md5(dep_namespace)` to generate unique class names (`MozartAutoloaderInit{hash}`), preventing conflicts when multiple Mozart-processed plugins coexist.
+- **Path normalization:** Generated classmap and array files always use forward-slash relative paths. When scanned classmap paths do not exactly string-match the configured working directory, Mozart computes a safe relative path instead of emitting an absolute path.
+- **Windows depth handling:** Generated `autoload_*.php` array files normalize `dep_directory` before calculating `$baseDir`, so nested directories like `src\dependencies\` resolve correctly on Windows.
 
 **Execution order:** Autoloader generation happens after replacement (so classmap scanning finds prefixed names) and before vendor deletion (so `ClassLoader.php` can be copied from `vendor/composer/`).
 
