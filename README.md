@@ -99,6 +99,22 @@ The core settings and their defaults:
 
 See [docs/configuration.md](docs/configuration.md) for the full configuration reference with defaults and inference logic.
 
+## Supported versions
+
+| Version | Documentation | Latest release |
+|---|---|---|
+| 1.3 | [docs/](docs/) (in development) | — |
+| 1.2 | [docs/](https://github.com/coenjacobs/mozart/tree/release-1.2/docs) | [1.2.0](https://github.com/coenjacobs/mozart/releases/tag/1.2.0) |
+| 1.1 | [docs/](https://github.com/coenjacobs/mozart/tree/release-1.1/docs) | [1.1.4](https://github.com/coenjacobs/mozart/releases/tag/1.1.4) |
+
+### No longer supported
+
+| Version | Documentation | Latest release |
+|---|---|---|
+| 1.0 | [docs/](https://github.com/coenjacobs/mozart/tree/release-1.0/docs) | [1.0.10](https://github.com/coenjacobs/mozart/releases/tag/1.0.10) |
+| 0.7 | [docs/](https://github.com/coenjacobs/mozart/tree/release-0.7/docs) | — |
+| 0.6 | [docs/](https://github.com/coenjacobs/mozart/tree/release-0.6/docs) | — |
+
 ## Further reading
 
 | Document | Description |
