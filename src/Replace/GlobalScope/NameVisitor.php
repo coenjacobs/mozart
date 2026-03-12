@@ -91,38 +91,11 @@ class NameVisitor extends NodeVisitorAbstract
             return $this->processConstFetch($node);
         }
 
-        // Only process Name nodes
-        if (!$node instanceof Name) {
-            return null;
+        if ($node instanceof Name) {
+            return $this->processNameNode($node);
         }
 
-        // Skip names that are part of namespace or use statements
-        if ($this->isPartOfNamespaceOrUseStatement($node)) {
-            return null;
-        }
-
-        $nameStr = $node->toString();
-
-        // Only process simple names (no namespace separator)
-        // Namespaced references are handled by PrefixVisitor
-        if (str_contains($nameStr, '\\')) {
-            return null;
-        }
-
-        // Check if this name is in our classmap (case-insensitive)
-        $nameLower = strtolower($nameStr);
-        if (!isset($this->classMapLower[$nameLower])) {
-            return null;
-        }
-
-        // Replace with the prefixed version
-        $prefixedName = $this->classMapLower[$nameLower];
-
-        if ($node->isFullyQualified()) {
-            return new Name\FullyQualified($prefixedName);
-        }
-
-        return new Name($prefixedName);
+        return null;
     }
 
     /**
@@ -199,25 +172,141 @@ class NameVisitor extends NodeVisitorAbstract
      */
     protected function processExistenceCheck(FuncCall $node): ?FuncCall
     {
+        if (!$node->name instanceof Name) {
+            return null;
+        }
+
         $allParsed = $this->parseAllExistenceChecks($node);
         $modified = false;
+        $functionName = strtolower($node->name->toString());
 
         foreach ($allParsed as $parsed) {
-            $value = $parsed['value'];
-            $valueLower = strtolower($value);
+            $replacement = $this->getExistenceCheckReplacement(
+                $functionName,
+                $parsed['value'],
+                $parsed['suffix']
+            );
 
-            if (isset($this->classMapLower[$valueLower])) {
-                $parsed['argNode']->value = $this->classMapLower[$valueLower] . $parsed['suffix'];
-                $modified = true;
-            } elseif (isset($this->constantMap[$value])) {
-                $parsed['argNode']->value = $this->constantMap[$value] . $parsed['suffix'];
-                $modified = true;
-            } elseif (isset($this->functionMapLower[$valueLower])) {
-                $parsed['argNode']->value = $this->functionMapLower[$valueLower] . $parsed['suffix'];
+            if ($replacement !== null) {
+                $parsed['argNode']->value = $replacement . $parsed['suffix'];
                 $modified = true;
             }
         }
 
         return $modified ? $node : null;
+    }
+
+    /**
+     * Process Name nodes that should use the class map.
+     */
+    protected function processNameNode(Name $node): ?Name
+    {
+        // Skip names that are part of namespace or use statements
+        if ($this->isPartOfNamespaceOrUseStatement($node)) {
+            return null;
+        }
+
+        if ($this->shouldDeferNameReplacementToParent($node)) {
+            return null;
+        }
+
+        $nameStr = $node->toString();
+
+        // Only process simple names (no namespace separator)
+        // Namespaced references are handled by PrefixVisitor
+        if (str_contains($nameStr, '\\')) {
+            return null;
+        }
+
+        $prefixedName = $this->classMapLower[strtolower($nameStr)] ?? null;
+        if ($prefixedName === null) {
+            return null;
+        }
+
+        if ($node->isFullyQualified()) {
+            return new Name\FullyQualified($prefixedName);
+        }
+
+        return new Name($prefixedName);
+    }
+
+    /**
+     * Skip Name nodes whose parent node applies a more specific symbol map.
+     */
+    protected function shouldDeferNameReplacementToParent(Name $node): bool
+    {
+        $parent = $node->getAttribute('parent');
+
+        if ($parent instanceof FuncCall && $node === $parent->name) {
+            return true;
+        }
+
+        return $parent instanceof ConstFetch && $node === $parent->name;
+    }
+
+    /**
+     * Resolve the correct replacement map for an existence-check argument.
+     */
+    protected function getExistenceCheckReplacement(string $functionName, string $value, string $suffix): ?string
+    {
+        if ($this->shouldUseClassMapForExistenceCheck($functionName, $suffix)) {
+            return $this->classMapLower[strtolower($value)] ?? null;
+        }
+
+        if ($this->shouldUseConstantMapForExistenceCheck($functionName)) {
+            return $this->constantMap[$value] ?? null;
+        }
+
+        if ($this->shouldUseFunctionMapForExistenceCheck($functionName, $suffix)) {
+            return $this->functionMapLower[strtolower($value)] ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine whether an existence-check argument should use the class map.
+     */
+    protected function shouldUseClassMapForExistenceCheck(string $functionName, string $suffix): bool
+    {
+        if ($suffix !== '') {
+            return in_array($functionName, ['defined', 'constant', 'is_callable'], true);
+        }
+
+        return in_array(
+            $functionName,
+            [
+                'class_exists',
+                'interface_exists',
+                'trait_exists',
+                'enum_exists',
+                'method_exists',
+                'property_exists',
+                'is_a',
+                'is_subclass_of',
+                'class_alias',
+            ],
+            true
+        );
+    }
+
+    /**
+     * Determine whether an existence-check argument should use the constant map.
+     */
+    protected function shouldUseConstantMapForExistenceCheck(string $functionName): bool
+    {
+        return in_array($functionName, ['define', 'defined', 'constant'], true);
+    }
+
+    /**
+     * Determine whether an existence-check argument should use the function map.
+     */
+    protected function shouldUseFunctionMapForExistenceCheck(string $functionName, string $suffix): bool
+    {
+        if ($suffix !== '') {
+            return false;
+        }
+
+        return in_array($functionName, ['function_exists', 'is_callable'], true);
     }
 }
