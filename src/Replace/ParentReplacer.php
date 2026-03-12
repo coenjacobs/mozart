@@ -2,13 +2,13 @@
 
 namespace CoenJacobs\Mozart\Replace;
 
+use CoenJacobs\Mozart\Composer\Autoload\Autoloader;
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
 use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
 use CoenJacobs\Mozart\Replace\GlobalScope\NameReplacer;
-use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 
 class ParentReplacer
 {
@@ -27,11 +27,14 @@ class ParentReplacer
     /** @var array<string,string> */
     protected array $replacedFunctions = [];
 
+    protected ParentFilesAutoloaderNamespacePropagator $namespacePropagator;
+
     public function __construct(Mozart $config, Replacer $replacer)
     {
-        $this->config   = $config;
-        $this->files    = new FilesHandler($config);
+        $this->config = $config;
+        $this->files = new FilesHandler($config);
         $this->replacer = $replacer;
+        $this->namespacePropagator = new ParentFilesAutoloaderNamespacePropagator($config, $this->files);
     }
 
     /**
@@ -68,10 +71,18 @@ class ParentReplacer
      */
     public function replaceParentClassesInDirectory(string $directory): void
     {
-        if (empty($this->replacedClasses) && empty($this->replacedConstants) && empty($this->replacedFunctions)) {
+        if (! $this->hasGlobalSymbolReplacements()) {
             return;
         }
 
+        $this->replaceParentClassesWithReplacerInDirectory($directory, $this->createNameReplacer());
+    }
+
+    /**
+     * Replace pass-2 global-scope symbols across all PHP files in a directory.
+     */
+    private function replaceParentClassesWithReplacerInDirectory(string $directory, NameReplacer $replacer): void
+    {
         $directory = trim($directory, '/');
 
         if (!is_dir($directory)) {
@@ -79,7 +90,6 @@ class ParentReplacer
         }
 
         $files = $this->files->getFilesFromPath($directory);
-        $replacer = new NameReplacer($this->replacedClasses, $this->replacedConstants, $this->replacedFunctions);
 
         foreach ($files as $file) {
             $targetFile = $file->getPathName();
@@ -107,41 +117,8 @@ class ParentReplacer
                 continue;
             }
 
-            foreach ($package->getAutoloaders() as $autoloader) {
-                if ($parentAutoloader instanceof NamespaceAutoloader) {
-                    $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
-                    $directory = $this->config->getWorkingDir() . $this->config->getDepDirectory() . $namespace
-                                 . DIRECTORY_SEPARATOR;
-
-                    if ($autoloader instanceof NamespaceAutoloader) {
-                        $this->replacer->replaceInDirectory($autoloader, $directory);
-                        continue;
-                    }
-
-                    if ($autoloader instanceof Files) {
-                        $this->replaceParentNamespacesFromFilesAutoloaderInDirectory($directory, $autoloader);
-                    }
-
-                    $directory = str_replace($this->config->getWorkingDir(), '', $directory);
-                    $this->replaceParentClassesInDirectory($directory);
-                    continue;
-                }
-
-                $directory = $this->config->getWorkingDir() .
-                $this->config->getClassmapDirectory() . $parent->getDirectoryName();
-
-                if ($autoloader instanceof NamespaceAutoloader) {
-                    $this->replacer->replaceInDirectory($autoloader, $directory);
-                    continue;
-                }
-
-                if ($autoloader instanceof Files) {
-                    $this->replaceParentNamespacesFromFilesAutoloaderInDirectory($directory, $autoloader);
-                }
-
-                $directory = str_replace($this->config->getWorkingDir(), '', $directory);
-                $this->replaceParentClassesInDirectory($directory);
-            }
+            $directory = $this->getParentAutoloaderDirectory($parent, $parentAutoloader);
+            $this->replaceParentDirectoryPackage($package, $directory);
         }
     }
 
@@ -150,6 +127,10 @@ class ParentReplacer
      */
     private function replaceParentClassesInFile(string $targetFile, NameReplacer $replacer): void
     {
+        if (! $this->hasGlobalSymbolReplacements()) {
+            return;
+        }
+
         $fullPath = $this->getFullPath($targetFile);
 
         if (!is_file($fullPath)) {
@@ -178,6 +159,7 @@ class ParentReplacer
     private function replaceParentFilesPackage(Package $package, Files $parentAutoloader): void
     {
         $files = $parentAutoloader->getFiles($this->files);
+        $replacer = $this->createNameReplacer();
 
         foreach ($package->getAutoloaders() as $autoloader) {
             foreach ($files as $file) {
@@ -194,17 +176,85 @@ class ParentReplacer
                 }
 
                 if ($autoloader instanceof Files) {
-                    $this->replaceParentNamespacesFromFilesAutoloaderInFile($fullPath, $autoloader);
+                    $this->namespacePropagator->replaceInFile($fullPath, $autoloader);
                 }
 
-                $replacer = new NameReplacer(
-                    $this->replacedClasses,
-                    $this->replacedConstants,
-                    $this->replacedFunctions
-                );
                 $this->replaceParentClassesInFile($fullPath, $replacer);
             }
         }
+    }
+
+    /**
+     * Replace all child autoloaders against a parent directory target.
+     */
+    private function replaceParentDirectoryPackage(Package $package, string $directory): void
+    {
+        $replacer = $this->createNameReplacer();
+
+        foreach ($package->getAutoloaders() as $autoloader) {
+            $this->replaceChildAutoloaderInDirectory($autoloader, $directory, $replacer);
+        }
+    }
+
+    /**
+     * Replace a child autoloader against a parent directory target.
+     */
+    private function replaceChildAutoloaderInDirectory(
+        Autoloader $autoloader,
+        string $directory,
+        NameReplacer $replacer
+    ): void {
+        if ($autoloader instanceof NamespaceAutoloader) {
+            $this->replacer->replaceInDirectory($autoloader, $directory);
+            return;
+        }
+
+        if ($autoloader instanceof Files) {
+            $this->namespacePropagator->replaceInDirectory($directory, $autoloader);
+        }
+
+        $this->replaceParentClassesWithReplacerInDirectory($this->toRelativePath($directory), $replacer);
+    }
+
+    /**
+     * Build the absolute directory target for a parent autoloader.
+     */
+    private function getParentAutoloaderDirectory(Package $parent, Autoloader $parentAutoloader): string
+    {
+        if ($parentAutoloader instanceof NamespaceAutoloader) {
+            $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
+
+            return $this->config->getWorkingDir()
+                . $this->config->getDepDirectory()
+                . $namespace
+                . DIRECTORY_SEPARATOR;
+        }
+
+        return $this->config->getWorkingDir()
+            . $this->config->getClassmapDirectory()
+            . $parent->getDirectoryName();
+    }
+
+    /**
+     * Build the global symbol replacer for pass-2 parent replacement.
+     */
+    private function createNameReplacer(): NameReplacer
+    {
+        return new NameReplacer(
+            $this->replacedClasses,
+            $this->replacedConstants,
+            $this->replacedFunctions
+        );
+    }
+
+    /**
+     * Check whether any global symbol replacements are available.
+     */
+    private function hasGlobalSymbolReplacements(): bool
+    {
+        return !empty($this->replacedClasses)
+            || !empty($this->replacedConstants)
+            || !empty($this->replacedFunctions);
     }
 
     /**
@@ -220,88 +270,11 @@ class ParentReplacer
     }
 
     /**
-     * Apply namespace replacement from a child files autoloader to every PHP file in a parent directory.
+     * Convert an absolute working-dir path to a relative Mozart target path.
      */
-    private function replaceParentNamespacesFromFilesAutoloaderInDirectory(string $directory, Files $autoloader): void
+    private function toRelativePath(string $path): string
     {
-        if (!is_dir($directory)) {
-            return;
-        }
-
-        $namespaces = $this->getFilesAutoloaderNamespaces($autoloader);
-        if (empty($namespaces)) {
-            return;
-        }
-
-        $files = $this->files->getFilesFromPath($directory);
-
-        foreach ($files as $file) {
-            $targetFile = $file->getPathName();
-
-            if (!str_ends_with($targetFile, '.php')) {
-                continue;
-            }
-
-            $this->replaceParentNamespacesFromFilesAutoloaderInFile($targetFile, $autoloader, $namespaces);
-        }
-    }
-
-    /**
-     * Apply namespace replacement from a child files autoloader to a single parent file.
-     *
-     * @param string[]|null $namespaces Cached namespaces from the child files autoloader.
-     */
-    private function replaceParentNamespacesFromFilesAutoloaderInFile(
-        string $targetFile,
-        Files $autoloader,
-        ?array $namespaces = null
-    ): void {
-        $fullPath = $this->getFullPath($targetFile);
-
-        if (!is_file($fullPath)) {
-            return;
-        }
-
-        $targetFile = str_replace($this->config->getWorkingDir(), '', $fullPath);
-
-        try {
-            $contents = $this->files->readFile($targetFile);
-        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
-            return;
-        }
-
-        $namespaces = $namespaces ?? $this->getFilesAutoloaderNamespaces($autoloader);
-
-        foreach ($namespaces as $namespace) {
-            $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
-            $replacer->setAutoloader($autoloader);
-            $replacer->setSearchNamespace($namespace);
-            $contents = $replacer->replace($contents);
-        }
-
-        $this->files->writeFile($targetFile, $contents);
-    }
-
-    /**
-     * Collect distinct namespaces declared by files in a files autoloader.
-     *
-     * @return string[]
-     */
-    private function getFilesAutoloaderNamespaces(Files $autoloader): array
-    {
-        $namespaces = [];
-
-        foreach ($autoloader->getFiles($this->files) as $file) {
-            $namespace = $autoloader->getDetectedNamespace($file);
-
-            if ($namespace === null || $namespace === '') {
-                continue;
-            }
-
-            $namespaces[$namespace] = true;
-        }
-
-        return array_keys($namespaces);
+        return str_replace($this->config->getWorkingDir(), '', $path);
     }
 
     /**
