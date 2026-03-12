@@ -45,7 +45,7 @@ See [docs/installation.md](docs/installation.md) for all installation methods (D
 
 ## Configuration
 
-Mozart potentially requires zero configuration. When your project has a PSR-4 autoload entry or a package name in `composer.json`, Mozart infers everything it needs: the dependency namespace, target directories, and classmap prefix. Just run `mozart compose` and it works.
+Mozart potentially requires zero configuration. When your project has a PSR-4 autoload entry or a package name in `composer.json`, Mozart infers everything it needs: the dependency namespace, target directories, classmap prefix, and the generated dependency autoloader. In the default setup, run `mozart compose` and then include the generated `dep_directory/autoload.php` from your plugin bootstrap.
 
 If you want to customize the behavior, add an `extra.mozart` block to your `composer.json`. Even an empty block is valid — Mozart fills in every setting it can infer:
 
@@ -93,8 +93,8 @@ The core settings and their defaults:
 - `dep_directory` — target directory for namespaced package files. _Default: `vendor-prefixed/`._
 - `classmap_directory` — target directory for classmap package files. _Default: same as `dep_directory`._
 - `classmap_prefix` — prefix applied to classmap class names. _Default: derived from `dep_namespace` with `\` replaced by `_`._
-- `constant_prefix` — prefix for global-scope constants. _Default: empty (disabled)._
-- `functions_prefix` — prefix for global-scope functions. _Default: empty (disabled)._
+- `constant_prefix` — prefix for global-scope constants. _Default: derived from `classmap_prefix` by uppercasing it._
+- `functions_prefix` — prefix for global-scope functions. _Default: derived from `classmap_prefix` by lowercasing it._
 - `generate_autoloader` — generate a Composer-compatible autoloader for prefixed dependencies. _Default: `true`._
 
 See [docs/configuration.md](docs/configuration.md) for the full configuration reference with defaults and inference logic.
@@ -105,6 +105,6 @@ See [docs/configuration.md](docs/configuration.md) for the full configuration re
 |---|---|
 | [docs/installation.md](docs/installation.md) | All installation methods: Docker, PHAR, Composer |
 | [docs/configuration.md](docs/configuration.md) | Full configuration reference with defaults and inference |
-| [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts, configuring your project's autoloader |
+| [docs/usage.md](docs/usage.md) | Automating Mozart with Composer scripts and using the generated autoloader |
 | [docs/docker.md](docs/docker.md) | Docker registries, tag strategy, multi-architecture support |
 | [docs/background.md](docs/background.md) | Why Mozart was created and how it compares to PHP-Scoper |

@@ -58,7 +58,7 @@ The `ParentReplacer` handles cross-replacement: after `Replacer` rewrites namesp
 
 ## Configuration
 
-Mozart config lives in the consuming project's `composer.json` under `extra.mozart`:
+Mozart reads configuration from the consuming project's `composer.json`. If `extra.mozart` is present, those values are loaded first; otherwise Mozart starts from an empty config and applies defaults:
 
 | Key | Required | Description |
 |---|---|---|
@@ -66,8 +66,8 @@ Mozart config lives in the consuming project's `composer.json` under `extra.moza
 | `dep_directory` | No (has default) | Where namespaced files are copied to. Default: `vendor-prefixed/`. |
 | `classmap_prefix` | No (has default) | Prefix added to global class names. Derived from `dep_namespace` with `\` → `_`. |
 | `classmap_directory` | No (has default) | Where classmap files are copied to. Default: same as `dep_directory`. |
-| `constant_prefix` | No | Prefix for global-scope constants. Default: empty (disabled). |
-| `functions_prefix` | No | Prefix for global-scope functions. Default: empty (disabled). |
+| `constant_prefix` | No | Prefix for global-scope constants. Default: derived from `classmap_prefix` (uppercased). |
+| `functions_prefix` | No | Prefix for global-scope functions. Default: derived from `classmap_prefix` (lowercased). |
 | `generate_autoloader` | No | Generate Composer-compatible autoloader. Default: `true`. |
 | `packages` | No | Limit which packages are processed. If empty, all `require` dependencies are processed. |
 | `excluded_packages` | No | Packages to skip entirely during replacement |
@@ -142,11 +142,11 @@ Mozart uses a small exception hierarchy:
 
 ```
 MozartException (base)
-├── ConfigurationException  — invalid or missing Mozart config
+├── ConfigurationException  — invalid config or missing inferred requirements
 └── FileOperationException  — file read/write failures (caught and skipped in replacer)
 ```
 
-`ConfigurationException` is thrown early in `Commands\Compose::execute()` if the Mozart config block is missing. `FileOperationException` is thrown by `FilesHandler` on I/O failures and is caught in the replacer loops to skip unreadable files gracefully.
+`ConfigurationException` is thrown early in `Commands\Compose::execute()` if Mozart still cannot resolve a required value after applying defaults and inference. `FileOperationException` is thrown by `FilesHandler` on I/O failures and is caught in the replacer loops to skip unreadable files gracefully.
 
 ## Project structure
 
