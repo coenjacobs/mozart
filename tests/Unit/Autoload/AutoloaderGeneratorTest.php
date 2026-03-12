@@ -6,6 +6,7 @@ namespace CoenJacobs\Mozart\Tests\Unit\Autoload;
 
 use CoenJacobs\Mozart\Autoload\AutoloaderFileWriter;
 use CoenJacobs\Mozart\Autoload\AutoloaderGenerator;
+use CoenJacobs\Mozart\Autoload\PathHelper;
 use CoenJacobs\Mozart\Config\ConfigLoader;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
@@ -19,6 +20,9 @@ class AutoloaderGeneratorTest extends TestCase
 {
     protected string $testsWorkingDir;
     protected Mozart $config;
+
+    /** @var array<string> */
+    protected array $extraDirectories = [];
 
     public function setUp(): void
     {
@@ -150,6 +154,35 @@ class AutoloaderGeneratorTest extends TestCase
 
         $content = file_get_contents($filesFile);
         $this->assertStringContainsString('Spyc.php', $content);
+    }
+
+    #[Test]
+    public function it_scopes_file_identifiers_to_the_autoloader_hash(): void
+    {
+        $this->setUpVendorComposer();
+
+        $generator = new TestAutoloaderGenerator($this->config);
+        $entries = $generator->buildFilesEntriesForTest(['classes/mustangostang/spyc/Spyc.php']);
+
+        $expectedId = md5($generator->getHash() . ':classes/mustangostang/spyc/Spyc.php');
+
+        $this->assertSame(
+            [$expectedId => 'classes/mustangostang/spyc/Spyc.php'],
+            $entries
+        );
+    }
+
+    #[Test]
+    public function it_uses_the_same_file_identifier_for_windows_and_unix_style_targets(): void
+    {
+        $this->setUpVendorComposer();
+
+        $generator = new TestAutoloaderGenerator($this->config);
+
+        $unixEntries = $generator->buildFilesEntriesForTest(['classes/mustangostang/spyc/Spyc.php']);
+        $windowsEntries = $generator->buildFilesEntriesForTest(['classes\\mustangostang\\spyc\\Spyc.php']);
+
+        $this->assertSame($unixEntries, $windowsEntries);
     }
 
     #[Test]
@@ -295,6 +328,32 @@ class AutoloaderGeneratorTest extends TestCase
     }
 
     #[Test]
+    public function it_relativizes_classmap_entries_when_working_dir_is_not_a_string_prefix(): void
+    {
+        $mismatchedRoot = sys_get_temp_dir() . '/mozart_autoloader_external_' . uniqid();
+        $this->extraDirectories[] = $mismatchedRoot;
+        mkdir($mismatchedRoot, 0777, true);
+
+        $generator = new TestAutoloaderGenerator(
+            $this->config,
+            [
+                'MyPlugin\\Dependencies\\Mismatch' => $mismatchedRoot . '/src/dependencies/Mismatch.php',
+            ]
+        );
+
+        $entries = $generator->buildClassmapEntriesForTest();
+
+        $this->assertSame(
+            '../' . basename($mismatchedRoot) . '/src/dependencies/Mismatch.php',
+            $entries['MyPlugin\\Dependencies\\Mismatch']
+        );
+        $this->assertStringNotContainsString(
+            (new PathHelper())->normalize($mismatchedRoot),
+            $entries['MyPlugin\\Dependencies\\Mismatch']
+        );
+    }
+
+    #[Test]
     public function it_computes_relative_paths_correctly(): void
     {
         $filesHandler = new FilesHandler($this->config);
@@ -309,6 +368,62 @@ class AutoloaderGeneratorTest extends TestCase
             '../../../classes/pkg/File.php',
             $writer->computeRelativePath('src/dependencies/composer', 'classes/pkg/File.php')
         );
+    }
+
+    #[Test]
+    public function it_generates_a_windows_safe_base_dir_expression(): void
+    {
+        $writer = new TestAutoloaderFileWriter(
+            new FilesHandler($this->config),
+            'src\\dependencies\\',
+            'testhash'
+        );
+
+        $this->assertSame('dirname($vendorDir, 2)', $writer->buildBaseDirExprForTest());
+    }
+
+    #[Test]
+    public function it_formats_external_paths_with_normalized_base_dir_expressions(): void
+    {
+        $writer = new TestAutoloaderFileWriter(
+            new FilesHandler($this->config),
+            'src\\dependencies\\',
+            'testhash'
+        );
+
+        $this->assertSame(
+            '$baseDir . \'/classes/pkg/File.php\'',
+            $writer->formatPathExprForTest('composer', 'classes\\pkg\\File.php')
+        );
+    }
+
+    #[Test]
+    public function it_loads_files_from_two_generated_autoloaders_in_the_same_process(): void
+    {
+        $pluginADir = $this->testsWorkingDir . '/plugin-a';
+        $pluginBDir = $this->testsWorkingDir . '/plugin-b';
+
+        $autoloadA = $this->createGeneratedAutoloaderFixture($pluginADir, 'PluginA\\Dependencies', 'plugin-a');
+        $autoloadB = $this->createGeneratedAutoloaderFixture($pluginBDir, 'PluginB\\Dependencies', 'plugin-b');
+
+        $scriptPath = $this->testsWorkingDir . '/load_both_autoloaders.php';
+        $script = <<<PHP
+<?php
+\$GLOBALS['mozart_test_loaded'] = [];
+
+require {$this->exportPhpString($autoloadA)};
+require {$this->exportPhpString($autoloadB)};
+
+if (\$GLOBALS['mozart_test_loaded'] !== ['plugin-a', 'plugin-b']) {
+    fwrite(STDERR, json_encode(\$GLOBALS['mozart_test_loaded']));
+    exit(1);
+}
+PHP;
+        file_put_contents($scriptPath, $script);
+
+        exec('php ' . escapeshellarg($scriptPath) . ' 2>&1', $output, $exitCode);
+
+        $this->assertSame(0, $exitCode, implode("\n", $output));
     }
 
     /**
@@ -328,11 +443,86 @@ class AutoloaderGeneratorTest extends TestCase
             file_put_contents(
                 $vendorComposerDir . '/ClassLoader.php',
                 "<?php\nnamespace Composer\\Autoload;\nclass ClassLoader {\n"
-                . "    public function __construct(\$vendorDir = '') {}\n}\n"
+                . "    public \$prefixLengthsPsr4 = [];\n"
+                . "    public \$prefixDirsPsr4 = [];\n"
+                . "    public \$classMap = [];\n"
+                . "    public function __construct(\$vendorDir = '') {}\n"
+                . "    public function register(\$prepend = false) {}\n}\n"
             );
         }
 
         file_put_contents($vendorComposerDir . '/LICENSE', 'MIT License');
+    }
+
+    /**
+     * Create a generated autoloader fixture for runtime regression tests.
+     */
+    protected function createGeneratedAutoloaderFixture(
+        string $workingDir,
+        string $dependencyNamespace,
+        string $label
+    ): string {
+        mkdir($workingDir, 0777, true);
+
+        $configArgs = [
+            'dep_namespace' => $dependencyNamespace,
+            'dep_directory' => '/src/dependencies/',
+            'classmap_directory' => '/classes/',
+            'classmap_prefix' => str_replace('\\', '_', $dependencyNamespace) . '_',
+        ];
+
+        $loader = new ConfigLoader();
+        $config = $loader->fromString(json_encode($configArgs), Mozart::class);
+        $config->setWorkingDir($workingDir);
+
+        mkdir($workingDir . '/src/dependencies', 0777, true);
+        mkdir($workingDir . '/classes/shared', 0777, true);
+
+        file_put_contents(
+            $workingDir . '/classes/shared/bootstrap.php',
+            "<?php\n\$GLOBALS['mozart_test_loaded'][] = '{$label}';\n"
+        );
+
+        $this->setUpVendorComposerInDirectory($workingDir);
+
+        $generator = new AutoloaderGenerator($config);
+        $generator->generate(['classes/shared/bootstrap.php']);
+
+        return $workingDir . '/src/dependencies/autoload.php';
+    }
+
+    /**
+     * Set up a minimal vendor/composer directory in a specific working directory.
+     */
+    protected function setUpVendorComposerInDirectory(string $workingDir): void
+    {
+        $vendorComposerDir = $workingDir . '/vendor/composer';
+        mkdir($vendorComposerDir, 0777, true);
+
+        $realClassLoader = dirname(__DIR__, 3) . '/vendor/composer/ClassLoader.php';
+        if (file_exists($realClassLoader)) {
+            copy($realClassLoader, $vendorComposerDir . '/ClassLoader.php');
+        } else {
+            file_put_contents(
+                $vendorComposerDir . '/ClassLoader.php',
+                "<?php\nnamespace Composer\\Autoload;\nclass ClassLoader {\n"
+                . "    public \$prefixLengthsPsr4 = [];\n"
+                . "    public \$prefixDirsPsr4 = [];\n"
+                . "    public \$classMap = [];\n"
+                . "    public function __construct(\$vendorDir = '') {}\n"
+                . "    public function register(\$prepend = false) {}\n}\n"
+            );
+        }
+
+        file_put_contents($vendorComposerDir . '/LICENSE', 'MIT License');
+    }
+
+    /**
+     * Export a string as a single-quoted PHP literal.
+     */
+    protected function exportPhpString(string $value): string
+    {
+        return var_export($value, true);
     }
 
     public function tearDown(): void
@@ -341,6 +531,12 @@ class AutoloaderGeneratorTest extends TestCase
 
         if (is_dir($this->testsWorkingDir)) {
             $this->removeDirectory($this->testsWorkingDir);
+        }
+
+        foreach ($this->extraDirectories as $directory) {
+            if (is_dir($directory)) {
+                $this->removeDirectory($directory);
+            }
         }
     }
 
@@ -368,5 +564,72 @@ class AutoloaderGeneratorTest extends TestCase
         }
 
         rmdir($dir);
+    }
+}
+
+class TestAutoloaderGenerator extends AutoloaderGenerator
+{
+    /** @var array<string, string>|null */
+    private ?array $classmapOverride;
+
+    /**
+     * @param array<string, string>|null $classmapOverride
+     */
+    public function __construct(Mozart $config, ?array $classmapOverride = null)
+    {
+        parent::__construct($config);
+        $this->classmapOverride = $classmapOverride;
+    }
+
+    /**
+     * Expose files entry generation for unit tests.
+     *
+     * @param array<string> $targets
+     * @return array<string, string>
+     */
+    public function buildFilesEntriesForTest(array $targets): array
+    {
+        return $this->buildFilesEntries($targets);
+    }
+
+    /**
+     * Expose classmap entry generation for unit tests.
+     *
+     * @return array<string, string>
+     */
+    public function buildClassmapEntriesForTest(): array
+    {
+        return $this->buildClassmapEntries();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function createClassmapForDirectory(string $directory): array
+    {
+        if ($this->classmapOverride !== null) {
+            return $this->classmapOverride;
+        }
+
+        return parent::createClassmapForDirectory($directory);
+    }
+}
+
+class TestAutoloaderFileWriter extends AutoloaderFileWriter
+{
+    /**
+     * Expose the generated base-dir expression for unit tests.
+     */
+    public function buildBaseDirExprForTest(): string
+    {
+        return $this->buildBaseDirExpr();
+    }
+
+    /**
+     * Expose path expression formatting for unit tests.
+     */
+    public function formatPathExprForTest(string $fromDir, string $toPath): string
+    {
+        return $this->formatPathExpr($fromDir, $toPath);
     }
 }

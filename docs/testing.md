@@ -153,3 +153,6 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #159 | `Integration/Psr4ArrayAutoload` | PSR-4 arrays with non-existent directories |
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
 | #209 | `FilesHandlerTest` | Restrictive file permissions (0700/0600) from Flysystem's default private visibility |
+| #324 | `Unit/Autoload/AutoloaderGeneratorTest` | `autoload.files` identifier collisions across plugins and platform-specific hash churn |
+| #327 | `Unit/Autoload/AutoloaderGeneratorTest` | Incorrect generated `$baseDir` depth when `dep_directory` uses Windows separators |
+| #341 | `Unit/Autoload/AutoloaderGeneratorTest` | Absolute classmap paths when scanned file paths do not exactly match the configured working directory |
