@@ -16,9 +16,9 @@ class Application extends BaseApplication
         parent::__construct('mozart', $version);
 
         $composeCommand = new Compose();
-        $this->add($composeCommand);
+        $this->addCommand($composeCommand);
 
         $configCommand = new Config();
-        $this->add($configCommand);
+        $this->addCommand($configCommand);
     }
 }

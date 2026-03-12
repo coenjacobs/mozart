@@ -15,7 +15,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
-use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -87,7 +87,7 @@ class DeclarationVisitor extends NodeVisitorAbstract
         if ($node instanceof Namespace_ && $node->name !== null) {
             $this->inNamespace = true;
             // Skip children of named namespaces
-            return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+            return NodeVisitor::DONT_TRAVERSE_CHILDREN;
         }
         return null;
     }

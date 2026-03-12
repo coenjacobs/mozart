@@ -6,6 +6,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
 use CoenJacobs\Mozart\FilesHandler;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -28,7 +29,7 @@ class NamespaceAutoloaderTargetFileTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_strips_src_path_from_psr4_target_file(): void
     {
         // Set up directory structure: vendor/php-di/php-di/src/Attribute/Inject.php
@@ -75,7 +76,7 @@ class NamespaceAutoloaderTargetFileTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_psr4_path(): void
     {
         // Set up directory structure: vendor/some/package/Foo/Bar.php
@@ -120,7 +121,7 @@ class NamespaceAutoloaderTargetFileTest extends TestCase
         $this->assertStringEndsWith('Bar.php', $targetPath);
     }
 
-    /** @test */
+    #[Test]
     public function it_strips_path_with_array_of_psr4_paths(): void
     {
         // Set up directory structure with two source paths

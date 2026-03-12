@@ -3,3 +3,7 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     paths:
       - ./src
+    ignoreErrors:
+      -
+        message: '#@SuppressWarnings has invalid value#'
+        identifier: phpDoc.parseError

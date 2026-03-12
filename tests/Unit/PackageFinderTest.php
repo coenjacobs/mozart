@@ -10,6 +10,7 @@ use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFactory;
 use CoenJacobs\Mozart\PackageFinder;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -52,7 +53,7 @@ class PackageFinderTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_config_not_set(): void
     {
         $finder = new PackageFinder();
@@ -63,7 +64,7 @@ class PackageFinderTest extends TestCase
         $finder->getPackageBySlug('vendor/package');
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_for_non_package_slug(): void
     {
         $finder = new PackageFinder();
@@ -74,7 +75,7 @@ class PackageFinderTest extends TestCase
         $this->assertNull($result);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_package_directory_not_found(): void
     {
         $finder = new PackageFinder();
@@ -86,7 +87,7 @@ class PackageFinderTest extends TestCase
         $finder->getPackageBySlug('nonexistent/package');
     }
 
-    /** @test */
+    #[Test]
     public function it_filters_out_null_packages_from_slugs(): void
     {
         $finder = new PackageFinder();
@@ -101,7 +102,7 @@ class PackageFinderTest extends TestCase
         $this->assertEmpty($result);
     }
 
-    /** @test */
+    #[Test]
     public function it_finds_packages_recursively(): void
     {
         // Create a mock package structure
@@ -128,7 +129,7 @@ class PackageFinderTest extends TestCase
         $this->assertCount(1, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_factory_property(): void
     {
         $finder = new PackageFinder();
@@ -143,7 +144,7 @@ class PackageFinderTest extends TestCase
         return $package;
     }
 
-    /** @test */
+    #[Test]
     public function it_deduplicates_diamond_dependencies(): void
     {
         // A depends on B and C; both B and C depend on D
@@ -169,7 +170,7 @@ class PackageFinderTest extends TestCase
         $this->assertCount(4, array_unique($names));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_circular_dependencies(): void
     {
         // A depends on B, B depends on A
@@ -188,7 +189,7 @@ class PackageFinderTest extends TestCase
         $this->assertContains('vendor/b', $names);
     }
 
-    /** @test */
+    #[Test]
     public function it_passes_override_autoload_to_factory(): void
     {
         $vendorDir = $this->testDir . DIRECTORY_SEPARATOR . 'vendor';
@@ -224,7 +225,7 @@ class PackageFinderTest extends TestCase
         $this->assertInstanceOf(Classmap::class, $autoloaders[0]);
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_grow_exponentially_with_deep_shared_dependencies(): void
     {
         // Build a chain where each level shares a dependency with the next:

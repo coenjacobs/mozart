@@ -12,6 +12,7 @@ use CoenJacobs\Mozart\PhpSymbols\BuiltInSymbols;
 use CoenJacobs\Mozart\Replace\GlobalScope\GlobalScopeReplacer;
 use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 use CoenJacobs\Mozart\Replace\Replacer;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -59,7 +60,7 @@ class ReplacerTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_namespace_replacer_for_namespace_autoloader(): void
     {
         $autoloader = new Psr4();
@@ -71,7 +72,7 @@ class ReplacerTest extends TestCase
         $this->assertInstanceOf(NamespaceReplacer::class, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_classmap_replacer_for_classmap_autoloader(): void
     {
         $autoloader = new Classmap();
@@ -83,7 +84,7 @@ class ReplacerTest extends TestCase
         $this->assertInstanceOf(GlobalScopeReplacer::class, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_excluded_packages(): void
     {
         $this->expectNotToPerformAssertions();
@@ -99,7 +100,7 @@ class ReplacerTest extends TestCase
         $replacer->replacePackageByAutoloader($package, $autoloader);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_packages_array(): void
     {
         $this->expectNotToPerformAssertions();
@@ -108,7 +109,7 @@ class ReplacerTest extends TestCase
         $replacer->replacePackages([]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_package_with_no_autoloaders(): void
     {
         $this->expectNotToPerformAssertions();
@@ -120,7 +121,7 @@ class ReplacerTest extends TestCase
         $replacer->replacePackage($package);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_files_that_cannot_be_read(): void
     {
         $this->expectNotToPerformAssertions();
@@ -132,7 +133,7 @@ class ReplacerTest extends TestCase
         $replacer->replaceInFile('nonexistent/file.php', $autoloader);
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_empty_file_contents(): void
     {
         $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'empty.php';
@@ -147,7 +148,7 @@ class ReplacerTest extends TestCase
         $this->assertSame('', file_get_contents($filePath));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_classmap_package_with_nonexistent_directory(): void
     {
         $package = new Package();
@@ -162,7 +163,7 @@ class ReplacerTest extends TestCase
         $this->assertEmpty($replacer->getReplacedClasses());
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_namespace_autoloader_with_nonexistent_directory(): void
     {
         $this->expectNotToPerformAssertions();
@@ -174,7 +175,7 @@ class ReplacerTest extends TestCase
         $replacer->replaceInDirectory($autoloader, $this->testDir . DIRECTORY_SEPARATOR . 'nonexistent');
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_each_package_only_once_in_diamond_dependency_graph(): void
     {
         // Diamond: A→B→D, A→C→D — D should only be processed once.

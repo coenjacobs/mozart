@@ -525,7 +525,7 @@ PHP;
 
         $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
 
-        $this->assertStringContainsString("'Vendor\\\\MY_CONST'", $result['code']);
+        $this->assertStringContainsString("'Vendor\\MY_CONST'", $result['code']);
         $this->assertStringNotContainsString('MOZART_', $result['code']);
     }
 
@@ -536,7 +536,7 @@ PHP;
 
         $result = $this->processCodeWithConstantPrefix($code, 'MOZART_');
 
-        $this->assertStringContainsString("'Vendor\\\\Sub\\\\MY_CONST'", $result['code']);
+        $this->assertStringContainsString("'Vendor\\Sub\\MY_CONST'", $result['code']);
         $this->assertStringNotContainsString('MOZART_', $result['code']);
     }
 

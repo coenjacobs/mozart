@@ -94,14 +94,14 @@ class FilesAutoloaderTest extends IntegrationTestCase
         foreach ($functionNames as $funcName) {
             // Check that prefixed version exists (with escaped backslashes in file)
             $this->assertStringContainsString(
-                "function_exists('Mozart\\\\TestProject\\\\Dependencies\\\\DI\\\\{$funcName}')",
+                "function_exists('Mozart\\TestProject\\Dependencies\\DI\\{$funcName}')",
                 $content,
                 "function_exists() for {$funcName}() should use prefixed namespace"
             );
 
             // Check that unprefixed version does NOT exist
             $this->assertStringNotContainsString(
-                "function_exists('DI\\\\{$funcName}')",
+                "function_exists('DI\\{$funcName}')",
                 $content,
                 "Original unprefixed function_exists() for {$funcName}() should not remain"
             );

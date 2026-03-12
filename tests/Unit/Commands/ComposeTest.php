@@ -7,6 +7,7 @@ namespace CoenJacobs\Mozart\Tests\Unit\Commands;
 use CoenJacobs\Mozart\Commands\Compose;
 use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\Exceptions\MozartException;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class ComposeTest extends TestCase
@@ -44,7 +45,7 @@ class ComposeTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_composer_json_missing(): void
     {
         $compose = new Compose($this->testDir);
@@ -58,7 +59,7 @@ class ComposeTest extends TestCase
         @$compose->execute();
     }
 
-    /** @test */
+    #[Test]
     public function it_runs_with_zero_config_when_extra_mozart_missing(): void
     {
         $composerJson = [
@@ -77,7 +78,7 @@ class ComposeTest extends TestCase
         $compose->execute();
     }
 
-    /** @test */
+    #[Test]
     public function it_runs_with_zero_config_when_extra_absent(): void
     {
         $composerJson = [
@@ -95,7 +96,7 @@ class ComposeTest extends TestCase
         $compose->execute();
     }
 
-    /** @test */
+    #[Test]
     public function it_runs_with_zero_config_when_mozart_null(): void
     {
         $composerJson = [
@@ -116,7 +117,7 @@ class ComposeTest extends TestCase
         $compose->execute();
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_validation_when_namespace_cannot_be_inferred(): void
     {
         // A package without a name or PSR-4 autoload cannot infer dep_namespace
@@ -133,7 +134,7 @@ class ComposeTest extends TestCase
         $compose->execute();
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_working_directory_in_constructor(): void
     {
         $compose = new Compose($this->testDir);

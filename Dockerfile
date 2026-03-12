@@ -2,7 +2,7 @@
 # CI testing overrides this with build args to test multiple versions
 # Update this to latest PHP version when making a new Mozart release
 ARG PHP_VERSION=8.5
-FROM composer:2.7.9 AS composer
+FROM composer:2.9.5 AS composer
 FROM php:${PHP_VERSION}-cli-alpine AS base
 
 # Builder stage: for CI testing (no Xdebug, faster builds)
@@ -18,7 +18,7 @@ RUN composer install
 FROM builder AS develop
 RUN apk add --update linux-headers
 RUN apk add --no-cache $PHPIZE_DEPS \
-    && pecl install xdebug-3.5.0 \
+    && pecl install xdebug-3.5.1 \
     && docker-php-ext-enable xdebug
 COPY ./docker/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 

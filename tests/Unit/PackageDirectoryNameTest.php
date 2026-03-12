@@ -6,6 +6,7 @@ namespace CoenJacobs\Mozart\Tests\Unit;
 
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class PackageDirectoryNameTest extends TestCase
@@ -43,7 +44,7 @@ class PackageDirectoryNameTest extends TestCase
         rmdir($dir);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_directory_name_from_vendor_path(): void
     {
         // Create a package where directory name differs from package name
@@ -69,7 +70,7 @@ class PackageDirectoryNameTest extends TestCase
         $this->assertEquals('vendor/package-path', $package->directoryName);
     }
 
-    /** @test */
+    #[Test]
     public function it_falls_back_to_package_name_when_directory_name_not_set(): void
     {
         // Create a package without vendor path (e.g., root composer.json)
@@ -89,7 +90,7 @@ class PackageDirectoryNameTest extends TestCase
         $this->assertEquals('vendor/package-name', $package->getDirectoryName());
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_directory_name_for_path_construction(): void
     {
         // Create a package with autoload configuration

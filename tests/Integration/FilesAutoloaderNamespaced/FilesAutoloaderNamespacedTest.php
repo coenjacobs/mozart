@@ -59,7 +59,7 @@ class FilesAutoloaderNamespacedTest extends IntegrationTestCase
 
         // function_exists() guards should have prefixed namespace strings
         $this->assertStringContainsString(
-            "function_exists('Mozart\\\\TestProject\\\\Dependencies\\\\DI\\\\value')",
+            "function_exists('Mozart\\TestProject\\Dependencies\\DI\\value')",
             $content,
             "function_exists() for value() should use prefixed namespace"
         );

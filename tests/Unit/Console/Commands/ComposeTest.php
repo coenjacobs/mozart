@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CoenJacobs\Mozart\Tests\Unit\Console\Commands;
 
 use CoenJacobs\Mozart\Console\Commands\Compose;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,9 +35,8 @@ class ComposeTest extends TestCase
      * When composer.json is absent, instead of failing with: "failed to open
      * stream: No such file or directory" a better message should be written to
      * the OutputInterface.
-     *
-     * @test
      */
+    #[Test]
     public function it_fails_gracefully_when_composer_json_absent(): void
     {
         $inputInterfaceMock = $this->createMock(InputInterface::class);
@@ -58,9 +58,8 @@ class ComposeTest extends TestCase
     /**
      * When json_decode fails, instead of "Trying to get property 'extra' of
      * non-object" a better message should be written to the OutputInterface.
-     *
-     * @test
      */
+    #[Test]
     public function it_handles_malformed_json_with_grace(): void
     {
         $badComposerJson = '{ "name": "coenjacobs/mozart", }';
@@ -88,9 +87,8 @@ class ComposeTest extends TestCase
      * from the package name. The command proceeds but may fail during
      * execution (e.g. no vendor directory). The error is written to
      * OutputInterface, not thrown.
-     *
-     * @test
      */
+    #[Test]
     public function it_handles_absent_extra_config_with_grace(): void
     {
         $badComposerJson = '{ "name": "coenjacobs/mozart" }';
@@ -118,9 +116,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra is not an object, instead of "Trying to get
      * property 'mozart' of non-object" a better message should be written to
      * the OutputInterface.
-     *
-     * @test
      */
+    #[Test]
     public function it_handles_malformed_extra_config_with_grace(): void
     {
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": [] }';
@@ -147,9 +144,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra->mozart is absent (typo in key name),
      * zero-config resolves settings from the package name. The command
      * proceeds but may fail during execution.
-     *
-     * @test
      */
+    #[Test]
     public function it_handles_absent_mozart_config_with_grace(): void
     {
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "moozart": {} } }';
@@ -176,9 +172,8 @@ class ComposeTest extends TestCase
      * When composer.json->extra->mozart is an empty array, JsonMapper maps
      * it to a Mozart object with default values. Zero-config then resolves
      * settings from the package name.
-     *
-     * @test
      */
+    #[Test]
     public function it_handles_malformed_mozart_config__with_grace(): void
     {
         $badComposerJson = '{ "name": "coenjacobs/mozart", "extra": { "mozart": [] } }';
