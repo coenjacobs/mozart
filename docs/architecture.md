@@ -42,7 +42,15 @@ $parentReplacer->replaceParentInTree($packages);
 $parentReplacer->replaceParentClassesInDirectory($config->getClassmapDirectory());
 
 if ($config->getDeleteVendorDirectories()) {
-    $mover->deletePackageVendorDirectories();
+    $processedPackages = array_values(array_unique(array_map(function (Package $package): string {
+        return $package->getName();
+    }, array_filter($packages, function (Package $package) use ($config): bool {
+        return ! $config->isExcludedPackage($package);
+    }))));
+
+    $dependencyGraph = new InstalledPackageDependencyGraph($config->getWorkingDir());
+    $sharedProcessedPackages = $dependencyGraph->getSharedProcessedPackages($processedPackages);
+    $mover->deletePackageVendorDirectories($sharedProcessedPackages);
 }
 ```
 
@@ -126,7 +134,7 @@ The `Mover` class handles all file operations: preparing target directories, cop
 
 ### Vendor cleanup
 
-`deletePackageVendorDirectories()` removes processed package directories from `vendor/`. If this leaves the vendor subdirectory empty (e.g., `vendor/psr/` after removing `vendor/psr/container/`), the parent directory is also removed. Symlinked directories are skipped.
+`deletePackageVendorDirectories()` removes processed package directories from `vendor/`, except for processed packages that are still required by installed non-processed packages. Mozart determines that preserve-set from `vendor/composer/installed.json`, so dev-only packages can keep shared dependencies available during development while `--no-dev` installs still delete them when nothing else depends on them. If a package directory is deleted and this leaves the vendor subdirectory empty (e.g., `vendor/psr/` after removing `vendor/psr/container/`), the parent directory is also removed. Symlinked directories are skipped.
 
 ## Exceptions
 
