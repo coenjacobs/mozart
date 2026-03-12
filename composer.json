@@ -16,7 +16,7 @@
         "composer/class-map-generator": "^1.7",
         "league/flysystem": "^3.0",
         "league/flysystem-local": "^3.0",
-        "netresearch/jsonmapper": "^4.4",
+        "netresearch/jsonmapper": "^4.4 || ^5.0",
         "nikic/php-parser": "^5.0",
         "symfony/console": "^6.4 || ^7.4",
         "symfony/finder": "^6.4 || ^7.4"
