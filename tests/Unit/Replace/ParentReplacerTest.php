@@ -307,4 +307,50 @@ PHP;
         $this->assertStringNotContainsString('\OrigHelper', $result);
     }
 
+    /**
+     * @test
+     */
+    public function it_propagates_constant_and_function_replacements_to_parent_packages(): void
+    {
+        $config = $this->createRelativeConfig();
+        $child = $this->createClassmapPackage('child/package', ['lib/']);
+        $parent = $this->createPsr4Package('parent/package', 'Parent\\Lib\\', ['src/']);
+
+        $parentDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps'
+            . DIRECTORY_SEPARATOR . 'Parent' . DIRECTORY_SEPARATOR . 'Lib';
+        mkdir($parentDir, 0777, true);
+
+        $parentFile = $parentDir . DIRECTORY_SEPARATOR . 'ParentClass.php';
+        file_put_contents($parentFile, <<<'PHP'
+<?php
+
+namespace Parent\Lib;
+
+class ParentClass
+{
+    public function boot(): void
+    {
+        legacy_helper();
+
+        if (defined('LEGACY_FLAG')) {
+            echo constant('LEGACY_FLAG');
+        }
+    }
+}
+PHP);
+
+        $replacer = new Replacer($config, new BuiltInSymbols());
+        $parentReplacer = new ParentReplacer($config, $replacer);
+        $parentReplacer->setReplacedConstants(['LEGACY_FLAG' => 'TEST_LEGACY_FLAG']);
+        $parentReplacer->setReplacedFunctions(['legacy_helper' => 'test_legacy_helper']);
+
+        $this->replaceParentPackageInWorkingDirectory($parentReplacer, $child, $parent);
+
+        $result = file_get_contents($parentFile);
+
+        $this->assertStringContainsString('test_legacy_helper();', $result);
+        $this->assertStringContainsString("defined('TEST_LEGACY_FLAG')", $result);
+        $this->assertStringContainsString("constant('TEST_LEGACY_FLAG')", $result);
+    }
+
 }
