@@ -241,6 +241,44 @@ class Consumer {
     }
 
     #[Test]
+    public function it_uses_symbol_specific_maps_when_names_collide(): void
+    {
+        $code = "<?php\nhelpers();\n\$defined = defined('HELPERS');";
+
+        $replacer = new NameReplacer(
+            ['Helpers' => 'Mozart_Helpers'],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $result = $replacer->replace($code);
+
+        $this->assertStringContainsString('mozart_helpers();', $result);
+        $this->assertStringContainsString("defined('MOZART_HELPERS')", $result);
+        $this->assertStringNotContainsString('Mozart_Helpers();', $result);
+        $this->assertStringNotContainsString("defined('Mozart_Helpers')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_fall_back_for_suffix_based_class_contexts(): void
+    {
+        $code = "<?php\n\$defined = defined('HELPERS::CONST_NAME');\n\$callable = is_callable('helpers::method');";
+
+        $replacer = new NameReplacer(
+            [],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $result = $replacer->replace($code);
+
+        $this->assertStringContainsString("defined('HELPERS::CONST_NAME')", $result);
+        $this->assertStringContainsString("is_callable('helpers::method')", $result);
+        $this->assertStringNotContainsString("defined('MOZART_HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("is_callable('mozart_helpers::method')", $result);
+    }
+
+    #[Test]
     public function it_handles_catch_blocks(): void
     {
         $code = '<?php
