@@ -476,6 +476,54 @@ $check = defined(\'SomeOther\\SomeClass::\' . $constName);';
     }
 
     #[Test]
+    public function it_prefixes_define_with_namespaced_constant(): void
+    {
+        $code = '<?php
+define(\'Invoker\\MY_CONST\', 1);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString(
+            "define('MyPlugin\\\\Dependencies\\\\Invoker\\\\MY_CONST'",
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_non_target_namespace_in_define(): void
+    {
+        $code = '<?php
+define(\'SomeOther\\MY_CONST\', 1);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("define('SomeOther\\\\MY_CONST'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
+    public function it_does_not_double_prefix_define(): void
+    {
+        $code = '<?php
+define(\'MyPlugin\\Dependencies\\Invoker\\MY_CONST\', 1);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringNotContainsString(
+            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            $result
+        );
+    }
+
+    #[Test]
+    public function it_does_not_prefix_simple_define_constant(): void
+    {
+        $code = '<?php
+define(\'MY_CONST\', 1);';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString("define('MY_CONST'", $result);
+        $this->assertStringNotContainsString('MyPlugin', $result);
+    }
+
+    #[Test]
     public function it_prefixes_enum_exists_string_literal(): void
     {
         $code = '<?php

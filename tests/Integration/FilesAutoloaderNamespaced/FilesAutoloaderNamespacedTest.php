@@ -44,7 +44,8 @@ class FilesAutoloaderNamespacedTest extends IntegrationTestCase
 
         $this->assertEquals(0, $result);
 
-        $functionsPath = $this->testsWorkingDir . '/src/dependencies/DI/functions.php';
+        // The relative directory (src/) is preserved in the target path
+        $functionsPath = $this->testsWorkingDir . '/src/dependencies/DI/src/functions.php';
         $this->assertFileExists($functionsPath);
 
         $content = file_get_contents($functionsPath);

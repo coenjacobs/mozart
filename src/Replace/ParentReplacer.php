@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart\Replace;
 
 use CoenJacobs\Mozart\Composer\Autoload\NamespaceAutoloader;
+use CoenJacobs\Mozart\Config\Files;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
@@ -83,18 +84,7 @@ class ParentReplacer
             $targetFile = $file->getPathName();
 
             if (str_ends_with($targetFile, '.php')) {
-                try {
-                    $contents = $this->files->readFile($targetFile);
-                } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
-                    // Skip files that cannot be read
-                    continue;
-                }
-
-                $modifiedContents = $replacer->replace($contents);
-
-                if ($modifiedContents !== $contents) {
-                    $this->files->writeFile($targetFile, $modifiedContents);
-                }
+                $this->replaceParentClassesInFile($targetFile, $replacer);
             }
         }
     }
@@ -111,6 +101,11 @@ class ParentReplacer
         }
 
         foreach ($parent->getAutoloaders() as $parentAutoloader) {
+            if ($parentAutoloader instanceof Files) {
+                $this->replaceParentFilesPackage($package, $parentAutoloader);
+                continue;
+            }
+
             foreach ($package->getAutoloaders() as $autoloader) {
                 if ($parentAutoloader instanceof NamespaceAutoloader) {
                     $namespace = str_replace('\\', DIRECTORY_SEPARATOR, $parentAutoloader->namespace);
@@ -139,6 +134,76 @@ class ParentReplacer
                 $this->replaceParentClassesInDirectory($directory);
             }
         }
+    }
+
+    /**
+     * Replace pass-2 global-scope symbols in a single file.
+     */
+    private function replaceParentClassesInFile(string $targetFile, NameReplacer $replacer): void
+    {
+        $fullPath = $this->getFullPath($targetFile);
+
+        if (!is_file($fullPath)) {
+            return;
+        }
+
+        $targetFile = str_replace($this->config->getWorkingDir(), '', $fullPath);
+
+        try {
+            $contents = $this->files->readFile($targetFile);
+        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
+            // Skip files that cannot be read
+            return;
+        }
+
+        $modifiedContents = $replacer->replace($contents);
+
+        if ($modifiedContents !== $contents) {
+            $this->files->writeFile($targetFile, $modifiedContents);
+        }
+    }
+
+    /**
+     * Replace parent files-autoloader targets using the same resolved paths as the mover.
+     */
+    private function replaceParentFilesPackage(Package $package, Files $parentAutoloader): void
+    {
+        $files = $parentAutoloader->getFiles($this->files);
+
+        foreach ($package->getAutoloaders() as $autoloader) {
+            foreach ($files as $file) {
+                $targetFile = $parentAutoloader->getTargetFilePath($file);
+                $fullPath = $this->config->getWorkingDir() . $targetFile;
+
+                if (!str_ends_with($fullPath, '.php')) {
+                    continue;
+                }
+
+                if ($autoloader instanceof NamespaceAutoloader) {
+                    $this->replacer->replaceInFile($fullPath, $autoloader);
+                    continue;
+                }
+
+                $replacer = new NameReplacer(
+                    $this->replacedClasses,
+                    $this->replacedConstants,
+                    $this->replacedFunctions
+                );
+                $this->replaceParentClassesInFile($fullPath, $replacer);
+            }
+        }
+    }
+
+    /**
+     * Normalize a path to an absolute path under the configured working directory.
+     */
+    private function getFullPath(string $path): string
+    {
+        if (str_starts_with($path, $this->config->getWorkingDir())) {
+            return $path;
+        }
+
+        return $this->config->getWorkingDir() . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
     /**

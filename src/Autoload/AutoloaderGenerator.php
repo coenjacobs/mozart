@@ -15,12 +15,14 @@ class AutoloaderGenerator
     protected Mozart $config;
     protected FilesHandler $files;
     protected string $hash;
+    protected PathHelper $pathHelper;
 
     public function __construct(Mozart $config, ?FilesHandler $filesHandler = null)
     {
         $this->config = $config;
         $this->files = $filesHandler ?? new FilesHandler($config);
         $this->hash = $this->generateHash();
+        $this->pathHelper = new PathHelper();
     }
 
     /**
@@ -74,19 +76,16 @@ class AutoloaderGenerator
         $classmap = [];
 
         if (is_dir($depDir)) {
-            $classmap = array_merge($classmap, ClassMapGenerator::createMap($depDir));
+            $classmap = array_merge($classmap, $this->createClassmapForDirectory($depDir));
         }
 
         if (is_dir($cmapDir) && realpath($cmapDir) !== realpath($depDir)) {
-            $classmap = array_merge($classmap, ClassMapGenerator::createMap($cmapDir));
+            $classmap = array_merge($classmap, $this->createClassmapForDirectory($cmapDir));
         }
 
-        // Convert absolute paths to paths relative to working directory
         $entries = [];
         foreach ($classmap as $class => $absolutePath) {
-            $relativePath = str_replace($workingDir, '', $absolutePath);
-            $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
-            $entries[$class] = $relativePath;
+            $entries[$class] = $this->pathHelper->relativizeToWorkingDir($workingDir, $absolutePath);
         }
 
         return $entries;
@@ -102,12 +101,24 @@ class AutoloaderGenerator
     {
         $entries = [];
         foreach ($targets as $target) {
-            $identifier = md5($target);
-            $normalizedPath = str_replace(DIRECTORY_SEPARATOR, '/', $target);
+            $normalizedPath = $this->pathHelper->normalize($target);
+            $identifier = md5($this->hash . ':' . $normalizedPath);
             $entries[$identifier] = $normalizedPath;
         }
 
         return $entries;
+    }
+
+    /**
+     * Build a classmap for a specific directory.
+     *
+     * @return array<string, string>
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    protected function createClassmapForDirectory(string $directory): array
+    {
+        return ClassMapGenerator::createMap($directory);
     }
 
     /**

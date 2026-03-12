@@ -154,3 +154,7 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #177 | `Unit/Replace/Issues/Issue177Test` + `Integration/PhpDiPackage` | Nullable type hint double-prefixing |
 | #209 | `FilesHandlerTest` | Restrictive file permissions (0700/0600) from Flysystem's default private visibility |
 | #355 | `Unit/Composer/InstalledPackageDependencyGraphTest` + `Integration/SharedDependencyPreservation` | Shared processed dependencies being deleted from `vendor/` even though non-processed installed packages still require them |
+| #324 | `Unit/Autoload/AutoloaderGeneratorTest` | `autoload.files` identifier collisions across plugins and platform-specific hash churn |
+| #327 | `Unit/Autoload/AutoloaderGeneratorTest` | Incorrect generated `$baseDir` depth when `dep_directory` uses Windows separators |
+| #341 | `Unit/Autoload/AutoloaderGeneratorTest` | Absolute classmap paths when scanned file paths do not exactly match the configured working directory |
+| #347 | `Unit/Replace/GlobalScope/NameVisitorTest` + `NameReplacerTest` | Combined class/constant/function map routing and suffix-based existence checks |
