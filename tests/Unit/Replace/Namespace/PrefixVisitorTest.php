@@ -214,7 +214,7 @@ $y = \'Invoker\\Invoker\';';
         $result = $this->processCode($code, ['Invoker']);
 
         // String literals should remain unchanged
-        $this->assertStringContainsString("'Invoker\\\\Invoker'", $result);
+        $this->assertStringContainsString("'Invoker\\Invoker'", $result);
     }
 
     #[Test]
@@ -282,7 +282,7 @@ if (!function_exists(\'Invoker\\invoke\')) {
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "function_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\invoke')",
+            "function_exists('MyPlugin\\Dependencies\\Invoker\\invoke')",
             $result
         );
     }
@@ -297,7 +297,7 @@ if (class_exists(\'Invoker\\Invoker\')) {
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "class_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            "class_exists('MyPlugin\\Dependencies\\Invoker\\Invoker')",
             $result
         );
     }
@@ -312,7 +312,7 @@ if (interface_exists(\'Invoker\\InvokerInterface\')) {
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "interface_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\InvokerInterface')",
+            "interface_exists('MyPlugin\\Dependencies\\Invoker\\InvokerInterface')",
             $result
         );
     }
@@ -327,7 +327,7 @@ if (trait_exists(\'Invoker\\InvokerTrait\')) {
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "trait_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\InvokerTrait')",
+            "trait_exists('MyPlugin\\Dependencies\\Invoker\\InvokerTrait')",
             $result
         );
     }
@@ -341,7 +341,7 @@ if (!function_exists(\'SomeOther\\func\')) {
 }';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("function_exists('SomeOther\\\\func')", $result);
+        $this->assertStringContainsString("function_exists('SomeOther\\func')", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -356,11 +356,11 @@ if (!function_exists(\'MyPlugin\\Dependencies\\Invoker\\func\')) {
 
         // Should not add prefix again
         $this->assertStringContainsString(
-            "function_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\func')",
+            "function_exists('MyPlugin\\Dependencies\\Invoker\\func')",
             $result
         );
         $this->assertStringNotContainsString(
-            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            'MyPlugin\\Dependencies\\MyPlugin\\Dependencies',
             $result
         );
     }
@@ -375,7 +375,7 @@ if (!function_exists(\'DI\\value\')) {
         $result = $this->processCode($code, ['DI']);
 
         $this->assertStringContainsString(
-            "function_exists('MyPlugin\\\\Dependencies\\\\DI\\\\value')",
+            "function_exists('MyPlugin\\Dependencies\\DI\\value')",
             $result
         );
     }
@@ -388,7 +388,7 @@ $level = constant(\'Invoker\\Invoker::SOME_CONST\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            "constant('MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST')",
             $result
         );
     }
@@ -400,7 +400,7 @@ $level = constant(\'Invoker\\Invoker::SOME_CONST\');';
 $level = constant(\'SomeOther\\SomeClass::CONST_NAME\');';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("constant('SomeOther\\\\SomeClass::CONST_NAME')", $result);
+        $this->assertStringContainsString("constant('SomeOther\\SomeClass::CONST_NAME')", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -412,11 +412,11 @@ $level = constant(\'MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            "constant('MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST')",
             $result
         );
         $this->assertStringNotContainsString(
-            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            'MyPlugin\\Dependencies\\MyPlugin\\Dependencies',
             $result
         );
     }
@@ -429,7 +429,7 @@ $level = constant(\'Invoker\\Invoker::\' . $constName);';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "constant('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            "constant('MyPlugin\\Dependencies\\Invoker\\Invoker::'",
             $result
         );
     }
@@ -441,7 +441,7 @@ $level = constant(\'Invoker\\Invoker::\' . $constName);';
 $level = constant(\'SomeOther\\SomeClass::\' . $constName);';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("constant('SomeOther\\\\SomeClass::'", $result);
+        $this->assertStringContainsString("constant('SomeOther\\SomeClass::'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -453,7 +453,7 @@ $check = defined(\'Invoker\\Invoker::SOME_CONST\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "defined('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::SOME_CONST')",
+            "defined('MyPlugin\\Dependencies\\Invoker\\Invoker::SOME_CONST')",
             $result
         );
     }
@@ -465,7 +465,7 @@ $check = defined(\'Invoker\\Invoker::SOME_CONST\');';
 $check = defined(\'SomeOther\\SomeClass::CONST_NAME\');';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("defined('SomeOther\\\\SomeClass::CONST_NAME')", $result);
+        $this->assertStringContainsString("defined('SomeOther\\SomeClass::CONST_NAME')", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -477,7 +477,7 @@ $check = defined(\'Invoker\\Invoker::\' . $constName);';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "defined('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            "defined('MyPlugin\\Dependencies\\Invoker\\Invoker::'",
             $result
         );
     }
@@ -489,7 +489,7 @@ $check = defined(\'Invoker\\Invoker::\' . $constName);';
 $check = defined(\'SomeOther\\SomeClass::\' . $constName);';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("defined('SomeOther\\\\SomeClass::'", $result);
+        $this->assertStringContainsString("defined('SomeOther\\SomeClass::'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -501,7 +501,7 @@ define(\'Invoker\\MY_CONST\', 1);';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "define('MyPlugin\\\\Dependencies\\\\Invoker\\\\MY_CONST'",
+            "define('MyPlugin\\Dependencies\\Invoker\\MY_CONST'",
             $result
         );
     }
@@ -513,7 +513,7 @@ define(\'Invoker\\MY_CONST\', 1);';
 define(\'SomeOther\\MY_CONST\', 1);';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("define('SomeOther\\\\MY_CONST'", $result);
+        $this->assertStringContainsString("define('SomeOther\\MY_CONST'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -525,7 +525,7 @@ define(\'MyPlugin\\Dependencies\\Invoker\\MY_CONST\', 1);';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringNotContainsString(
-            'MyPlugin\\\\Dependencies\\\\MyPlugin\\\\Dependencies',
+            'MyPlugin\\Dependencies\\MyPlugin\\Dependencies',
             $result
         );
     }
@@ -549,7 +549,7 @@ if (enum_exists(\'Invoker\\Status\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "enum_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Status')",
+            "enum_exists('MyPlugin\\Dependencies\\Invoker\\Status')",
             $result
         );
     }
@@ -562,7 +562,7 @@ if (method_exists(\'Invoker\\Invoker\', \'someMethod\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "method_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            "method_exists('MyPlugin\\Dependencies\\Invoker\\Invoker'",
             $result
         );
     }
@@ -574,7 +574,7 @@ if (method_exists(\'Invoker\\Invoker\', \'someMethod\')) {}';
 if (method_exists(\'SomeOther\\SomeClass\', \'someMethod\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("method_exists('SomeOther\\\\SomeClass'", $result);
+        $this->assertStringContainsString("method_exists('SomeOther\\SomeClass'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -586,7 +586,7 @@ if (property_exists(\'Invoker\\Invoker\', \'someProp\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "property_exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            "property_exists('MyPlugin\\Dependencies\\Invoker\\Invoker'",
             $result
         );
     }
@@ -599,7 +599,7 @@ $check = is_a($obj, \'Invoker\\Invoker\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "is_a(\$obj, 'MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            "is_a(\$obj, 'MyPlugin\\Dependencies\\Invoker\\Invoker')",
             $result
         );
     }
@@ -611,7 +611,7 @@ $check = is_a($obj, \'Invoker\\Invoker\');';
 $check = is_a($obj, \'SomeOther\\SomeClass\');';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("is_a(\$obj, 'SomeOther\\\\SomeClass')", $result);
+        $this->assertStringContainsString("is_a(\$obj, 'SomeOther\\SomeClass')", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -623,7 +623,7 @@ $check = is_subclass_of($obj, \'Invoker\\Invoker\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "is_subclass_of(\$obj, 'MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            "is_subclass_of(\$obj, 'MyPlugin\\Dependencies\\Invoker\\Invoker')",
             $result
         );
     }
@@ -636,7 +636,7 @@ if (is_callable(\'Invoker\\invoke\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\invoke')",
+            "is_callable('MyPlugin\\Dependencies\\Invoker\\invoke')",
             $result
         );
     }
@@ -648,7 +648,7 @@ if (is_callable(\'Invoker\\invoke\')) {}';
 if (is_callable(\'SomeOther\\func\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("is_callable('SomeOther\\\\func')", $result);
+        $this->assertStringContainsString("is_callable('SomeOther\\func')", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -660,7 +660,7 @@ $check = is_callable(\'Invoker\\Invoker::someMethod\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::someMethod')",
+            "is_callable('MyPlugin\\Dependencies\\Invoker\\Invoker::someMethod')",
             $result
         );
     }
@@ -673,7 +673,7 @@ $check = is_callable(\'Invoker\\Invoker::\' . $method);';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "is_callable('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker::'",
+            "is_callable('MyPlugin\\Dependencies\\Invoker\\Invoker::'",
             $result
         );
     }
@@ -742,7 +742,7 @@ class_alias(\'Invoker\\Invoker\', \'Legacy_Invoker\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "class_alias('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker'",
+            "class_alias('MyPlugin\\Dependencies\\Invoker\\Invoker'",
             $result
         );
     }
@@ -754,7 +754,7 @@ class_alias(\'Invoker\\Invoker\', \'Legacy_Invoker\');';
 class_alias(\'SomeOther\\Client\', \'Legacy_Client\');';
         $result = $this->processCode($code, ['Invoker']);
 
-        $this->assertStringContainsString("class_alias('SomeOther\\\\Client'", $result);
+        $this->assertStringContainsString("class_alias('SomeOther\\Client'", $result);
         $this->assertStringNotContainsString('MyPlugin', $result);
     }
 
@@ -766,7 +766,7 @@ class_alias(\'Invoker\\Invoker\', \'Invoker\\LegacyInvoker\');';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "class_alias('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker', 'MyPlugin\\\\Dependencies\\\\Invoker\\\\LegacyInvoker')",
+            "class_alias('MyPlugin\\Dependencies\\Invoker\\Invoker', 'MyPlugin\\Dependencies\\Invoker\\LegacyInvoker')",
             $result
         );
     }
@@ -799,7 +799,7 @@ if (Class_Exists(\'Invoker\\Invoker\')) {}';
         $result = $this->processCode($code, ['Invoker']);
 
         $this->assertStringContainsString(
-            "Class_Exists('MyPlugin\\\\Dependencies\\\\Invoker\\\\Invoker')",
+            "Class_Exists('MyPlugin\\Dependencies\\Invoker\\Invoker')",
             $result
         );
     }

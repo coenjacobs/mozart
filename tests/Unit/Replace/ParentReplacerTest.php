@@ -408,9 +408,9 @@ PHP);
         $result = file_get_contents($parentFile);
 
         $this->assertStringContainsString('use function Test\Namespace\DI\value;', $result);
-        $this->assertStringContainsString("function_exists('Test\\\\Namespace\\\\DI\\\\value')", $result);
+        $this->assertStringContainsString("function_exists('Test\\Namespace\\DI\\value')", $result);
         $this->assertStringNotContainsString('use function DI\value;', $result);
-        $this->assertStringNotContainsString("function_exists('DI\\\\value')", $result);
+        $this->assertStringNotContainsString("function_exists('DI\\value')", $result);
     }
 
 }
