@@ -218,6 +218,24 @@ $y = \'Invoker\\Invoker\';';
     }
 
     #[Test]
+    public function it_does_not_prefix_phpdoc_alias_references(): void
+    {
+        $code = '<?php
+use Invoker as DI;
+class Foo {
+    /**
+     * @return DI\\Invoker
+     */
+    public function make() {}
+}';
+        $result = $this->processCode($code, ['Invoker']);
+
+        $this->assertStringContainsString('use MyPlugin\\Dependencies\\Invoker as DI;', $result);
+        $this->assertStringContainsString('@return DI\\Invoker', $result);
+        $this->assertStringNotContainsString('@return MyPlugin\\Dependencies\\DI\\Invoker', $result);
+    }
+
+    #[Test]
     public function it_handles_multiple_target_namespaces(): void
     {
         $code = '<?php

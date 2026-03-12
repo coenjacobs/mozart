@@ -156,6 +156,39 @@ class NamespaceReplacerTest extends TestCase
     }
 
     #[Test]
+    public function it_replaces_fully_qualified_class_names_in_phpdoc(): void
+    {
+        $contents = $this->wrapCode(
+            <<<'PHP'
+namespace Test\Test;
+
+class Downloadable
+{
+    /**
+     * @return \Test\Test\AttachmentDownload
+     * @throws \Test\Test\ApiException
+     */
+    public function download()
+    {
+    }
+}
+PHP
+        );
+
+        $contents = $this->replacer->replace($contents);
+        $extracted = $this->extractCode($contents);
+
+        $this->assertStringContainsString(
+            '@return \\My\\Mozart\\Prefix\\Test\\Test\\AttachmentDownload',
+            $extracted
+        );
+        $this->assertStringContainsString(
+            '@throws \\My\\Mozart\\Prefix\\Test\\Test\\ApiException',
+            $extracted
+        );
+    }
+
+    #[Test]
     public function it_throws_when_no_search_namespace_and_not_namespace_autoloader(): void
     {
         $autoloader = $this->createMock(Autoloader::class);
