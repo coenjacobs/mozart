@@ -57,6 +57,75 @@ class ParentReplacerTest extends TestCase
         rmdir($dir);
     }
 
+    private function createRelativeConfig(): Mozart
+    {
+        $config = new Mozart();
+        $config->setDepNamespace('Test\\Namespace\\');
+        $config->setDepDirectory('deps' . DIRECTORY_SEPARATOR);
+        $config->setClassmapDirectory('classmap' . DIRECTORY_SEPARATOR);
+        $config->setClassmapPrefix('Test_');
+        $config->setWorkingDir($this->testDir);
+        $config->setOverrideAutoload(new stdClass());
+
+        return $config;
+    }
+
+    private function createPsr4Package(string $name, string $namespace, array $paths): Package
+    {
+        $package = new Package();
+        $package->name = $name;
+
+        $autoload = new stdClass();
+        $psr4 = new stdClass();
+        $psr4->{$namespace} = $paths;
+        $autoload->{'psr-4'} = $psr4;
+
+        $package->setAutoload($autoload);
+
+        return $package;
+    }
+
+    private function createClassmapPackage(string $name, array $paths): Package
+    {
+        $package = new Package();
+        $package->name = $name;
+
+        $autoload = new stdClass();
+        $autoload->classmap = $paths;
+
+        $package->setAutoload($autoload);
+
+        return $package;
+    }
+
+    private function createFilesPackage(string $name, array $files): Package
+    {
+        $package = new Package();
+        $package->name = $name;
+
+        $autoload = new stdClass();
+        $autoload->files = $files;
+
+        $package->setAutoload($autoload);
+
+        return $package;
+    }
+
+    private function replaceParentPackageInWorkingDirectory(
+        ParentReplacer $parentReplacer,
+        Package $child,
+        Package $parent
+    ): void {
+        $originalCwd = getcwd();
+        chdir($this->testDir);
+
+        try {
+            $parentReplacer->replaceParentPackage($child, $parent);
+        } finally {
+            chdir($originalCwd);
+        }
+    }
+
     /** @test */
     public function it_handles_empty_directory_for_parent_classes(): void
     {
@@ -176,16 +245,7 @@ PHP);
         $parentReplacer = new ParentReplacer($config, $replacer);
         $parentReplacer->setReplacedClasses(['OrigHelper' => 'Test_OrigHelper']);
 
-        // chdir to working dir so relative paths in replaceParentClassesInDirectory
-        // resolve correctly (Symfony Finder uses CWD for relative paths)
-        $originalCwd = getcwd();
-        chdir($this->testDir);
-
-        try {
-            $parentReplacer->replaceParentPackage($child, $parent);
-        } finally {
-            chdir($originalCwd);
-        }
+        $this->replaceParentPackageInWorkingDirectory($parentReplacer, $child, $parent);
 
         $result = file_get_contents($parentFile);
 
@@ -195,4 +255,56 @@ PHP);
         // Classmap replacement applied: global class was prefixed
         $this->assertStringContainsString('Test_OrigHelper', $result);
     }
+
+    /**
+     * Regression test for #325: parent files-autoloader entries that declare a
+     * namespace are moved into dep_directory and must be updated there during
+     * pass 2.
+     *
+     * @test
+     */
+    public function it_replaces_namespaced_parent_files_autoloader_targets_in_dep_directory(): void
+    {
+        $config = $this->createRelativeConfig();
+        $child = $this->createClassmapPackage('child/package', ['lib/']);
+        $parent = $this->createFilesPackage('parent/package', ['src/helpers.php']);
+
+        $vendorParentDir = $this->testDir . DIRECTORY_SEPARATOR . 'vendor'
+            . DIRECTORY_SEPARATOR . 'parent' . DIRECTORY_SEPARATOR . 'package'
+            . DIRECTORY_SEPARATOR . 'src';
+        mkdir($vendorParentDir, 0777, true);
+
+        $contents = <<<'PHP'
+<?php
+
+namespace Parent\Lib;
+
+function parent_helper(): void
+{
+    $helper = new \OrigHelper();
+}
+PHP;
+
+        file_put_contents($vendorParentDir . DIRECTORY_SEPARATOR . 'helpers.php', $contents);
+
+        $targetDir = $this->testDir . DIRECTORY_SEPARATOR . 'deps'
+            . DIRECTORY_SEPARATOR . 'Parent' . DIRECTORY_SEPARATOR . 'Lib'
+            . DIRECTORY_SEPARATOR . 'src';
+        mkdir($targetDir, 0777, true);
+
+        $targetFile = $targetDir . DIRECTORY_SEPARATOR . 'helpers.php';
+        file_put_contents($targetFile, $contents);
+
+        $replacer = new Replacer($config, new BuiltInSymbols());
+        $parentReplacer = new ParentReplacer($config, $replacer);
+        $parentReplacer->setReplacedClasses(['OrigHelper' => 'Test_OrigHelper']);
+
+        $this->replaceParentPackageInWorkingDirectory($parentReplacer, $child, $parent);
+
+        $result = file_get_contents($targetFile);
+
+        $this->assertStringContainsString('Test_OrigHelper', $result);
+        $this->assertStringNotContainsString('\OrigHelper', $result);
+    }
+
 }
