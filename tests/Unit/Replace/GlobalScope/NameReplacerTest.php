@@ -279,6 +279,49 @@ class Consumer {
     }
 
     #[Test]
+    public function it_routes_all_three_maps_in_a_single_end_to_end_snippet(): void
+    {
+        $code = <<<'PHP'
+<?php
+$instance = new Helpers();
+$value = HELPERS;
+helpers();
+$classExists = class_exists('Helpers');
+$defined = defined('HELPERS');
+$constant = constant('HELPERS');
+$functionExists = function_exists('helpers');
+$definedClassConst = defined('Helpers::CONST_NAME');
+$constantClassConst = constant('Helpers::CONST_NAME');
+$callable = is_callable('Helpers::method');
+PHP;
+
+        $replacer = new NameReplacer(
+            ['Helpers' => 'Mozart_Helpers'],
+            ['HELPERS' => 'MOZART_HELPERS'],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $result = $replacer->replace($code);
+
+        $this->assertStringContainsString('new Mozart_Helpers()', $result);
+        $this->assertStringContainsString('$value = MOZART_HELPERS;', $result);
+        $this->assertStringContainsString('mozart_helpers();', $result);
+        $this->assertStringContainsString("class_exists('Mozart_Helpers')", $result);
+        $this->assertStringContainsString("defined('MOZART_HELPERS')", $result);
+        $this->assertStringContainsString("constant('MOZART_HELPERS')", $result);
+        $this->assertStringContainsString("function_exists('mozart_helpers')", $result);
+        $this->assertStringContainsString("defined('Mozart_Helpers::CONST_NAME')", $result);
+        $this->assertStringContainsString("constant('Mozart_Helpers::CONST_NAME')", $result);
+        $this->assertStringContainsString("is_callable('Mozart_Helpers::method')", $result);
+        $this->assertStringNotContainsString("defined('Mozart_Helpers')", $result);
+        $this->assertStringNotContainsString("constant('Mozart_Helpers')", $result);
+        $this->assertStringNotContainsString("function_exists('Mozart_Helpers')", $result);
+        $this->assertStringNotContainsString("defined('MOZART_HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("constant('MOZART_HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("is_callable('mozart_helpers::method')", $result);
+    }
+
+    #[Test]
     public function it_handles_catch_blocks(): void
     {
         $code = '<?php

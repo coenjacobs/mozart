@@ -156,3 +156,4 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #324 | `Unit/Autoload/AutoloaderGeneratorTest` | `autoload.files` identifier collisions across plugins and platform-specific hash churn |
 | #327 | `Unit/Autoload/AutoloaderGeneratorTest` | Incorrect generated `$baseDir` depth when `dep_directory` uses Windows separators |
 | #341 | `Unit/Autoload/AutoloaderGeneratorTest` | Absolute classmap paths when scanned file paths do not exactly match the configured working directory |
+| #347 | `Unit/Replace/GlobalScope/NameVisitorTest` + `NameReplacerTest` | Combined class/constant/function map routing and suffix-based existence checks |
