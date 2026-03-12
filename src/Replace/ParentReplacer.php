@@ -8,6 +8,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\FilesHandler;
 use CoenJacobs\Mozart\Replace\GlobalScope\NameReplacer;
+use CoenJacobs\Mozart\Replace\Namespace\NamespaceReplacer;
 
 class ParentReplacer
 {
@@ -117,6 +118,10 @@ class ParentReplacer
                         continue;
                     }
 
+                    if ($autoloader instanceof Files) {
+                        $this->replaceParentNamespacesFromFilesAutoloaderInDirectory($directory, $autoloader);
+                    }
+
                     $directory = str_replace($this->config->getWorkingDir(), '', $directory);
                     $this->replaceParentClassesInDirectory($directory);
                     continue;
@@ -128,6 +133,10 @@ class ParentReplacer
                 if ($autoloader instanceof NamespaceAutoloader) {
                     $this->replacer->replaceInDirectory($autoloader, $directory);
                     continue;
+                }
+
+                if ($autoloader instanceof Files) {
+                    $this->replaceParentNamespacesFromFilesAutoloaderInDirectory($directory, $autoloader);
                 }
 
                 $directory = str_replace($this->config->getWorkingDir(), '', $directory);
@@ -184,6 +193,10 @@ class ParentReplacer
                     continue;
                 }
 
+                if ($autoloader instanceof Files) {
+                    $this->replaceParentNamespacesFromFilesAutoloaderInFile($fullPath, $autoloader);
+                }
+
                 $replacer = new NameReplacer(
                     $this->replacedClasses,
                     $this->replacedConstants,
@@ -204,6 +217,91 @@ class ParentReplacer
         }
 
         return $this->config->getWorkingDir() . ltrim($path, DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * Apply namespace replacement from a child files autoloader to every PHP file in a parent directory.
+     */
+    private function replaceParentNamespacesFromFilesAutoloaderInDirectory(string $directory, Files $autoloader): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $namespaces = $this->getFilesAutoloaderNamespaces($autoloader);
+        if (empty($namespaces)) {
+            return;
+        }
+
+        $files = $this->files->getFilesFromPath($directory);
+
+        foreach ($files as $file) {
+            $targetFile = $file->getPathName();
+
+            if (!str_ends_with($targetFile, '.php')) {
+                continue;
+            }
+
+            $this->replaceParentNamespacesFromFilesAutoloaderInFile($targetFile, $autoloader, $namespaces);
+        }
+    }
+
+    /**
+     * Apply namespace replacement from a child files autoloader to a single parent file.
+     *
+     * @param string[]|null $namespaces Cached namespaces from the child files autoloader.
+     */
+    private function replaceParentNamespacesFromFilesAutoloaderInFile(
+        string $targetFile,
+        Files $autoloader,
+        ?array $namespaces = null
+    ): void {
+        $fullPath = $this->getFullPath($targetFile);
+
+        if (!is_file($fullPath)) {
+            return;
+        }
+
+        $targetFile = str_replace($this->config->getWorkingDir(), '', $fullPath);
+
+        try {
+            $contents = $this->files->readFile($targetFile);
+        } catch (\CoenJacobs\Mozart\Exceptions\FileOperationException) {
+            return;
+        }
+
+        $namespaces = $namespaces ?? $this->getFilesAutoloaderNamespaces($autoloader);
+
+        foreach ($namespaces as $namespace) {
+            $replacer = new NamespaceReplacer($this->config->getDependencyNamespace());
+            $replacer->setAutoloader($autoloader);
+            $replacer->setSearchNamespace($namespace);
+            $contents = $replacer->replace($contents);
+        }
+
+        $this->files->writeFile($targetFile, $contents);
+    }
+
+    /**
+     * Collect distinct namespaces declared by files in a files autoloader.
+     *
+     * @return string[]
+     */
+    private function getFilesAutoloaderNamespaces(Files $autoloader): array
+    {
+        $namespaces = [];
+
+        foreach ($autoloader->getFiles($this->files) as $file) {
+            $namespace = $autoloader->getDetectedNamespace($file);
+
+            if ($namespace === null || $namespace === '') {
+                continue;
+            }
+
+            $namespaces[$namespace] = true;
+        }
+
+        return array_keys($namespaces);
     }
 
     /**
