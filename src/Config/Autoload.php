@@ -67,11 +67,7 @@ class Autoload
     public function setAutoloaders(array $autoloaders): void
     {
         foreach ($autoloaders as $autoloader) {
-            if (! $autoloader instanceof Autoloader) {
-                continue;
-            }
-
-            array_push($this->autoloaders, $autoloader);
+            $this->autoloaders[] = $autoloader;
         }
     }
 

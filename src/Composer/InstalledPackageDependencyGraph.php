@@ -23,7 +23,7 @@ class InstalledPackageDependencyGraph
         $graph = [];
 
         foreach ($packages as $package) {
-            if (!is_array($package) || empty($package['name']) || !is_string($package['name'])) {
+            if (empty($package['name']) || !is_string($package['name'])) {
                 continue;
             }
 

@@ -8,7 +8,7 @@ use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 
 class PackageFinder
 {
-    private ?Mozart $config;
+    private ?Mozart $config = null;
     public PackageFactory $factory;
 
     public function __construct()
