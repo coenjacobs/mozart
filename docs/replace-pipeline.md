@@ -42,6 +42,10 @@ The visitor maintains state during traversal:
 
 An unqualified name inside a namespace that's being prefixed is skipped, because it will resolve correctly through the already-prefixed namespace declaration.
 
+### PHPDoc FQCN prefixing
+
+`PrefixVisitor` also rewrites fully-qualified class-like names inside PHPDoc comments (`@param`, `@return`, `@var`, `@throws`, etc.). After visiting each node, `processDocComment()` scans the node's doc comment for multi-part names (e.g., `\Vendor\Package\Class` or `Vendor\Package\Class`) and prefixes any that resolve to a target namespace. Unqualified names and names that don't match a target namespace are left untouched.
+
 ## Global-scope replacement
 
 **Location:** `src/Replace/GlobalScope/`
@@ -81,8 +85,8 @@ This two-pass design exists because you can't know the full set of renamed symbo
 
 ### NameVisitor
 
-- Replaces `Name` nodes that match entries in the class map
-- Replaces `FuncCall` nodes whose name matches entries in the function map
+- Routes replacements by symbol type: `Name` nodes are matched against the class map, `ConstFetch` nodes against the constant map, and `FuncCall` nodes against the function map. Each map is checked independently, so a constant named `FOO` won't collide with a class named `FOO`.
+- Class and function lookups are case-insensitive (via lowercased map copies); constant lookups are case-sensitive
 - Only processes simple names (no namespace separator)
 - Handles string arguments in existence-check functions
 - Uses `createTraverser()` (with `ParentConnectingVisitor`) because it needs `NameNodeContextTrait`

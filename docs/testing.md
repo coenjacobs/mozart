@@ -56,7 +56,7 @@ The full CI suite (`composer test`) runs these checks in order. All must pass be
 
 | Script | Tool | What it checks |
 |---|---|---|
-| `test:lint` | phpcs + `composer validate` | Code style (PSR-12), PHP 8.1-8.5 compatibility |
+| `test:lint` | phpcs + `composer validate` | Code style (PSR-12), PHP 8.2-8.5 compatibility |
 | `test:phpunit` | PHPUnit 10 | Unit tests (all PHP versions) + integration tests (PHP 8.1 + 8.5) |
 | `test:phpstan` | PHPStan level 8 | Static type analysis on `src/` |
 | `test:phpmd` | PHPMD | Code smells: codesize, cleancode, naming, unused code, design |
@@ -87,8 +87,8 @@ Also use `@SuppressWarnings(PHPMD.UnusedFormalParameter)` for interface-mandated
 
 The CI workflow (`.github/workflows/main.yml`) runs:
 
-- **Unit tests**: All PHP versions (8.1, 8.2, 8.3, 8.4, 8.5)
-- **Integration tests**: PHP 8.1 + 8.5 only (lowest and highest supported)
+- **Unit tests**: All PHP versions (8.2, 8.3, 8.4, 8.5)
+- **Integration tests**: PHP 8.2 + 8.5 only (lowest and highest supported)
 
 The PHP version matrix works via the `PHP_VERSION` build arg passed to Docker.
 
@@ -157,4 +157,6 @@ Several GitHub issues have dedicated regression tests to prevent recurrence:
 | #324 | `Unit/Autoload/AutoloaderGeneratorTest` | `autoload.files` identifier collisions across plugins and platform-specific hash churn |
 | #327 | `Unit/Autoload/AutoloaderGeneratorTest` | Incorrect generated `$baseDir` depth when `dep_directory` uses Windows separators |
 | #341 | `Unit/Autoload/AutoloaderGeneratorTest` | Absolute classmap paths when scanned file paths do not exactly match the configured working directory |
+| #325 | `Unit/Replace/ParentReplacerTest` | Parent files-autoloader entries with namespaced constants/functions not propagated |
+| #326 | `Integration/FilesAutoloaderBasenameCollision` | Files autoloader flattening same-basename global files into one target |
 | #347 | `Unit/Replace/GlobalScope/NameVisitorTest` + `NameReplacerTest` | Combined class/constant/function map routing and suffix-based existence checks |

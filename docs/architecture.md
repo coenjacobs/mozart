@@ -85,7 +85,7 @@ composer.json  →  PackageFactory::createPackage()
                     →  Package.extra.mozart → Mozart config object
 ```
 
-`ConfigLoader` provides `fromFile()` → `fromString()` → `mapToClass()`, all ultimately delegating to `netresearch/jsonmapper` for mapping JSON to typed PHP objects. The loader accepts a target class name, so the same class serves both `Package` and `Mozart` deserialization.
+`ConfigLoader` provides `fromFile()` → `fromString()` → `mapToClass()`, all ultimately delegating to `netresearch/jsonmapper` for mapping JSON to typed PHP objects. The loader accepts a target class name, so the same class serves both `Package` and `Mozart` deserialization. After mapping, `ConfigDefaultsResolver::apply()` fills in any missing values using the inference chain documented in [docs/configuration.md](configuration.md).
 
 `PackageFactory` creates `Package` objects and **caches them by file path**. This means the same package won't be parsed twice when it appears in multiple dependency chains (diamond dependencies). It also applies `override_autoload` settings at creation time, replacing a package's autoload config before any processing.
 
@@ -185,10 +185,10 @@ tests/
 
 | Package | Purpose |
 |---|---|
-| `nikic/php-parser` | AST-based PHP code transformation (supports v4 and v5) |
+| `nikic/php-parser` | AST-based PHP code transformation (v5) |
 | `league/flysystem` | File system abstraction for all file I/O |
 | `symfony/console` | CLI application framework |
 | `symfony/finder` | File discovery (finding PHP files in directories) |
 | `netresearch/jsonmapper` | Mapping JSON configuration to PHP objects |
 
-**Note:** `composer.json` has a `conflict` section that pins several Symfony packages below v7.0 to maintain PHP 8.1 compatibility. Check this section before attempting Symfony upgrades.
+**Note:** Mozart requires PHP 8.2+. Symfony 7.x is used as of version 1.2.0.
