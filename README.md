@@ -111,9 +111,9 @@ See [docs/configuration.md](docs/configuration.md) for the full configuration re
 
 | Version | Documentation | Latest release |
 |---|---|---|
-| 1.0 | [docs/](https://github.com/coenjacobs/mozart/tree/release-1.0/docs) | [1.0.10](https://github.com/coenjacobs/mozart/releases/tag/1.0.10) |
-| 0.7 | [docs/](https://github.com/coenjacobs/mozart/tree/release-0.7/docs) | — |
-| 0.6 | [docs/](https://github.com/coenjacobs/mozart/tree/release-0.6/docs) | — |
+| 1.0 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.0/README.md) | [1.0.10](https://github.com/coenjacobs/mozart/releases/tag/1.0.10) |
+| 0.7 | [README.md](https://github.com/coenjacobs/mozart/blob/release-0.7/README.md) | [0.7.1](https://github.com/coenjacobs/mozart/releases/tag/0.7.1) |
+| 0.6 | [README.md](https://github.com/coenjacobs/mozart/blob/release-0.6/README.md) | [0.6.0](https://github.com/coenjacobs/mozart/releases/tag/0.6.0) |
 
 ## Further reading
 
