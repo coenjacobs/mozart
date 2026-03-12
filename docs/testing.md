@@ -57,7 +57,7 @@ The full CI suite (`composer test`) runs these checks in order. All must pass be
 | Script | Tool | What it checks |
 |---|---|---|
 | `test:lint` | phpcs + `composer validate` | Code style (PSR-12), PHP 8.2-8.5 compatibility |
-| `test:phpunit` | PHPUnit 10 | Unit tests (all PHP versions) + integration tests (PHP 8.1 + 8.5) |
+| `test:phpunit` | PHPUnit 11 | Unit tests (all PHP versions) + integration tests (PHP 8.2 + 8.5) |
 | `test:phpstan` | PHPStan level 8 | Static type analysis on `src/` |
 | `test:phpmd` | PHPMD | Code smells: codesize, cleancode, naming, unused code, design |
 | `test:docs` | php-doc-check | Docblock completeness (see below) |

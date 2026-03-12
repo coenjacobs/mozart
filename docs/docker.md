@@ -62,7 +62,7 @@ The Dockerfile uses multi-stage builds. Each stage serves a different purpose:
 | `packager` | `builder` | Reinstalls dependencies with `--no-dev` for production |
 | `application` | `base` | Final production image. Copies only built artifacts from `packager`. |
 
-The `PHP_VERSION` build arg defaults to `8.5` and is overridden by CI to test against multiple PHP versions (8.1 through 8.5).
+The `PHP_VERSION` build arg defaults to `8.5` and is overridden by CI to test against multiple PHP versions (8.2 through 8.5).
 
 ## Docker Compose services
 
