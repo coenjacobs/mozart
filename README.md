@@ -1,4 +1,7 @@
 # Mozart [![Latest Stable Version](https://poser.pugx.org/coenjacobs/mozart/v/stable.svg)](https://packagist.org/packages/coenjacobs/mozart) [![License](https://poser.pugx.org/coenjacobs/mozart/license.svg)](https://packagist.org/packages/coenjacobs/mozart) [![Total Downloads](https://poser.pugx.org/coenjacobs/mozart/downloads)](//packagist.org/packages/coenjacobs/mozart) [![Docker Image Pulls](https://img.shields.io/docker/pulls/coenjacobs/mozart.svg)](https://hub.docker.com/r/coenjacobs/mozart)
+
+**You are viewing the documentation for Mozart 1.1.** This version is **still supported** but is no longer the latest. See [supported versions](https://github.com/coenjacobs/mozart?tab=readme-ov-file#supported-versions) for all available versions and their documentation.
+
 Composes all dependencies as a package inside a WordPress plugin. Load packages through Composer and have them wrapped inside your own namespace. Gone are the days when plugins could load conflicting versions of the same package, resulting in hard to reproduce bugs.
 
 This package requires PHP 8.1 or higher in order to run the tool. You can use the resulting files as a bundle, requiring any PHP version you like, even PHP 5.2.
