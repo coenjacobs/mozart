@@ -103,7 +103,7 @@ See [docs/configuration.md](docs/configuration.md) for the full configuration re
 
 | Version | Documentation | Latest release |
 |---|---|---|
-| 1.3 | [README.md](https://github.com/coenjacobs/mozart/blob/master/README.md) (in development) | — |
+| 1.3 | [README.md](https://github.com/coenjacobs/mozart/blob/master/README.md) | (in development) |
 | 1.2 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.2/README.md) | [1.2.0](https://github.com/coenjacobs/mozart/releases/tag/1.2.0) |
 | 1.1 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.1/README.md) | [1.1.4](https://github.com/coenjacobs/mozart/releases/tag/1.1.4) |
 
