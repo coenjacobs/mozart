@@ -27,4 +27,4 @@ call_user_func(function ($version) {
 
     $app = new CoenJacobs\Mozart\Console\Application($version);
     $app->run();
-}, '1.2.0');
+}, '1.2.1');
