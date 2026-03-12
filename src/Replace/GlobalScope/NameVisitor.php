@@ -249,6 +249,10 @@ class NameVisitor extends NodeVisitorAbstract
      */
     protected function getExistenceCheckReplacement(string $functionName, string $value, string $suffix): ?string
     {
+        if ($this->isSuffixBasedClassContext($functionName, $suffix)) {
+            return $this->classMapLower[strtolower($value)] ?? null;
+        }
+
         if ($this->shouldUseClassMapForExistenceCheck($functionName, $suffix)) {
             return $this->classMapLower[strtolower($value)] ?? null;
         }
@@ -265,12 +269,24 @@ class NameVisitor extends NodeVisitorAbstract
     }
 
     /**
+     * Detect existence checks where a :: suffix means the base value is always a class name.
+     */
+    protected function isSuffixBasedClassContext(string $functionName, string $suffix): bool
+    {
+        if ($suffix === '') {
+            return false;
+        }
+
+        return in_array($functionName, ['defined', 'constant', 'is_callable'], true);
+    }
+
+    /**
      * Determine whether an existence-check argument should use the class map.
      */
     protected function shouldUseClassMapForExistenceCheck(string $functionName, string $suffix): bool
     {
-        if ($suffix !== '') {
-            return in_array($functionName, ['defined', 'constant', 'is_callable'], true);
+        if ($this->isSuffixBasedClassContext($functionName, $suffix)) {
+            return false;
         }
 
         return in_array(

@@ -415,6 +415,21 @@ class NameVisitorTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_fall_back_to_constant_map_for_defined_class_constants(): void
+    {
+        $code = "\$check = defined('HELPERS::CONST_NAME');";
+
+        $result = $this->processCodeWithMaps(
+            $code,
+            [],
+            ['HELPERS' => 'MOZART_HELPERS']
+        );
+
+        $this->assertStringContainsString("defined('HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("defined('MOZART_HELPERS::CONST_NAME')", $result);
+    }
+
+    #[Test]
     public function it_replaces_class_name_in_enum_exists(): void
     {
         $code = "if (enum_exists('MyEnum')) {}";
@@ -539,6 +554,22 @@ class NameVisitorTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_fall_back_to_function_map_for_is_callable_method_strings(): void
+    {
+        $code = "\$check = is_callable('helpers::method');";
+
+        $result = $this->processCodeWithMaps(
+            $code,
+            [],
+            [],
+            ['helpers' => 'mozart_helpers']
+        );
+
+        $this->assertStringContainsString("is_callable('helpers::method')", $result);
+        $this->assertStringNotContainsString("is_callable('mozart_helpers::method')", $result);
+    }
+
+    #[Test]
     public function it_replaces_class_name_in_class_alias_first_argument(): void
     {
         $code = "class_alias('MyClass', 'Legacy_MyClass');";
@@ -629,6 +660,21 @@ class NameVisitorTest extends TestCase
         $result = $this->processCodeWithConstantMap($code, $constantMap);
 
         $this->assertStringContainsString("constant('MOZART_MY_CONST')", $result);
+    }
+
+    #[Test]
+    public function it_does_not_fall_back_to_constant_map_for_constant_class_constants(): void
+    {
+        $code = "\$val = constant('HELPERS::CONST_NAME');";
+
+        $result = $this->processCodeWithMaps(
+            $code,
+            [],
+            ['HELPERS' => 'MOZART_HELPERS']
+        );
+
+        $this->assertStringContainsString("constant('HELPERS::CONST_NAME')", $result);
+        $this->assertStringNotContainsString("constant('MOZART_HELPERS::CONST_NAME')", $result);
     }
 
     #[Test]
