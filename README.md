@@ -99,6 +99,22 @@ The core settings and their defaults:
 
 See [docs/configuration.md](docs/configuration.md) for the full configuration reference with defaults and inference logic.
 
+## Supported versions
+
+| Version | Documentation | Latest release |
+|---|---|---|
+| 1.3 | [README.md](https://github.com/coenjacobs/mozart/blob/master/README.md) | (in development) |
+| 1.2 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.2/README.md) | [1.2.0](https://github.com/coenjacobs/mozart/releases/tag/1.2.0) |
+| 1.1 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.1/README.md) | [1.1.4](https://github.com/coenjacobs/mozart/releases/tag/1.1.4) |
+
+### No longer supported
+
+| Version | Documentation | Latest release |
+|---|---|---|
+| 1.0 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.0/README.md) | [1.0.10](https://github.com/coenjacobs/mozart/releases/tag/1.0.10) |
+| 0.7 | [README.md](https://github.com/coenjacobs/mozart/blob/release-0.7/README.md) | [0.7.1](https://github.com/coenjacobs/mozart/releases/tag/0.7.1) |
+| 0.6 | [README.md](https://github.com/coenjacobs/mozart/blob/release-0.6/README.md) | [0.6.0](https://github.com/coenjacobs/mozart/releases/tag/0.6.0) |
+
 ## Further reading
 
 | Document | Description |
