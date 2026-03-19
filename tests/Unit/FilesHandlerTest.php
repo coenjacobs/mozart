@@ -49,7 +49,13 @@ class FilesHandlerTest extends TestCase
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
             $path = $dir . DIRECTORY_SEPARATOR . $file;
-            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+            if (is_link($path)) {
+                unlink($path);
+            } elseif (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                unlink($path);
+            }
         }
         rmdir($dir);
     }
@@ -127,6 +133,42 @@ class FilesHandlerTest extends TestCase
 
         $this->assertTrue($handler->isDirectoryEmpty($emptyDir));
         $this->assertFalse($handler->isDirectoryEmpty($nonEmptyDir));
+    }
+
+    #[Test]
+    public function it_does_not_throw_when_directory_contains_symlink(): void
+    {
+        $dirPath = 'dir_with_symlink';
+        $targetFile = 'target.txt';
+
+        file_put_contents($this->testDir . DIRECTORY_SEPARATOR . $targetFile, 'content');
+        mkdir($this->testDir . DIRECTORY_SEPARATOR . $dirPath, 0777, true);
+        symlink(
+            $this->testDir . DIRECTORY_SEPARATOR . $targetFile,
+            $this->testDir . DIRECTORY_SEPARATOR . $dirPath . DIRECTORY_SEPARATOR . 'link.txt'
+        );
+
+        $handler = new FilesHandler($this->config);
+
+        $this->assertFalse($handler->isDirectoryEmpty($dirPath));
+    }
+
+    #[Test]
+    public function it_treats_directory_with_only_symlinks_as_non_empty(): void
+    {
+        $dirPath = 'dir_with_only_symlink';
+        $targetFile = 'outside_target.txt';
+
+        file_put_contents($this->testDir . DIRECTORY_SEPARATOR . $targetFile, 'content');
+        mkdir($this->testDir . DIRECTORY_SEPARATOR . $dirPath, 0777, true);
+        symlink(
+            $this->testDir . DIRECTORY_SEPARATOR . $targetFile,
+            $this->testDir . DIRECTORY_SEPARATOR . $dirPath . DIRECTORY_SEPARATOR . 'CLAUDE.md'
+        );
+
+        $handler = new FilesHandler($this->config);
+
+        $this->assertFalse($handler->isDirectoryEmpty($dirPath));
     }
 
     #[Test]
