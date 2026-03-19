@@ -4,6 +4,7 @@ namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Exceptions\FileOperationException;
+use FilesystemIterator;
 use Iterator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\FilesystemOperationFailed;
@@ -88,9 +89,25 @@ class FilesHandler
         }
     }
 
+    /**
+     * Check whether the given path is an empty directory.
+     *
+     * Uses native FilesystemIterator instead of Flysystem's listContents()
+     * because Flysystem throws SymbolicLinkEncountered when it encounters
+     * symlinks in the directory tree. Symlinks are valid filesystem entries
+     * and should not cause a failure here.
+     */
     public function isDirectoryEmpty(string $path): bool
     {
-        return count($this->filesystem->listContents($path, true)->toArray()) === 0;
+        $fullPath = $this->config->getWorkingDir() . $path;
+
+        if (!is_dir($fullPath)) {
+            return true;
+        }
+
+        $iterator = new FilesystemIterator($fullPath);
+
+        return !$iterator->valid();
     }
 
     public function copyFile(string $origin, string $destination): void
