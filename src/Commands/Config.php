@@ -85,7 +85,7 @@ class Config
             ? '(explicit)'
             : '(default)';
 
-        $sources['classmap_directory'] = $this->classmapDirSource($snapshot, $config);
+        $sources['classmap_directory'] = $this->classmapDirSource($snapshot);
 
         $sources['dep_namespace'] = !empty($snapshot['dep_namespace'])
             ? '(explicit)'
@@ -121,17 +121,13 @@ class Config
      *
      * @param array<string, string|bool> $snapshot
      */
-    private function classmapDirSource(array $snapshot, Mozart $config): string
+    private function classmapDirSource(array $snapshot): string
     {
         if (!empty($snapshot['classmap_directory'])) {
             return '(explicit)';
         }
 
-        if ($config->classmapDir === $config->depDirectory) {
-            return '(default, same as dep_directory)';
-        }
-
-        return '(default)';
+        return '(default, same as dep_directory)';
     }
 
     /**
