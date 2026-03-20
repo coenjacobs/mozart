@@ -26,7 +26,7 @@ class Config
      * Load the Mozart configuration, apply defaults, and return the resolved
      * config alongside source annotations for each setting.
      *
-     * @return array{config: Mozart, sources: array<string, string>}
+     * @return array{config: Mozart, sources: array<string, string>, warnings: string[]}
      */
     public function execute(): array
     {
@@ -43,7 +43,12 @@ class Config
         (new ConfigDefaultsResolver())->apply($config, $package);
         $sources = $this->buildSources($snapshot, $config, $package);
 
-        return ['config' => $config, 'sources' => $sources];
+        $warnings = [];
+        if (! $config->isValidMozartConfig()) {
+            $warnings = $config->getMissingConfigFields();
+        }
+
+        return ['config' => $config, 'sources' => $sources, 'warnings' => $warnings];
     }
 
     /**

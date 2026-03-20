@@ -364,4 +364,69 @@ class ConfigTest extends TestCase
         $sources = $result['sources'];
         $this->assertStringContainsString('inferred from package name', $sources['dep_namespace']);
     }
+
+    #[Test]
+    public function it_returns_empty_warnings_for_valid_config(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'autoload' => [
+                'psr-4' => [
+                    'TestProject\\' => 'src/',
+                ],
+            ],
+            'extra' => [
+                'mozart' => new \stdClass(),
+            ],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertEmpty($result['warnings']);
+    }
+
+    #[Test]
+    public function it_returns_warnings_for_missing_required_fields(): void
+    {
+        $composerJson = [
+            'require' => [],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertNotEmpty($result['warnings']);
+        $this->assertContains('dep_namespace', $result['warnings']);
+        $this->assertContains('classmap_prefix', $result['warnings']);
+    }
+
+    #[Test]
+    public function it_returns_warnings_only_for_actually_missing_fields(): void
+    {
+        $composerJson = [
+            'name' => 'test/project',
+            'require' => [],
+        ];
+
+        file_put_contents(
+            $this->testDir . DIRECTORY_SEPARATOR . 'composer.json',
+            json_encode($composerJson)
+        );
+
+        $command = new Config($this->testDir);
+        $result = $command->execute();
+
+        $this->assertEmpty($result['warnings']);
+    }
 }
