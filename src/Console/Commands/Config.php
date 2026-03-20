@@ -45,9 +45,16 @@ class Config extends Command
 
         $this->printAllSettings($output, $result['config'], $result['sources']);
 
+        if (!empty($result['warnings'])) {
+            $output->writeln('');
+            $fields = implode(', ', $result['warnings']);
+            $output->writeln('<warning>⚠ Missing required fields: ' . $fields . '</warning>');
+            $output->writeln('<warning>  mozart compose will fail until these are configured.</warning>');
+        }
+
         $output->writeln('');
 
-        return 0;
+        return empty($result['warnings']) ? 0 : 1;
     }
 
     /**
