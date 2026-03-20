@@ -49,6 +49,7 @@ Rules are specific constraints and workflows that must always be followed when w
 Commands are reusable prompt templates that can be invoked on demand to perform specific workflows.
 
 @.agents/commands/learned.md
+@.agents/commands/port.md
 
 ## Agent setup
 
