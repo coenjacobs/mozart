@@ -214,7 +214,37 @@ class PrefixVisitor extends NodeVisitorAbstract
             return true;
         }
 
+        if ($this->isAliasQualifiedName($node)) {
+            return true;
+        }
+
         return $this->isUnqualifiedNameInPrefixedNamespace($node);
+    }
+
+    /**
+     * Check if node is a qualified name whose first part is a tracked alias.
+     *
+     * Names like P\Create (where P is aliased to GuzzleHttp\Promise) or
+     * Psr7\Utils (where Psr7 is aliased to GuzzleHttp\Psr7) resolve through
+     * their alias. Since the use statement is already being prefixed, the
+     * alias-based reference will resolve correctly without modification.
+     * Expanding them to the full prefixed path without making them fully
+     * qualified would cause PHP to resolve them relative to the current
+     * namespace, doubling the prefix.
+     */
+    protected function isAliasQualifiedName(Name $node): bool
+    {
+        if ($node->isFullyQualified()) {
+            return false;
+        }
+
+        $nameStr = $node->toString();
+        if (!str_contains($nameStr, '\\')) {
+            return false;
+        }
+
+        $firstPart = explode('\\', $nameStr, 2)[0];
+        return isset($this->aliases[$firstPart]);
     }
 
     /**

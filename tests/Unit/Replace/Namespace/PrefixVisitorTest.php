@@ -687,6 +687,30 @@ $check = is_callable(\'Invoker\\Invoker::\' . $method);';
     }
 
     #[Test]
+    public function it_does_not_expand_alias_qualified_names(): void
+    {
+        $code = '<?php
+namespace GuzzleHttp;
+
+use GuzzleHttp\\Promise as P;
+
+class Pool {
+    public function create(iterable $requests) {
+        return P\\Create::iterFor($requests);
+    }
+}';
+        $result = $this->processCode($code, ['GuzzleHttp']);
+
+        $this->assertStringContainsString('namespace MyPlugin\\Dependencies\\GuzzleHttp;', $result);
+        $this->assertStringContainsString('use MyPlugin\\Dependencies\\GuzzleHttp\\Promise as P;', $result);
+        $this->assertStringContainsString('return P\\Create::iterFor($requests);', $result);
+        $this->assertStringNotContainsString(
+            'MyPlugin\\Dependencies\\GuzzleHttp\\Promise\\Create::iterFor',
+            $result
+        );
+    }
+
+    #[Test]
     public function it_prefixes_class_alias_first_argument(): void
     {
         $code = '<?php
