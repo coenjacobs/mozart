@@ -63,6 +63,8 @@ jobs:
       - name: Prepare
         id: prep
         run: |
+          set -euo pipefail
+
           DOCKER_IMAGE=coenjacobs/mozart
           GHCR_IMAGE=ghcr.io/${{ github.repository_owner }}/mozart
           VERSION="${{ inputs.version }}"
@@ -88,14 +90,23 @@ jobs:
             MAJOR=$(echo "$VERSION_NO_V" | cut -d. -f1)
             MINOR=$(echo "$VERSION_NO_V" | cut -d. -f2)
 
+            echo "Fetching stable GitHub release tags once..."
+            STABLE_RELEASES=$(curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases?per_page=100" | \
+              jq -r '.[] | select(.prerelease == false and .draft == false) | .tag_name' | \
+              sed 's/^v//' | \
+              grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true)
+
+            if [ -n "$STABLE_RELEASES" ]; then
+              echo "Stable releases considered:"
+              printf '%s\n' "$STABLE_RELEASES"
+            else
+              echo "No stable releases returned by the API"
+            fi
+
             # Check if this should be tagged as 'latest' (highest overall version)
             echo "Querying GitHub releases to find highest stable version..."
-            HIGHEST_STABLE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases" | \
-              jq -r '.[] | select(.prerelease == false) | .tag_name' | \
-              sed 's/^v//' | \
-              sort -V | \
-              tail -n1)
+            HIGHEST_STABLE=$(printf '%s\n' "$STABLE_RELEASES" | sort -V | tail -n1)
 
             if [ -z "$HIGHEST_STABLE" ]; then
               HIGHEST_STABLE="0.0.0"
@@ -118,33 +129,49 @@ jobs:
             # Check major version tag (independent of 'latest' tag)
             # This should update whenever the version is the latest in its major version range
             echo "Checking if this is the latest in major version $MAJOR..."
-            LATEST_IN_MAJOR=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases" | \
-              jq -r ".[] | select(.prerelease == false) | .tag_name" | \
-              sed 's/^v//' | \
-              grep "^${MAJOR}\." | \
-              sort -V | \
-              tail -n1)
+            LATEST_IN_MAJOR=$(printf '%s\n' "$STABLE_RELEASES" | \
+              jq -r -R -s --arg major "$MAJOR" '
+                split("\n")
+                | map(select(length > 0 and startswith($major + ".")))
+                | sort_by(split(".") | map(tonumber? // 0))
+                | last // ""
+              ')
+
+            if [ -n "$LATEST_IN_MAJOR" ]; then
+              echo "Latest stable in major version $MAJOR: $LATEST_IN_MAJOR"
+            else
+              echo "No stable release found in major version $MAJOR"
+            fi
 
             if [ "$VERSION_NO_V" = "$LATEST_IN_MAJOR" ]; then
               echo "This is the latest in major version $MAJOR, creating major version tag"
               TAGS="${TAGS},${DOCKER_IMAGE}:${MAJOR},${GHCR_IMAGE}:${MAJOR}"
+            else
+              echo "Skipping major version tag $MAJOR because latest in range is ${LATEST_IN_MAJOR:-<none>}"
             fi
 
             # Check minor version tag (independent of both 'latest' and major version tags)
             # This should update whenever the version is the latest in its minor version range
             echo "Checking if this is the latest in minor version ${MAJOR}.${MINOR}..."
-            LATEST_IN_MINOR=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases" | \
-              jq -r ".[] | select(.prerelease == false) | .tag_name" | \
-              sed 's/^v//' | \
-              grep "^${MAJOR}\.${MINOR}\." | \
-              sort -V | \
-              tail -n1)
+            LATEST_IN_MINOR=$(printf '%s\n' "$STABLE_RELEASES" | \
+              jq -r -R -s --arg major "$MAJOR" --arg minor "$MINOR" '
+                split("\n")
+                | map(select(length > 0 and startswith($major + "." + $minor + ".")))
+                | sort_by(split(".") | map(tonumber? // 0))
+                | last // ""
+              ')
+
+            if [ -n "$LATEST_IN_MINOR" ]; then
+              echo "Latest stable in minor version ${MAJOR}.${MINOR}: $LATEST_IN_MINOR"
+            else
+              echo "No stable release found in minor version ${MAJOR}.${MINOR}"
+            fi
 
             if [ "$VERSION_NO_V" = "$LATEST_IN_MINOR" ]; then
               echo "This is the latest in minor version ${MAJOR}.${MINOR}, creating minor version tag"
               TAGS="${TAGS},${DOCKER_IMAGE}:${MAJOR}.${MINOR},${GHCR_IMAGE}:${MAJOR}.${MINOR}"
+            else
+              echo "Skipping minor version tag ${MAJOR}.${MINOR} because latest in range is ${LATEST_IN_MINOR:-<none>}"
             fi
           fi
 
