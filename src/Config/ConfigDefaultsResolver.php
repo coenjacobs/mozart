@@ -23,6 +23,20 @@ class ConfigDefaultsResolver
      */
     public function apply(Mozart $config, Package $package): void
     {
+        $this->applyDirectoryDefaults($config);
+
+        $depNamespaceWasEmpty = empty($config->depNamespace);
+        $rootNamespace = $this->inferRootNamespace($package);
+
+        $this->applyNamespaceDefaults($config, $rootNamespace);
+        $this->applyPrefixDefaults($config, $depNamespaceWasEmpty, $rootNamespace);
+    }
+
+    /**
+     * Apply directory-related defaults.
+     */
+    private function applyDirectoryDefaults(Mozart $config): void
+    {
         if (empty($config->depDirectory)) {
             $config->depDirectory = 'vendor-prefixed/';
         }
@@ -30,15 +44,20 @@ class ConfigDefaultsResolver
         if (empty($config->classmapDir)) {
             $config->classmapDir = $config->depDirectory;
         }
+    }
 
-        $depNamespaceWasEmpty = empty($config->depNamespace);
-        $rootNamespace = $this->inferRootNamespace($package);
-
-        if ($depNamespaceWasEmpty && !empty($rootNamespace)) {
-            $config->depNamespace = $rootNamespace . '\\Dependencies';
+    /**
+     * Apply namespace defaults and validate inference succeeded.
+     *
+     * @throws ConfigurationException When namespace cannot be inferred.
+     */
+    private function applyNamespaceDefaults(Mozart $config, string $rootNamespace): void
+    {
+        if (!empty($config->depNamespace)) {
+            return;
         }
 
-        if ($depNamespaceWasEmpty && empty($config->depNamespace)) {
+        if (empty($rootNamespace)) {
             throw new ConfigurationException(
                 'Could not automatically determine dep_namespace. ' .
                 'Mozart tried to infer it from: ' .
@@ -48,6 +67,14 @@ class ConfigDefaultsResolver
             );
         }
 
+        $config->depNamespace = $rootNamespace . '\\Dependencies';
+    }
+
+    /**
+     * Apply prefix-related defaults.
+     */
+    private function applyPrefixDefaults(Mozart $config, bool $depNamespaceWasEmpty, string $rootNamespace): void
+    {
         if (empty($config->classmapPrefix)) {
             $prefixSource = $depNamespaceWasEmpty ? $rootNamespace : $config->depNamespace;
             $config->classmapPrefix = $this->namespaceToPrefixString($prefixSource);
