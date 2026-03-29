@@ -129,7 +129,7 @@ class ComposeTest extends TestCase
         $compose = new Compose($this->testDir);
 
         $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('Could not determine');
+        $this->expectExceptionMessage('Could not automatically determine dep_namespace');
 
         $compose->execute();
     }
