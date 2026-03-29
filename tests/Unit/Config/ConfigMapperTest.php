@@ -10,6 +10,7 @@ use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\OverrideAutoload;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFinder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -128,18 +129,16 @@ class ConfigMapperTest extends TestCase
     }
 
     #[Test]
-    public function it_fails_validation_with_no_psr4_and_no_name(): void
+    public function it_throws_configuration_exception_when_namespace_cannot_be_inferred(): void
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Could not automatically determine dep_namespace");
+
         $package = new Package();
-        $package->name = '';
+        $package->name = "";
 
         $result = $this->loader->fromString(json_encode(new \stdClass()), Mozart::class);
         $this->defaults->apply($result, $package);
-
-        $this->assertFalse($result->isValidMozartConfig());
-        $this->assertSame('', $result->depNamespace);
-        $this->assertContains('dep_namespace', $result->getMissingConfigFields());
-        $this->assertContains('classmap_prefix', $result->getMissingConfigFields());
     }
 
     #[Test]
