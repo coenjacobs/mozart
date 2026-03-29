@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Config;
 
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
+
 /**
  * Fill empty Mozart configuration properties with sensible defaults.
  *
@@ -34,6 +36,16 @@ class ConfigDefaultsResolver
 
         if ($depNamespaceWasEmpty && !empty($rootNamespace)) {
             $config->depNamespace = $rootNamespace . '\\Dependencies';
+        }
+
+        if ($depNamespaceWasEmpty && empty($config->depNamespace)) {
+            throw new ConfigurationException(
+                'Could not automatically determine dep_namespace. ' .
+                'Mozart tried to infer it from: ' .
+                '(1) the PSR-4 autoload namespace in your composer.json, or ' .
+                '(2) your package name (vendor/package format). ' .
+                'Please explicitly set "extra.mozart.dep_namespace" in your composer.json.'
+            );
         }
 
         if (empty($config->classmapPrefix)) {
