@@ -2,6 +2,8 @@
 
 namespace CoenJacobs\Mozart\Config;
 
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
+
 /**
  * Fill empty Mozart configuration properties with sensible defaults.
  *
@@ -21,6 +23,20 @@ class ConfigDefaultsResolver
      */
     public function apply(Mozart $config, Package $package): void
     {
+        $this->applyDirectoryDefaults($config);
+
+        $depNamespaceWasEmpty = empty($config->depNamespace);
+        $rootNamespace = $this->inferRootNamespace($package);
+
+        $this->applyNamespaceDefaults($config, $rootNamespace);
+        $this->applyPrefixDefaults($config, $depNamespaceWasEmpty, $rootNamespace);
+    }
+
+    /**
+     * Apply directory-related defaults.
+     */
+    private function applyDirectoryDefaults(Mozart $config): void
+    {
         if (empty($config->depDirectory)) {
             $config->depDirectory = 'vendor-prefixed/';
         }
@@ -28,14 +44,37 @@ class ConfigDefaultsResolver
         if (empty($config->classmapDir)) {
             $config->classmapDir = $config->depDirectory;
         }
+    }
 
-        $depNamespaceWasEmpty = empty($config->depNamespace);
-        $rootNamespace = $this->inferRootNamespace($package);
-
-        if ($depNamespaceWasEmpty && !empty($rootNamespace)) {
-            $config->depNamespace = $rootNamespace . '\\Dependencies';
+    /**
+     * Apply namespace defaults and validate inference succeeded.
+     *
+     * @throws ConfigurationException When namespace cannot be inferred.
+     */
+    private function applyNamespaceDefaults(Mozart $config, string $rootNamespace): void
+    {
+        if (!empty($config->depNamespace)) {
+            return;
         }
 
+        if (empty($rootNamespace)) {
+            throw new ConfigurationException(
+                'Could not automatically determine dep_namespace. ' .
+                'Mozart tried to infer it from: ' .
+                '(1) the PSR-4 autoload namespace in your composer.json, or ' .
+                '(2) your package name (vendor/package format). ' .
+                'Please explicitly set "extra.mozart.dep_namespace" in your composer.json.'
+            );
+        }
+
+        $config->depNamespace = $rootNamespace . '\\Dependencies';
+    }
+
+    /**
+     * Apply prefix-related defaults.
+     */
+    private function applyPrefixDefaults(Mozart $config, bool $depNamespaceWasEmpty, string $rootNamespace): void
+    {
         if (empty($config->classmapPrefix)) {
             $prefixSource = $depNamespaceWasEmpty ? $rootNamespace : $config->depNamespace;
             $config->classmapPrefix = $this->namespaceToPrefixString($prefixSource);
