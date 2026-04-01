@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CoenJacobs\Mozart\Tests\Unit\Commands;
 
 use CoenJacobs\Mozart\Commands\Config;
-use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -407,8 +406,16 @@ class ConfigTest extends TestCase
         $result = $command->execute();
 
         $this->assertNotEmpty($result['warnings']);
+        $this->assertContains(
+            'Could not automatically determine dep_namespace. Mozart tried to infer it from: ' .
+            '(1) the PSR-4 autoload namespace in your composer.json, or ' .
+            '(2) your package name (vendor/package format). ' .
+            'Please explicitly set "extra.mozart.dep_namespace" in your composer.json.',
+            $result['warnings']
+        );
         $this->assertContains('dep_namespace', $result['warnings']);
         $this->assertContains('classmap_prefix', $result['warnings']);
+        $this->assertSame('(could not be inferred)', $result['sources']['dep_namespace']);
     }
 
     #[Test]

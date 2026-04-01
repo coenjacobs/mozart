@@ -6,6 +6,7 @@ use CoenJacobs\Mozart\Config\ConfigDefaultsResolver;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\Config\Psr4;
+use CoenJacobs\Mozart\Exceptions\ConfigurationException;
 use CoenJacobs\Mozart\PackageFactory;
 
 class Config
@@ -40,12 +41,18 @@ class Config
         $this->raw = $this->extractRawMozart($composerFile);
 
         $snapshot = $this->snapshot($config);
-        (new ConfigDefaultsResolver())->apply($config, $package);
+        $warnings = [];
+
+        try {
+            (new ConfigDefaultsResolver())->apply($config, $package);
+        } catch (ConfigurationException $e) {
+            $warnings[] = $e->getMessage();
+        }
+
         $sources = $this->buildSources($snapshot, $config, $package);
 
-        $warnings = [];
         if (! $config->isValidMozartConfig()) {
-            $warnings = $config->getMissingConfigFields();
+            $warnings = array_merge($warnings, $config->getMissingConfigFields());
         }
 
         return ['config' => $config, 'sources' => $sources, 'warnings' => $warnings];
@@ -194,7 +201,7 @@ class Config
     private function inferNamespaceSource(Package $package, string $resolved): string
     {
         if (empty($resolved)) {
-            return '(not set)';
+            return '(could not be inferred)';
         }
 
         foreach ($package->getAutoloaders() as $autoloader) {
