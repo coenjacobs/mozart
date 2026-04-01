@@ -47,8 +47,10 @@ class Config extends Command
 
         if (!empty($result['warnings'])) {
             $output->writeln('');
-            $fields = implode(', ', $result['warnings']);
-            $output->writeln('<warning>⚠ Missing required fields: ' . $fields . '</warning>');
+            foreach ($result['warnings'] as $warning) {
+                $output->writeln('<warning>⚠ ' . $warning . '</warning>');
+            }
+
             $output->writeln('<warning>  mozart compose will fail until these are configured.</warning>');
         }
 
