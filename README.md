@@ -104,7 +104,7 @@ See [docs/configuration.md](docs/configuration.md) for the full configuration re
 | Version | Documentation | Latest release |
 |---|---|---|
 | 1.3 | [README.md](https://github.com/coenjacobs/mozart/blob/master/README.md) | (in development) |
-| 1.2 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.2/README.md) | [1.2.2](https://github.com/coenjacobs/mozart/releases/tag/1.2.2) |
+| 1.2 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.2/README.md) | [1.2.3](https://github.com/coenjacobs/mozart/releases/tag/1.2.3) |
 | 1.1 | [README.md](https://github.com/coenjacobs/mozart/blob/release-1.1/README.md) | [1.1.6](https://github.com/coenjacobs/mozart/releases/tag/1.1.6) |
 
 ### No longer supported
