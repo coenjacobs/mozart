@@ -50,12 +50,19 @@ class AutoloaderGenerator
     /**
      * Build the PSR-4 entries mapping the dependency namespace to dep_directory.
      *
+     * Skips emitting the entry when dep_directory is empty, which happens when
+     * no PSR-4 or PSR-0 dependencies were processed (only classmap packages).
+     *
      * @return array<string, array<string>>
      */
     protected function buildPsr4Entries(): array
     {
         $namespace = $this->config->getDependencyNamespace();
         $depDir = rtrim($this->config->getDepDirectory(), DIRECTORY_SEPARATOR . '/');
+
+        if ($this->files->isDirectoryEmpty($depDir)) {
+            return [];
+        }
 
         return [$namespace => [$depDir]];
     }
