@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CoenJacobs\Mozart\Tests\Unit;
 
+use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use CoenJacobs\Mozart\PackageFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -118,6 +119,71 @@ class PackageFactoryTest extends TestCase
         $package = $factory->createPackage($filePath, null);
 
         $this->assertInstanceOf(Package::class, $package);
+    }
+
+    #[Test]
+    public function it_returns_existing_mozart_when_extra_mozart_exists(): void
+    {
+        $composerJson = [
+            'name' => 'test/package',
+            'require' => [],
+            'extra' => [
+                'mozart' => [
+                    'dep_namespace' => 'Custom\\Ns',
+                    'dep_directory' => 'custom/',
+                ],
+            ],
+        ];
+        $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'composer.json';
+        file_put_contents($filePath, json_encode($composerJson));
+
+        $factory = new PackageFactory();
+        $package = $factory->createPackage($filePath);
+
+        $config = $factory->resolveConfig($package);
+
+        $this->assertSame($package->getExtra()->getMozart(), $config);
+        $this->assertSame('Custom\\Ns', $config->depNamespace);
+    }
+
+    #[Test]
+    public function it_creates_and_attaches_mozart_in_zero_config_mode(): void
+    {
+        $composerJson = [
+            'name' => 'test/package',
+            'require' => [],
+        ];
+        $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'composer.json';
+        file_put_contents($filePath, json_encode($composerJson));
+
+        $factory = new PackageFactory();
+        $package = $factory->createPackage($filePath);
+
+        $config = $factory->resolveConfig($package);
+
+        $this->assertInstanceOf(Mozart::class, $config);
+        $this->assertNotNull($package->getExtra());
+        $this->assertSame($config, $package->getExtra()->getMozart());
+    }
+
+    #[Test]
+    public function it_attaches_mozart_when_extra_exists_but_mozart_is_absent(): void
+    {
+        $composerJson = [
+            'name' => 'test/package',
+            'require' => [],
+            'extra' => new \stdClass(),
+        ];
+        $filePath = $this->testDir . DIRECTORY_SEPARATOR . 'composer.json';
+        file_put_contents($filePath, json_encode($composerJson));
+
+        $factory = new PackageFactory();
+        $package = $factory->createPackage($filePath);
+
+        $config = $factory->resolveConfig($package);
+
+        $this->assertInstanceOf(Mozart::class, $config);
+        $this->assertSame($config, $package->getExtra()->getMozart());
     }
 
 }

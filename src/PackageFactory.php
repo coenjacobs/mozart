@@ -3,6 +3,7 @@
 namespace CoenJacobs\Mozart;
 
 use CoenJacobs\Mozart\Config\ConfigLoader;
+use CoenJacobs\Mozart\Config\Extra;
 use CoenJacobs\Mozart\Config\Mozart;
 use CoenJacobs\Mozart\Config\Package;
 use stdClass;
@@ -51,6 +52,10 @@ class PackageFactory
      * Return the Mozart config from the package's extra.mozart block,
      * or a fresh empty config when the block is absent. Running the
      * command is the opt-in — no extra.mozart block is required.
+     *
+     * In zero-config mode, the newly created Mozart object is attached
+     * to the package so downstream code always sees the same config
+     * instance regardless of call order.
      */
     public function resolveConfig(Package $package): Mozart
     {
@@ -60,6 +65,15 @@ class PackageFactory
             return $extra->getMozart();
         }
 
-        return new Mozart();
+        $mozart = new Mozart();
+
+        if ($extra === null) {
+            $extra = new Extra();
+            $package->extra = $extra;
+        }
+
+        $extra->setMozart($mozart);
+
+        return $mozart;
     }
 }
