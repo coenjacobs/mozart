@@ -80,6 +80,11 @@ class AutoloaderGeneratorTest extends TestCase
     {
         $this->setUpVendorComposer();
 
+        // Simulate a namespaced dependency having been moved to dep_directory
+        $nsDir = $this->testsWorkingDir . '/src/dependencies/MyPlugin/Dependencies/Foo';
+        mkdir($nsDir, 0777, true);
+        file_put_contents($nsDir . '/Bar.php', "<?php\nnamespace MyPlugin\\Dependencies\\Foo;\nclass Bar {}\n");
+
         $generator = new AutoloaderGenerator($this->config);
         $generator->generate([]);
 
@@ -88,6 +93,22 @@ class AutoloaderGeneratorTest extends TestCase
 
         $content = file_get_contents($psr4File);
         $this->assertStringContainsString('MyPlugin\\\\Dependencies\\\\', $content);
+    }
+
+    #[Test]
+    public function it_skips_psr4_mapping_when_dep_directory_is_empty(): void
+    {
+        $this->setUpVendorComposer();
+
+        // Do NOT create any files in dep_directory
+        $generator = new AutoloaderGenerator($this->config);
+        $generator->generate([]);
+
+        $psr4File = $this->testsWorkingDir . '/src/dependencies/composer/autoload_psr4.php';
+        $this->assertFileExists($psr4File);
+
+        $content = file_get_contents($psr4File);
+        $this->assertStringNotContainsString('MyPlugin\\Dependencies\\', $content);
     }
 
     #[Test]
