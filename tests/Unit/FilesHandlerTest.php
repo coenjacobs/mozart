@@ -11,6 +11,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
+use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\UnableToWriteFile;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -390,6 +391,33 @@ class FilesHandlerTest extends TestCase
         $this->expectExceptionMessage('Failed to delete directory: test_dir');
 
         $handler->deleteDirectory('test_dir');
+    }
+
+    #[Test]
+    public function it_can_delete_file(): void
+    {
+        $filePath = 'test_file.txt';
+        file_put_contents($this->testDir . DIRECTORY_SEPARATOR . $filePath, 'content');
+
+        $handler = new FilesHandler($this->config);
+        $handler->deleteFile($filePath);
+
+        $this->assertFileDoesNotExist($this->testDir . DIRECTORY_SEPARATOR . $filePath);
+    }
+
+    #[Test]
+    public function it_throws_exception_when_deleting_file_fails(): void
+    {
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('delete')
+            ->willThrowException(UnableToDeleteFile::atLocation('test.txt', 'Permission denied'));
+
+        $handler = new FilesHandler($this->config, $filesystem);
+
+        $this->expectException(FileOperationException::class);
+        $this->expectExceptionMessage('Failed to delete file: test.txt');
+
+        $handler->deleteFile('test.txt');
     }
 }
 
