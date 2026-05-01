@@ -142,7 +142,7 @@ class AutoloaderGenerator
         $autoloadFile = $this->config->getDepDirectory() . 'autoload.php';
         $absolutePath = $this->config->getWorkingDir() . $autoloadFile;
         if (file_exists($absolutePath)) {
-            unlink($absolutePath);
+            $this->files->deleteFile($autoloadFile);
         }
     }
 

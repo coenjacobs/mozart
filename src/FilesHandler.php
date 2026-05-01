@@ -90,6 +90,18 @@ class FilesHandler
     }
 
     /**
+     * Delete a single file.
+     */
+    public function deleteFile(string $path): void
+    {
+        try {
+            $this->filesystem->delete($path);
+        } catch (FilesystemOperationFailed $e) {
+            throw new FileOperationException("Failed to delete file: {$path}. " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
      * Check whether the given path is an empty directory.
      *
      * Uses native FilesystemIterator instead of Flysystem's listContents()
