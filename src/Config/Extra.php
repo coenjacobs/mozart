@@ -10,4 +10,9 @@ class Extra
     {
         return $this->mozart;
     }
+
+    public function setMozart(?Mozart $mozart): void
+    {
+        $this->mozart = $mozart;
+    }
 }
